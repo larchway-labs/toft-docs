@@ -1,68 +1,52 @@
 ---
 title: Trusted app sources
-description: Constraining where code may come from — and nothing else.
+description: Restrict which git hosts and paths apps may be deployed from.
 ---
 
-This constrains the **provenance** of an app — where its code came from — and
-nothing else.
+The source policy controls **where an app's code may come from** — nothing else.
+An app from an approved source is not safer at runtime: its build still runs
+arbitrary code and can still reach public npm and PyPI.
 
-## What it is not
+## Setting it
 
-It says nothing about what an app *does* once it is running. An app from an
-approved source is not safer at runtime than one from anywhere else; it is merely
-from a place you decided to trust.
+**Admin → Sources** holds an **allowlist or blocklist** of git hosts and paths.
+Before saving:
 
-Every sentence of copy about this feature has to survive that distinction, and so
-does every conversation about it.
+- **Preview** the policy against the estate,
+- see **what the estate actually uses**,
+- see **what the policy resolves to**.
 
-## How it works
+A sensible default for most installs is an allowlist of your own git host's
+organizations. Go finer only for a reason you could write down.
 
-An **allowlist or a blocklist** of git hosts and paths, on Admin → Sources. One
-resolver, and the matcher is pure.
+Hosts match exactly (`github.com.evil.internal` does not match `github.com`) and
+redirects are never followed.
 
-Seven enforcement points, and that list is the whole specification.
+## Where it is enforced
 
-You can **preview** a policy before saving it, see **what the estate actually
-uses**, and see **what the policy resolves to**. Use all three before you save:
-the observed list is usually shorter and more surprising than people expect.
+Seven points, all failing closed: `POST /apps`, re-pointing in
+`PATCH /apps/{id}`, `POST /apps/{id}/deploy`, the builder just before cloning, the
+auto-deploy poller, and the gallery's deploy and update routes. The picker is
+convenience, not enforcement — a typed URL meets the same check.
 
-## Two switches that are not this one
-
-**Archive uploads** — `source_uploads_enabled` — are a different switch, and the
-two ZIP routes are **not** among the seven enforcement points. Turning the source
-policy on does not stop somebody uploading a folder. Publishing from RStudio is an
-upload too, so this switch governs it — see
-[Publishing from RStudio](../../capabilities/rstudio-publishing/).
-
-**Extensions-only mode** restricts the gallery, not the source policy.
+A refusal is a 403 that names what would be allowed. There is no exception-request
+workflow.
 
 ## Changing it
 
-**A settings change never takes down running code.** Tightening the list does not
-stop apps deployed under the old one. It gates the next deploy.
+Tightening never stops running apps. A non-compliant app keeps serving and can be
+rolled back, but not redeployed; auto-deploy skips it. The owner sees a banner on
+the app's page. Every policy change is audited as a diff.
 
-**A refused source is stated on the app's page**, as a banner, so the owner finds
-out where they are rather than in a log.
+## Switches that are not this one
+
+| | |
+|---|---|
+| `source_uploads_enabled` | Archive uploads (including [RStudio publishing](../../capabilities/rstudio-publishing/)) are a separate switch. With git restricted and uploads on, a refused developer can upload the same code — the settings page says so. |
+| Gallery | One-click gallery deploys are off entirely while the policy is restricted. **Extensions only** mode limits what the gallery lists, not the source policy. |
 
 ## Connected git hosts
 
-A connected git host is a **held credential**: Toft holds it, developers
-never see it, and **a developer is never told which auth method was used**.
-
-See [Connected git hosts](../git-connections/).
-
-**No key may attach one.** An API key cannot connect a git host, because that
-would be a key managing a credential.
-
-**Coverage is checked at the write, never at the clone.** You find out that a
-source is not covered when you configure it, not at 3am during a deploy.
-
-## What to set it to
-
-The honest default for most installs is an **allowlist of your own git host's
-organizations**. That is one line, it is the thing everybody assumed was true
-anyway, and it makes "somebody deployed from their personal GitHub" a refusal
-rather than a discovery.
-
-Going finer than that — path-level rules — is worth it only when you have a
-reason you could write down.
+A [connected git host](../git-connections/) is a credential Toft holds. Coverage
+is checked when an app is attached, never at clone time, so you learn about a gap
+while configuring, not during a deploy. No key may attach one.

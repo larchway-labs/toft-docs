@@ -1,74 +1,60 @@
 ---
 title: Configuration and settings
-description: Which knob is which, and the three-question test that sorts them.
+description: Environment variables versus audited settings, and the test that decides which a knob is.
 ---
 
-Toft splits its knobs in two, and the split is not arbitrary.
-
-## Configuration is the operator's
-
-Environment variables, read at startup. Facts about the **machine** — where
-Postgres is, which cluster, which bucket, which key encrypted what.
-
-They cannot be changed from the web interface, because changing where the
-database is from inside the application is not a feature.
-
-## Settings are the administrator's
-
-Database rows, changed from the admin pages, **audited**, no restart. Sign-in
-providers, the dependency policy, whether apps may be public, notification
-channels, storage resources, retention.
-
-## The test that sorts them
-
-In order — the first that answers wins:
-
-1. **Would changing it invalidate something already written down?** Where the
-   database is, which bucket, which key encrypted what. → **Configuration**, and
-   it stays in the environment forever.
-2. **Is it a capability being offered or withdrawn?** Isolated execution, public
-   apps, the gallery, API keys. → **Audited setting**.
-3. **Is it a quantity, a pace, a ceiling or a verbosity?** → an
-   [**operating dial**](../operating-dials/), which is both.
-
-Deliberately *not* "how often does it change": a collector address changes when
-the collector moves, and a memory ceiling may never change at all, so frequency
-sorts neither.
-
-## What is left in the environment, and why
-
-| Group | Examples | Why it stays |
+| | Configuration | Setting |
 |---|---|---|
-| **Facts about the install** | `DATABASE_URL`, `BASE_URL`, `APPS_PORT`, `ARTIFACT_*`, `KUBE_*`, `STORE_*`, the paths and ports | Changing one invalidates something already written down |
+| **Is** | An environment variable | A database row |
+| **Owned by** | The operator | An administrator |
+| **Changed** | At restart | On the admin pages, live, **audited** |
+| **About** | The machine: database, cluster, bucket, keys | Policy: providers, public apps, dependencies, channels, storage, retention |
+
+A third kind, the [operating dial](../operating-dials/), is both.
+
+## The test
+
+The first question that answers wins:
+
+1. **Would changing it invalidate something already written down?** (Where the
+   database is, which bucket, which key encrypted what.) → **Configuration.**
+2. **Is it a capability offered or withdrawn?** (Isolated execution, public apps,
+   the gallery, API keys.) → **Audited setting.**
+3. **Is it a quantity, pace, ceiling or verbosity?** → **Operating dial.**
+
+## What stays in the environment
+
+| Group | Examples | Why |
+|---|---|---|
+| **Facts about the install** | `DATABASE_URL`, `BASE_URL`, `APPS_PORT`, `ARTIFACT_*`, `KUBE_*`, `STORE_*`, paths and ports | Changing one invalidates something written down |
+| **Where links point** | `DOCS_URL`, `GALLERY_CATALOG_URL` | Configuration, not a setting — the settings API refuses `docs_url` |
 | **Secrets** | `JWT_SECRET`, `ENCRYPTION_KEY`, `BOOTSTRAP_ADMIN_PASSWORD`, `METRICS_TOKEN` | A settings page never holds the key that decrypts the settings |
-| **Somebody else's contract** | the `OTEL_*` family | The names are the OpenTelemetry standard ones, because every runbook already knows them |
-| **Bootstrap-only** | the `OIDC_*` and `GITHUB_*` pairs | A fresh install has no users, so nobody can reach the admin page to configure the way in |
-| **Development** | `DEV_PASSWORD`, `DEV_INSECURE_COOKIES` | Not part of any install |
+| **Someone else's contract** | `OTEL_*` | The OpenTelemetry standard names |
+| **Bootstrap only** | `OIDC_*`, `GITHUB_*` | A fresh install has nobody who can reach the admin pages |
+| **Development** | `DEV_PASSWORD`, `DEV_INSECURE_COOKIES` | Not for any real install |
 
-## Three that look like dials and are not
+`DOCS_URL` points the **Documentation** page at a mirror of the public docs, or
+`off` to remove documentation links.
 
-- **`GALLERY_CATALOG_URL`** — where the catalog lives is configuration.
-- **`PORT_RANGE_START` / `_END`** — the allocator is built from them, and a
-  change strands running apps at addresses the platform no longer believes in.
-- **`RUNNER_VERSION`** — it exists only for the window in which the two halves of
-  a release are upgraded in some order.
+Some that look like dials and are not:
 
-And one that looks like a dial and is a trust decision: **`BUILD_ALLOW_SCRIPTS`**
-is not a quantity. It admits npm lifecycle scripts, which widens the trust
-boundary of every subsequent deploy with nothing about the result looking
-different.
+- **`PORT_RANGE_START` / `PORT_RANGE_END`** — changing them strands running apps
+  on ports the allocator no longer knows.
+- **`RUNNER_VERSION`** — only for the window while the two halves of a release
+  are upgraded.
+- **`BUILD_ALLOW_SCRIPTS`** — a trust decision, not a quantity: it lets npm
+  lifecycle scripts run in every later build.
 
-## A change of one does not silently move the other
-
-An environment variable that has a setting over it is a **floor**, not a value —
-see [dials](../operating-dials/). Restarting with a changed variable moves the
-bootstrap values; it does not overwrite what an administrator chose.
+Every variable is listed in the [environment reference](../../reference/environment/);
+every setting in the [settings reference](../../reference/settings/).
 
 ## Booleans
 
-Switches are read as booleans: on is `1`, `true`, `yes` or `on`; off is `0`,
-`false`, `no` or `off`. Case and surrounding spaces do not matter, and **anything
-else is refused at startup** rather than treated as false.
+| Value | Read as |
+|---|---|
+| `1`, `true`, `yes`, `on` | On |
+| `0`, `false`, `no`, `off` | Off |
+| Anything else | **Refused at startup** |
 
-A switch is never read by *presence*. And in a delivery artifact — a chart, a
-compose file — off is spelled as **absent or empty**, never `0`.
+Case and surrounding spaces are ignored. In a chart or compose file, spell off as
+**absent or empty**, never `0`.

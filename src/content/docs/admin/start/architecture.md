@@ -1,76 +1,62 @@
 ---
 title: What you are running
-description: The pieces, the listeners, and the one boundary everything else rests on.
+description: One Go binary, Postgres and a filesystem — the pieces, the listeners and the origin boundary.
 ---
 
-Toft is a **single Go binary** that embeds its own web interface, migrates
-its own schema, and builds and runs the apps you give it. It needs Postgres and
-a place to put files. That is the whole dependency list.
+Toft is a **single Go binary**. It serves its own web interface, migrates its own
+schema, and clones, builds and runs the apps you give it.
 
 :::note
-This guide is for people who run a Toft install. If you are deploying an
-app onto one, you want the **user guide**; for `toft` and the app SDK, the **CLI
-and SDK guide**. Both are separate apps, installable from the gallery.
+This guide is for whoever runs an install. Deploying apps is the **user guide**;
+`toft` and the app SDKs are the **CLI & SDK guide**. The **Documentation** page in
+Toft links to all three for your version.
 :::
 
 ## The pieces
 
-| | |
+| Piece | Role |
 |---|---|
-| **The binary** | The platform API, the SPA, the build pipeline, the scheduler, the proxy. |
-| **Postgres 17** | Everything Toft knows. The binary owns the schema and migrates it at startup. |
-| **A filesystem** | Releases, logs and build caches. |
-| **A process manager** | PM2, for apps that run as processes. Bundled in the image. |
-| **A cluster** | Optional. Only for isolated execution. |
+| **The binary** | Platform API, web interface, build pipeline, scheduler, app proxy. |
+| **Postgres 17** | Everything Toft knows. The binary migrates the schema at startup. |
+| **A filesystem** | Releases, logs, build caches. |
+| **PM2** | Runs apps as processes (shared mode). Bundled in the image. |
+| **A cluster** | Optional — only for isolated execution. |
 
-No Docker registry for apps, no build service, no CI. Toft clones, builds
-and runs apps itself.
+No app registry, build service or CI is required.
 
 ## Three listeners
 
-| Port | Serves | Present |
+| Listener | Serves | Present |
 |---|---|---|
-| `:8080` | The platform — the pages people sign in to. | Always |
-| `APPS_PORT` (`:8081`) | Deployed apps. **A different origin, on purpose.** | Always |
-| `METRICS_ADDR` | The Prometheus scrape endpoint. | Only when configured |
+| `PORT` (`:8080`) | The platform | Always |
+| `APPS_PORT` (`:8081`) | Deployed apps, on a **different origin** | Always |
+| `METRICS_ADDR` | Prometheus scrape endpoint | Only when set |
 
-The third **never lives as a path on `:8080`**. On a single-origin install, an
-app's JavaScript could read a metrics path as the viewer — so it gets a listener
-of its own, or none at all.
+Metrics never live as a path on `:8080`. See
+[Listeners, origins and proxies](../../config/listeners-and-origins/).
 
 ## The boundary everything rests on
 
-**Apps are served on a different origin from the platform.** That is not a
-deployment convenience. It is what stops code inside a deployed app from reading
-the platform API, or forging writes, as the person looking at it.
+**Apps are served on a different origin from the platform.** That is what stops an
+app's JavaScript from calling the platform API as the person viewing it. A
+single-origin install gives that up — see
+[How apps are isolated](../../security/isolation/).
 
-You can run single-origin, and some installs do. Understand what you give up:
-on a single-origin install, an app's JavaScript runs on the same origin as the
-platform's own pages. See [How apps are isolated](../../security/isolation/).
+Toft works out its own inbound address from each request. `BASE_URL` sets only
+**outbound** links, such as those in notification emails.
 
-## What Toft works out for itself
+## Configuration and settings
 
-**Its own inbound address.** You do not tell it its own URL. It reads how the
-caller reached it, which is why an install moved behind a new hostname keeps
-working.
+| Kind | Where | Changed by |
+|---|---|---|
+| **Configuration** | Environment variables, read at startup | The operator, with a restart |
+| **Setting** | Database rows, audited | An administrator, on the admin pages |
+| **Operating dial** | Both: environment floor, setting override | Either |
 
-What you configure is **outbound** links — where a link in a notification email
-should point.
-
-## Two kinds of knob
-
-**Configuration** is the operator's: environment variables, read at startup,
-about the machine. **Settings** are the administrator's: database rows, changed
-from the admin pages, audited, no restart.
-
-There is a third kind — an **operating dial** — that is both. See
-[Configuration and settings](../../config/configuration-vs-settings/).
+See [Configuration and settings](../../config/configuration-vs-settings/).
 
 ## Four variables to start
 
 `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY` and `BASE_URL`. Everything else
-has a default or is a capability you have not asked for.
-
-Around 120 names exist. Most of them do not apply to your install, which is the
-absent-not-dormant rule working: the ten `ARTIFACT_*` variables are simply not
-part of a VM install.
+has a default or switches on a capability you have not asked for. The full list is
+in the [environment reference](../../reference/environment/).

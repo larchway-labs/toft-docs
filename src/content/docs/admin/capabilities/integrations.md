@@ -1,90 +1,61 @@
 ---
 title: Integrations
-description: Connecting apps to the outside, and the boundary that keeps them honest.
+description: Let apps send messages and files outward using an identity the install holds, never one the app holds.
 ---
 
-An integration lets an app send something outward — a message, a file — using an
-identity **the install holds** rather than one the app does.
+An integration lets an app send something outward — a message or a file — with
+credentials **the install holds**. The app supplies the content; the platform
+supplies the identity. Manage them in **Admin → Integrations**.
 
-Ten kinds: Slack, email, a signed webhook, SharePoint, OneDrive, Teams, Google
-Drive, Google Chat, Discord and PagerDuty.
+| Kind | Sends |
+|---|---|
+| Slack, Teams, Google Chat, Discord | Messages |
+| Email | Mail |
+| Webhook | Signed HTTP requests |
+| PagerDuty | Alerts |
+| SharePoint, OneDrive, Google Drive | Files |
 
-## The app supplies the message; the platform supplies the identity
+## Connections and attachments
 
-That is the whole design. **An app never speaks in the platform's voice**, and an
-app never holds the credential.
+| Rule | Effect |
+|---|---|
+| A connection offered to apps **is** the switch | No separate toggle; an app has no integration of a kind until you attach one |
+| A connection is welded to its scope | To use a different channel or folder, create another connection — existing users keep their meaning |
+| One attachment per (app, kind) | A second is refused, not swapped |
+| Destinations | A kind either lists destinations or (when welded) answers 404 — not an empty list |
+| Broken destination | The send fails; it never falls back somewhere else |
+| URLs you type | Checked at save **and** at every send; private addresses refused both times |
 
-## A connection is the install switch
+What a connection can reach is decided on the far side — the channel it was
+invited to, the folder it was given. **Teams is the exception**, and its form says so.
 
-**An app has none of a kind until you attach one. Absent, not off.**
+## What apps can do
 
-**A connection that exists and offers itself to apps *is* the install switch.**
-There is no second toggle: creating a connection and making it available is the
-act of turning the capability on.
+- Send only. No integration route reads — an app cannot read Slack or list a folder.
+- Every send passes the same four gates, each with its own error code, re-checked
+  before transport.
+- Files are added, never replaced. A file name that is really a path is refused.
+- An app can look up only the sends it triggered.
+- Jobs can send through their app's attachments; see [Automation](../../operate/automation/#sending-from-a-job).
 
-## Scope is welded
+## The integration log
 
-**A connection is welded to its scope, and a new scope is a new connection.** You
-do not re-point an existing connection at a different channel or folder — you make
-another one. Anything already using the first keeps meaning what it meant.
+Every send, with recipients in full, per app and install-wide in **Admin →
+Integration log**.
 
-**One attachment per (app, kind).** A second is **refused rather than swapped**, so
-an app cannot silently start posting somewhere else.
+| Setting | Default |
+|---|---|
+| `integrations_retain_bodies` | Off — the log keeps a checksum, not the text |
+| `integrations_retention_days` | At least 30 days |
 
-## Destinations
-
-**Whether a kind enumerates destinations is a property of the kind.** A welded one
-**404s rather than answering an empty list** — "I have no such question" is a
-different answer from "there are none".
-
-**A chosen destination that stops working fails. It never falls back.** Routing
-resolves in one place, and a broken destination is an error somebody sees rather
-than a message that quietly went somewhere else.
-
-## The far side's membership is the boundary
-
-What an integration can reach is decided by the far side — the channel it was
-invited to, the folder it was given. Toft does not re-implement that.
-
-**Teams is the exception, and its copy has to say so.** Do not paper over it when
-somebody asks.
-
-## URLs are input
-
-**A URL somebody typed is server-side input, refused at save *and* at dial.** The
-second check is not redundant: what resolved safely when it was saved may resolve
-somewhere else later. A private address is refused both times.
-
-## What an app can and cannot do
-
-- **Four gates**, the same four for every kind, with distinct codes, re-checked
-  before the transport.
-- **No status is ever a lie.** If the ledger says it sent, it sent.
-- **Nothing here reads.** Integrations are outbound. An app cannot use one to read
-  your Slack or list a folder. No read route exists.
-- A file is **added and never replaced**. The folder is the attachment's, the name
-  is the app's, and a name that is really a path is **refused rather than
-  sanitised**.
-- **An app can resolve the sends it triggered, and only those.**
-
-## The ledger
-
-Per app, and install-wide on Admin → Integration log: every message an app has
-sent, with its recipients in full.
-
-**Message bodies are not kept by default** — `integrations_retain_bodies` — and the
-log always records a checksum either way. Retention is at least 30 days.
-
-**Three kinds leave residue**, and its record outlives both the ledger's retention
-and the app itself. **Detach reaches nothing already written.** Detach is not
-deletion, and it is worth saying that to whoever asks you to "remove the files".
+:::caution[Detach is not deletion]
+Sends that placed a file are kept regardless of retention and outlive the app.
+Detaching an integration removes nothing already written on the far side.
+:::
 
 ## Testing
 
-You can test a connection, and you can test one app's integration. Do the second
-before telling a developer their integration works: a connection that
-authenticates is not the same as an app that can post to the channel.
-
-A file-kind connection — SharePoint, OneDrive, Google Drive — is tested by
-uploading a one-line `toft-test.txt` to its default destination, because
-those refuse a plain text message; the button says so. Expect to find the file.
+Test the connection, then test **the app's** integration before telling a
+developer it works — authenticating is not the same as being able to post.
+File kinds (SharePoint, OneDrive, Google Drive) are tested by uploading a
+one-line `toft-test.txt` to the default destination; expect to find it there.

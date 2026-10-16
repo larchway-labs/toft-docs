@@ -1,65 +1,29 @@
 ---
 title: The credentials broker
-description: Values an app needs and its owner never holds.
+description: Hold a secret centrally and attach it to apps — the app gets the keys, nobody gets the values.
 ---
 
-Admin → Credentials. You hold a value centrally and **attach** it to apps; the
-keys arrive in the workload's environment at start, and nobody sees the value.
+In **Admin → Credentials** you store a set of key–value pairs and **attach** it to
+apps. The keys arrive in the app's environment at start; no person, owner or
+administrator can read the values back.
 
-## When you want one
+Use it when several apps share a value (one place to rotate), or when an app's
+owner must not hold the secret. For anything the owner may know, an ordinary app
+environment variable is simpler.
 
-- **Several apps need the same value** — a warehouse connection string, a shared
-  API key. One place to rotate.
-- **The app's owner should not be able to read it.** A developer can deploy an app
-  that talks to the warehouse without holding the warehouse password.
+## Behavior
 
-For anything an owner may legitimately hold, an ordinary environment variable on
-the app is simpler and is theirs.
+| | |
+|---|---|
+| Visible | The credential's name and key names — never values, on any route or in any audit row |
+| In the app | Ordinary environment variables at start, but not shown in the app's own variable list |
+| Key collisions | A key two sources would both supply is refused with `409`, at the attach or at the owner's write, naming the key |
+| Edit values | **No restart.** Attached apps show an unapplied-change banner and pick it up at their next start |
+| Detach | **Restarts the app** onto its current release |
+| Delete | Refused with `409` while attached, naming the apps |
 
-## What is visible
+## Rotate a credential
 
-A credential shows as **its name and its key names**. Never its values.
-
-**No route returns a credential's values, to anybody** — not to the app's owner,
-not to another administrator, not to you. And **no audit row for any credential
-act carries a value**: five actions, names and key names only.
-
-## What the app sees
-
-At start, the keys are in the workload's environment exactly like the app's own
-variables. The app's code cannot tell the difference and does not have to.
-
-They do **not** appear in the app's own variable list. Two lists, two owners.
-
-## One source per key
-
-**A key two sources would both supply is refused** — at the attach, and at the
-owner's write. `409`, naming the key and what already supplies it.
-
-So an owner who already set `DATABASE_URL` blocks your attach until one of you
-removes theirs, and an attach that landed first blocks their write. Neither
-silently wins.
-
-## Detach restarts; edit does not
-
-**Detaching restarts the app** onto its current release, because the key has to
-stop being in the environment and an environment is set at start.
-
-**Editing the values does not.** It raises the same unapplied-change banner an
-ordinary variable edit does, and the app picks it up at its next start. That is
-deliberate: rotating a credential should not restart nine apps at once unless you
-choose to.
-
-## Deleting is refused while attached
-
-`409`, **naming the apps**. Detach them, or accept that you are about to break
-them and do it deliberately.
-
-## Rotating
-
-1. Edit the values.
-2. Restart the apps when you want them to pick it up — or let them, at their next
-   start.
-
-If the old value must stop working immediately, restart them immediately. The
-banner tells each app's owner what state they are in meanwhile.
+1. Edit the values in **Admin → Credentials**.
+2. Restart the attached apps when you want the new value live — immediately, if the
+   old value must stop working now. Otherwise each picks it up at its next start.

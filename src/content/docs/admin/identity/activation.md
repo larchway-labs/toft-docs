@@ -1,61 +1,40 @@
 ---
 title: Accounts that wait to be activated
-description: Provisioning somebody without letting them in.
+description: Create accounts on first sign-in but admit nobody until an administrator activates them.
 ---
 
-A provider can be set to create an account and **not** let it in:
-`default_role: pending`.
+Set a provider's `default_role` to **`pending`** and its first sign-in creates
+the account but refuses entry. An administrator then decides whether the person
+gets in, and as what.
 
-The account exists, stamped as awaiting activation and holding the floor role.
-The sign-in is refused. An administrator decides whether they get in, and as
-what.
+Use it when your directory holds more people than should have access, or to
+prepare grants before somebody's first day.
 
-## Why you would
+## How it behaves
 
-Two situations, and they are the common ones:
-
-- Your directory contains more people than should have accounts here — every
-  contractor, every service desk account.
-- You want the account to exist so grants can be prepared before somebody's
-  first day.
-
-## Pending is a provisioning policy, never a role
-
-It is not a fourth system role, and it does not appear in the role picker. It is
-a stamp on an account, and the refusal is **at every door** — a pending account
-is refused on its second sign-in and its twentieth, not just the first.
-
-## What happens when somebody lands in the queue
-
-An administrator is **nudged once**, by mail and to a connected channel, on the
-provisioning sign-in only. Not on every subsequent attempt: the queue is the
-record, and one person retrying is not news.
-
-The person sees the **awaiting-activation message** you wrote on Admin →
-Messages. Write something that says who to contact.
+- **Pending is a state, not a role.** It is not in the role picker. A pending
+  account is refused at every sign-in, not just the first.
+- **Administrators are notified once**, by email and any connected channel, on
+  the sign-in that created the account — not on retries.
+- **The person sees the awaiting-activation message** from **Admin → Messages**
+  (`pending_activation_message`). Say who to contact.
 
 ## Activating
 
-People → Pending. Activation is **one audited act** that admits the account and
-chooses its role.
+**People → Pending**, then activate and choose a role. Activation is one audited
+action.
 
-Three refusals:
+| Refused | Why |
+|---|---|
+| Activating as administrator | Promote separately, after activation |
+| Activating twice | The account is already active |
 
-- **It cannot mint an administrator.** That role is made deliberately, elsewhere.
-- **A second activation is refused.**
-- **It does not unlock.** An account that is both pending and locked stays
-  locked; those are two different facts.
+Activation does **not** unlock a locked account — pending and locked are separate.
+The person is told by email only (`account_activated_message`); with no email
+configured, tell them yourself.
 
-The activated person is told **by mail alone**, in your words — the
-account-activated message. If mail is not configured, nobody is told, so tell
-them yourself.
+## What never puts someone in the queue
 
-## Two things that do not put somebody in the queue
-
-**Linking never does.** An account reached by `link_by_verified_email` under a
-pending policy stays activated. Somebody who already has an account here does not
-get sent back to the waiting room because they signed in through a new provider.
-
-**The dormancy sweep never locks a pending account.** A pending account past the
-dormancy threshold stays pending; locking somebody who has never been let in
-would be a state nobody can read.
+- **Linking.** An existing account reached through `link_by_verified_email` stays
+  active, whatever the new provider's policy.
+- **The dormancy sweep.** It never locks a pending account.

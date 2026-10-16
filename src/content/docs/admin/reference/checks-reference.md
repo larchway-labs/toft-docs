@@ -1,66 +1,62 @@
 ---
 title: Checks reference
-description: Every system check, its category, and what each status means.
+description: All 26 system checks in report order, with their category and what moves each one off pass.
 ---
 
-The registry, in the order the report produces it. **The list is the
-specification**: a test walks it, so a check cannot silently stop running.
+Every check on **Admin → System checks**, in the order the report runs them.
+There are **26**, in nine categories. A test walks this registry, so a check
+cannot silently stop running. Some checks emit more than one row; each row keeps
+its own id.
 
-Twenty-six checks, in nine categories. Several of these emit more than one row; the rows keep their own ids.
+| Id | Name | Category | What it reads |
+|---|---|---|---|
+| `database` | Database | Platform | The connection and the schema. |
+| `storage` | Storage | Storage | `apps_dir`, `logs_dir`, `cache_dir`, `artifact_store` and shared storage roots. `fail` when a mount is gone or read-only. |
+| `host` | Host | Platform | CPU, memory, disk. |
+| `execution` | Execution backends | Execution | Two rows: `shared_backend` and `isolated_backend`. |
+| `toolchains` | Toolchains | Execution | Node, Python, Go and R. An absent family is re-probed; a present one shows the age of its reading. |
+| `estate` | App health | Apps | App health. Locked, suspended and withheld apps are counted without raising the verdict. |
+| `notifications` | Notifications | Notifications | Mail and channels. |
+| `sign_in` | Sign-in | Sign-in | Providers, plus a `lockout_risk` row when one administrator remains and local sign-in is off. |
+| `directory_groups` | Directory groups | Sign-in | `skip` with no mappings; `warn` when a provider has mappings and no membership has ever arrived. |
+| `login_group_gate` | Permitted login groups | Sign-in | `skip` when no provider gates by group; otherwise `pass`, naming the gated providers. |
+| `scim` | Directory feed | Sign-in | `skip` with no token; `warn` for a token never used. |
+| `license` | License | Platform | Tier, term, last verdict. |
+| `git_connections` | Clone credentials | Sources | `fail` past expiry, with the number of apps affected; `warn` within 14 days or after a failed mint. Disabled connections are excluded. |
+| `security_txt` | security.txt | Security | `warn` when expired or within 30 days. Links to `security_txt_expires`. |
+| `advisory_corpus` | Advisory corpus | Platform | `warn` past 7 days old, or when the policy is on and no feed has ever synced. Never blocks a deploy. |
+| `reachability` | Public reachability | Platform | The stored verdict, certificate expiry (21 days), suspended apps. `warn`, never `fail`; `skip` when nothing is published. |
+| `clock` | Clock | Platform | Skew against the database. `warn` past 2 s, `fail` past 30 s. Nothing contacts a time server. |
+| `encryption` | At-rest encryption | Security | `pass` with the backend, current key id, number of keys held and KEK URI: the key that must be in your backup. |
+| `stuck_work` | Stuck work | Automation | Job runs past their deadline; cron runs past the sweeper's cutoff. |
+| `scheduled_tasks` | Scheduled tasks | Automation | `warn` when a task is more than 10 minutes overdue, naming the app and task. |
+| `telemetry` | Telemetry | Platform | Exporters, and whether they are working. |
+| `db_pool` | Database pool | Platform | `warn` at 90% of connections in use, or on accumulated wait. |
+| `runner_images` | Runner images | Execution | `warn` for a language with no image, or an image on `latest` or no tag. |
+| `dev_switches` | Development switches | Security | `warn` when `DEV_PASSWORD` or `DEV_INSECURE_COOKIES` is set. `skip` on a loopback-only install. |
+| `trusted_proxy` | Trusted proxy | Security | `warn` when the request asking carried `X-Forwarded-For` from outside `TRUSTED_PROXY_CIDRS`. |
+| `migrations` | Schema migrations | Platform | `warn` with a count when the schema moved under a running process. A pending migration at boot stops startup instead. |
 
-| Check | Category | What it reads |
-|---|---|---|
-| `database` | Platform | The connection and the schema. |
-| `storage` | Storage | The data directories — `apps_dir`, `logs_dir`, `artifact_store`, `cache_dir` — and shared storage roots. `fail` when a mount is gone or read-only. |
-| `host` | Platform | CPU, memory, disk. |
-| `execution` | Execution | Both backends, reported separately: `shared_backend` and `isolated_backend`. |
-| `toolchains` | Execution | Node, Python, Go and R, discovered. **An absent family is re-probed on this path**; a present one carries the age of its reading. |
-| `estate` | Apps | App health. Counts locked, suspended and withheld **without raising the verdict**. |
-| `notifications` | Notifications | Mail and channels. |
-| `sign_in` | Sign-in | Providers, and `lockout_risk` — one administrator with local sign-in off. Absent while local sign-in is on. |
-| `directory_groups` | Sign-in | `skip` with no mappings; `warn` when a provider has mappings and no membership has ever arrived. |
-| `login_group_gate` | Sign-in | `skip` when no provider restricts sign-in by group; **`pass`** naming the gated providers, with what a vanished claim would cost. |
-| `scim` | Sign-in | `skip` with no token; `warn` on a token never used. |
-| `license` | Platform | Tier, term, last verdict. |
-| `git_connections` | Sources | `fail` past expiry **naming the app count**; `warn` inside 14 days or after a failed mint. Disabled connections excluded. |
-| `security_txt` | Security | `warn` when expired or inside 30 days. Links to the setting. |
-| `advisory_corpus` | Platform | `warn` past 7 days, and when the policy is on and no feed ever synced. Never blocks a deploy. |
-| `reachability` | Platform | The stored verdict, the certificate expiry, suspended apps. **`warn`, never `fail`**; `skip` when nothing is published. |
-| `clock` | Platform | Skew against the database, both directions. `warn` past 2s, `fail` past 30s. **Nothing dials a time server.** |
-| `encryption` | Security | **Always `pass`.** Carries backend, encrypt key id, ring size and KEK URI — the answer to "which key must be in the backup". |
-| `stuck_work` | Automation | Job runs past their deadline, cron runs past the sweeper's cutoff. |
-| `scheduled_tasks` | Automation | `warn` past 10 minutes overdue, **naming app and task**. |
-| `telemetry` | Platform | Exporters, and whether they are working. |
-| `db_pool` | Platform | `warn` at 90% in use, or on accumulated wait. |
-| `runner_images` | Execution | `warn` for a family with no image, or one on `latest` or no tag. |
-| `dev_switches` | Security | `warn` for `DEV_PASSWORD` or `DEV_INSECURE_COOKIES`. `skip` on a loopback install. |
-| `trusted_proxy` | Security | `warn` when `X-Forwarded-For` arrives from outside `TRUSTED_PROXY_CIDRS`. Caught from the request that asked. |
-| `migrations` | Platform | `warn` with a count when the database moved underneath a running process. A pending migration at boot is a **startup refusal**, not a row. |
+## Statuses
 
-## The four statuses
-
-**pass** asked and good · **warn** asked and worth attention · **fail** asked and
-bad · **skip** this install does not offer that capability.
-
-## The three ways a check can not answer
-
-| | Reads |
+| Status | Meaning |
 |---|---|
-| Overran 5 seconds | `warn` — "did not answer" |
-| The 20-second budget never reached it | `warn` — "ran out of time" |
-| It panicked | a **contained** `fail`, and the rest of the report still renders |
+| `pass` | Asked, and good. |
+| `warn` | Asked, and worth attention. |
+| `fail` | Asked, and bad. |
+| `skip` | This install does not use that capability. |
 
-## Rules the whole page keeps
+## When a check cannot answer
 
-- Only reads. Never a third party. `skip` over `warn`.
-- **A check the platform could not ask is not a bad answer.**
-- **No detail carries a credential.**
-- A **finding** carries an admin route or a settings key, never both. A **fact**
-  links nowhere — which is the quiet signal of which rows are findings.
-- Every check has a unique lower-snake id, and a category from the closed list of
-  nine.
+| Situation | Row |
+|---|---|
+| The check takes longer than 5 seconds | `warn`: did not answer |
+| The 20-second report budget runs out first | `warn`: ran out of time |
+| The check panics | `fail`, contained; the rest of the report still renders |
 
-## Above the checks
+A check that could not ask is not a bad answer. Checks only read, never contact
+a third party, and never put a credential in a row. A row that is a finding links
+to an admin page or a setting; a row that only states a fact links nowhere.
 
-The [build cache](../../build/cache/): its size, and Reclaim. **An action, not a
-check**, which is why it has a card of its own.
+The build cache card above the checks is an action, not a check: see [the build
+cache](../../build/cache/).

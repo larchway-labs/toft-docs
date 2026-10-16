@@ -1,81 +1,84 @@
 ---
 title: What a deploy does
-description: The three phases, what each can refuse, and what a failure never disturbs.
+description: The three phases of a deploy, what each can refuse, building from a folder, and what a failure leaves alone.
 ---
 
-Every deploy is **upload → scan → deploy**, in that order, and every step belongs
-to exactly one phase. The phase is derived from the step, never stored, and the
-step keys are a wire contract — the same across surfaces and releases.
+Every deploy runs **upload → scan → deploy**. Each step belongs to one phase, and
+the step keys are a stable wire contract across the UI, CLI and API.
 
 | Phase | What happens | Can refuse on |
 |---|---|---|
-| **Upload** | Clone, or unpack an archive. Dependency directories stripped; unsafe entries dropped. | [Source policy](../../security/sources/), archive caps, a clone credential |
-| **Scan** | Resolve what the app installs, compare to the [dependency policy](../../security/dependencies/). | Severity, fixability, malware |
-| **Deploy** | Install dependencies, run the build, start the workload. | Build timeout, a language version, a start that produced no process |
+| **Upload** | Clone the repository (or its folder), or unpack an archive. Dependency directories stripped; unsafe entries dropped. | [Source policy](../../security/sources/), archive caps, a clone credential, a bad folder |
+| **Scan** | Resolve what the app installs and compare it to the [dependency policy](../../security/dependencies/). | Severity, fixability, malware |
+| **Deploy** | Install dependencies, build, start the workload. | Build timeout, language version, a start that produced no process |
 
-## What a failure never disturbs
+:::note[A failure never takes an app down]
+The release that is serving keeps serving. A build that fails, times out, is
+killed or is refused changes nothing users see.
+:::
 
-**The release that is serving keeps serving.** A build that fails, times out or is
-refused changes nothing about what users are getting. There is no window in which
-a failed deploy leaves an app with nothing.
+A refusal before anything is stored writes no deployment row. An upload that
+started and then failed **is** recorded, with the reason.
 
-A killed build leaves the serving release up. So does a refusal.
+## Building from a folder of a repository
 
-## A refusal is not a deploy, but a failed upload is
+One repository can hold several apps. Each app names its folder:
 
-If the platform refuses before anything is stored, no deployment row is written.
-If the upload started and then failed, it **is** recorded, with the reason.
+| Surface | Where |
+|---|---|
+| UI | **New app → Folder (optional)**; later, the app's **Settings → Source & deploys → Folder** |
+| API | `repo_subdir` on `POST /api/v1/apps` and `PATCH /api/v1/apps/{id}` |
+| CLI | `toft create --repo <url> --subdir <folder>`; `toft status` prints `folder` |
 
-Two different things, and the difference is whether there is anything to look at.
+- **Only that folder becomes the release.** The repository is cloned beside the
+  release and the folder is moved in; nothing outside it and no `.git` is kept.
+  Detection, `toft.toml` and the build all treat the folder as the app's root.
+- **Refused:** absolute paths, `.` or `..` segments, anything inside `.git`, and a
+  folder that is a symlink in the repository (checked on disk, segment by segment).
+  A missing folder, or a file where a folder is expected, fails the upload phase.
+- Without a name or slug, the **slug defaults to the folder's name**.
+- An app deployed from an upload has no repository, so it has no folder.
+
+:::caution[Auto-deploy and shared repositories]
+Auto-deploy tracks the branch's commits, not the folder's. A push to **any**
+folder rebuilds **every** auto-deploying app on that branch. This is a known
+limitation.
+:::
 
 ## What an archive loses
 
-Fixed, and it happens **before the caps are counted** — so a zip that is mostly
-`node_modules` is usually well inside the limit once unpacked.
+Applied **before the caps are counted**, so a zip that is mostly `node_modules`
+usually fits once unpacked. `.zip` and `.tar.gz` go through the same unpacker.
 
-A single top-level wrapper directory is unwrapped. Dependency directories are
-removed. Entries with absolute paths, paths escaping the root, or symlinks
-pointing outside are dropped.
+- A single top-level wrapper directory is unwrapped.
+- Dependency directories are removed.
+- Entries with absolute paths, paths escaping the root, or symlinks pointing
+  outside are dropped.
 
-**What was dropped is reported on the deploy it changed**, so an owner looking for
-a missing file finds it there.
+What was dropped is reported on the deployment it changed.
 
-Both container formats — `.zip` and `.tar.gz` — go through one unpacker.
+## Build parameters are the operator's
 
-## Build parameters are yours, never the app's
-
-Build memory, CPU and timeout are the operator's numbers. A repository cannot ask
-for a bigger builder.
-
-Registry URLs **and registry credentials** come from this process's environment
-and **beat the app's**: an app declaring `NPM_TOKEN` gets the operator's value.
-There is one allow-list of keys and prefixes, and a build credential never
-reaches the deployed app.
+- Build memory, CPU and timeout are yours; a repository cannot ask for more.
+- Registry URLs **and credentials** come from the platform's environment and
+  **override the app's**: an app declaring `NPM_TOKEN` gets the operator's value.
+  One allow-list governs which keys pass through, and a build credential never
+  reaches the deployed app.
 
 ## npm lifecycle scripts
 
-Disabled unless `BUILD_ALLOW_SCRIPTS` is set. A `postinstall` that fetches a
-binary or patches a package does not run.
+Off unless **`BUILD_ALLOW_SCRIPTS`** is set; a `postinstall` does not run. It is
+install-wide configuration, not a setting or a per-app choice: turning it on
+widens what every later build may execute.
 
-This is not a dial and is not per app: it decides what code a build may execute,
-and turning it on widens the trust boundary of **every** subsequent deploy on the
-install, with nothing about the result looking different.
+## Watching a deploy
 
-## Watching one
-
-A deploy in flight is watched where the person is standing — a console above the
-tabs on the app's page, with a phase bar and the build's own output. Progress is
-a stream of snapshots and is never load-bearing.
-
-A build's log has three lifetimes and no surface presents one as another: a pane
-that joined mid-build says so, the stored log is offered and never substituted,
-and there is one socket per build per page.
-
-The deployment **list** carries no build log. One route serves it.
+A deploy in flight shows as a console above the app page's tabs, with a phase
+bar and the build's own output. The stored log is offered after the fact; the
+deployment list carries no log.
 
 ## Builds are unsandboxed
 
-Stated rather than hidden: a build runs your organization's code with the
-toolchain's ordinary access. The mitigations are the [source
-policy](../../security/sources/), the lifecycle-script switch above, and per-app
-OS accounts. Build sandboxing is on the backlog and is not shipped.
+A build runs your organization's code with the toolchain's ordinary access.
+Mitigations: the [source policy](../../security/sources/), the lifecycle-script
+switch, and per-app OS accounts ([execution modes](../../apps/execution-modes/)).

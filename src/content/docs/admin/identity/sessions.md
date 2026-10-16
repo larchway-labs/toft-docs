@@ -1,79 +1,42 @@
 ---
 title: Sessions
-description: The two clocks, and the fact that you set both.
+description: Idle and absolute session lifetimes, sign-out everywhere, and where sign-in lands.
 ---
 
-A session has **two clocks**, and an install sets both.
+A session has two clocks, both set on **Admin → Settings**:
 
-| Clock | Setting | What it bounds |
+| Setting | Bounds | Default | Range |
+|---|---|---|---|
+| `session_idle_minutes` | Inactivity before sign-out | 30 | 5–480, or `0` |
+| `session_absolute_hours` | Total session lifetime, however active | 8 | 1–24 |
+
+`session_idle_minutes: 0` turns off sliding renewal: the session simply lasts the
+absolute lifetime.
+
+Renewal extends only the idle clock. The original sign-in time (`auth_time`)
+never moves, so activity cannot keep a session alive past the absolute limit.
+
+Sessions are signed cookies, not database rows; there is no session list to
+browse or prune.
+
+## Ending sessions
+
+| Action | Where | Effect |
 |---|---|---|
-| **Idle** | `session_idle_minutes` | How long somebody can do nothing before being signed out. |
-| **Absolute** | `session_absolute_hours` | How long a session may live at all, however active. |
-
-An eight-hour absolute ceiling means a person who has been working all day is
-signed out at hour eight. That is the point of it — the two clocks answer
-different questions and you want both.
-
-`session_idle_minutes: 0` collapses to a flat lifetime with no sliding renewal.
-
-## Nothing is written down
-
-Sessions are not rows in a table you can browse. There is no session list to
-prune, and no "sign everybody out" button that works by deleting records.
-
-The two numbers are the whole mechanism, enforced against a signed cookie.
-
-## A renewal is the same session
-
-A session that renews is still the same session. **`auth_time` does not move**, so
-the absolute ceiling still applies — renewal extends the idle clock, never the
-absolute one. Activity cannot be used to live forever.
-
-**The ceiling is not the token's expiry.** They are different numbers, and the
-ceiling is the one that ends a session.
-
-## Revoking
-
-A person can end **every session they hold, everywhere**, from Me → Security.
-That bumps a token version, and the audit row is written in the same transaction.
-
-Two properties worth knowing:
-
-- **It does not touch personal API keys.** Those are separate credentials and stay
-  valid. Somebody who meant to revoke a key has to revoke the key.
-- **It is denied to a key principal.** A credential cannot end its holder's
-  sessions.
-
-You can also lock an account, which stops sessions and keys together — see
-[Offboarding](../offboarding/).
+| **Sign out everywhere** | **Me → Security** | Ends every session the person holds. Personal API keys keep working. Not available to an API key. |
+| **Lock the account** | **People → the person** | Ends sessions and stops personal keys — see [Offboarding](../offboarding/) |
 
 ## Where sign-in lands
 
-The page you were sent from is validated **on the server**, by one rule for
-password sign-in and every provider's callback, and the browser is only ever sent
-to the validated destination — never to the value it supplied. Accepted: a path on
-this install, or an address on an origin it already trusts (its own, and the apps
-address, so signing in from a protected app lands back on it). Refused, and the
-person lands on `/` instead:
+The return destination is validated on the server for password sign-in and every
+provider callback. Accepted: a path on this install, or an address on an origin
+it trusts (its own, or the apps origin). Anything else — `//host`, `/\host`, or
+any value containing a control character — lands on `/`.
 
-- anything that leaves the site, including `//host` and `/\host`;
-- **a control character anywhere in the value**. A tab or newline inside the
-  leading slashes is removed by a browser's URL parser, which turned `/<tab>/host`
-  into `//host`; refusing the character is what closes that.
+## Choosing values
 
-Password sign-in and password change now return the destination they validated
-and the login page navigates to that.
+- **Idle**: how long should a laptop left open in a meeting room stay signed in?
+- **Absolute**: how long should a stolen cookie be useful?
 
-## What to set
-
-There is no universally right answer, and the defaults are reasonable. Two
-questions:
-
-- **How long should a laptop left open in a meeting room stay signed in?** That
-  is your idle clock.
-- **How long should a stolen session cookie be useful?** That is your absolute
-  one.
-
-If people complain about being signed out constantly, the idle clock is the one
-to look at first — and be aware that "constantly" often means the absolute
-ceiling landing mid-afternoon, which is a different fix.
+If people complain about frequent sign-outs, check whether it is the absolute
+limit arriving mid-afternoon rather than the idle clock.

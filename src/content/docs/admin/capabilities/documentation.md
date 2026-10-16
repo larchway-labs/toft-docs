@@ -1,53 +1,51 @@
 ---
 title: Documentation
-description: Where the guides live, how an install links to them, and what to do on a network with no way out.
+description: How an install links to the guides for its own version, and how to mirror or turn off those links.
 ---
 
-Toft's manuals — the user guide, this admin guide, and the CLI and SDK
-guide — are one public site, published by the people who make Toft. Your
-install does not host them. It **links** to them.
+The user, admin and CLI & SDK guides are one public site. Your install links to
+it; it does not host the guides.
 
-## Every install links to its own version
+## What readers see
 
-The site keeps one folder per minor version: `/0.7/`, `/0.8/`, and `latest/`.
-An install links to the folder for the version it runs, so somebody on 0.7
-reads the 0.7 documentation even after 0.8 ships. Nobody has to install,
-update or choose anything: the link is worked out from the running version.
+The **Documentation** page, in the header for everyone, lists the three guides
+(opening in a new tab) and your [knowledge base](../announcements/), if you
+set one.
 
-The **Documentation** page lists the three guides, opening in a new tab, beside
-your install's own knowledge base if you have configured one
-([announcements](../announcements/)). It is in the header for everybody.
+Each link points at the folder for the minor version the install runs, such as
+`/toft-docs/0.7/admin/`. Someone on 0.7 keeps reading the 0.7 guides after 0.8
+ships. There is nothing to install, update or choose.
 
-## Your install makes no request to the site
+Toft never fetches, checks or caches the site. Only a reader's browser follows
+the links, and they do not identify your install.
 
-A link is only ever followed by a reader's browser. Toft does not fetch the
-documentation, check that it is there, or cache a copy, and the links do not
-tell the site which install they came from.
+## Point the links elsewhere
 
-## Where the links point is configuration
+`DOCS_URL` is configuration, set in the environment. There is no admin setting,
+and the settings API refuses `docs_url`.
 
-`DOCS_URL` sets the site the links point at; Toft adds the version. Unset, it is
-the public site. Like `GALLERY_CATALOG_URL`, it is part of how the install was
-stood up — there is no setting for it in the admin panel, and the settings API
-refuses one by name.
-
-| `DOCS_URL` | What readers get |
+| `DOCS_URL` | Readers get |
 |---|---|
-| unset | The public site, at this install's version |
-| `https://docs.internal.example` | Your mirror, at this install's version — it needs the same `/<minor>/` folders |
-| `off` | No documentation links anywhere; the Documentation page says documentation is not available on this install |
+| unset | The public site, at this install's version. |
+| `https://docs.internal.example` | Your mirror, at this install's version. It needs the same `/<minor>/` folders. |
+| `off` | No documentation links. The Documentation page says documentation is not available. |
+
+A value that is not an `http(s)` URL, or that carries credentials, a query or a
+fragment, stops startup.
 
 ## On a network with no way out
 
-The public site will not load for your readers. Either mirror it — copy the
-published folders onto any static host, including an ordinary Toft static app,
-and set `DOCS_URL` to it — or set `DOCS_URL=off` so nobody is offered links that
-fail at the firewall. How to build a mirror is in the site's own repository,
-`larchway-labs/toft-docs`.
+Readers cannot load the public site. Either:
+
+- **Mirror it.** Copy the published version folders to any static host,
+  including a Toft static app, and set `DOCS_URL` to it. How to build the site is
+  in `larchway-labs/toft-docs`.
+- **Turn it off.** Set `DOCS_URL=off` so nobody is offered links that fail at
+  the firewall.
 
 ## Guides installed by an earlier version
 
-Earlier versions installed the guides as apps on `_user-guide`, `_admin-guide`
-and `_cli-guide`. Those copies are now ordinary apps: they appear in the app
-list, the gallery no longer lists them, and you can delete them. Nothing deletes
-them for you.
+Earlier versions installed the guides as apps at `_user-guide`, `_admin-guide`
+and `_cli-guide`. Those are now ordinary apps: listed, and deletable by their
+owner. Nothing removes them for you. The `_` slug prefix stays reserved, so no
+new app can take those addresses.
