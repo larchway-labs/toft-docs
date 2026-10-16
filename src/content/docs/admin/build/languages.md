@@ -20,7 +20,7 @@ family's default.
 |---|---|---|
 | Python | 3.15, 3.14, 3.13 | 3.15 |
 | Node | 24, 22, 20 | 24 |
-| Go | 1.27, 1.26.9, 1.25.14 | 1.27 |
+| Go | 1.27, 1.26.9 | 1.27 |
 | R | 4.6, 4.5, 4.4 (Posit builds, `/opt/R/<version>`) | 4.6 |
 
 Quarto 1.10.19 is in the same image. Python 3.12 and R 4.3 are not offered: an
