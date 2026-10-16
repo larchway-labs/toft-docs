@@ -1,68 +1,49 @@
 ---
 title: The six roles
-description: The words on the wire, what each means, and how the signature works.
+description: The role words a request carries, what each means, and how your app verifies them.
 ---
 
-Every request Toft forwards carries a role: **what the caller may do**, not
-who they are.
+Every request Toft forwards to your app carries a signed role: **what the caller
+may do**, not who they are.
 
-## Seven constants. Six arrive on the wire.
-
-| Word | Who |
+| Role | Caller |
 |---|---|
-| `anonymous` | A visitor not signed in to Toft. Only a public app sees it. |
+| `anonymous` | A visitor not signed in to Toft. Only public apps see it. |
 | `viewer` | May look. |
 | `editor` | May change. |
-| `owner` | Owns this deployment. |
-| `system` | Toft acting on its own — a scheduled task firing on its schedule. |
-| `app` | An app credential: an app key at the gateway, or an app-started job's callback. |
-| `unknown` | **Never arrives.** Every failure resolves here. |
+| `owner` | Owns this app. |
+| `system` | Toft itself, such as a task firing on its schedule. |
+| `app` | An app credential: an app key at the gateway, or a job the app started. |
+| `unknown` | Not sent by the platform. The SDK's answer for a missing, invalid or expired role. |
 
-`unknown` is no header, no key, a bad signature, a blob for another app, or an
-expired one. **It is never privileged**, and every `atLeast` against it is false.
+## Comparing roles
 
-## A manual firing is not `system`
+```js
+if (!toft.caller(req.headers).atLeast(toft.ROLE_EDITOR)) return res.status(403).end();
+```
 
-A scheduled task firing on its schedule is `system`. The **same** schedule fired
-by hand carries the role of whoever pressed the button. Do not treat a task
-request as proof that nobody is there.
+`at_least` compares on the ladder `anonymous < viewer < editor < owner`.
+`system`, `app` and `unknown` are not on it, so every check against them is
+false.
 
-## An administrator reads as `viewer`
+A rung doesn't guarantee a human. An app key can carry `viewer` or `editor`, and
+satisfies checks exactly as a person with that role does.
 
-A Toft administrator with no grant on your app reads as `viewer`. **The
-header carries no admin bit.**
+## Things that surprise people
 
-That is deliberate: an app asking "is this person an administrator" is asking
-about a *person*, which is what [`who`](../../sdk/viewer/) is for.
+- **A manual task firing is not `system`.** It carries the role of whoever
+  pressed **Run now**.
+- **A Toft administrator with no grant reads as `viewer`.** The role has no admin
+  bit; use [`who`](../../sdk/viewer/) and `is_admin`.
+- **The role is always on.** Viewer identity (`who`) is off until an
+  administrator enables it; the role is not, because an app that can't tell an
+  editor from a visitor can't be written safely.
 
 ## How it is signed
 
-Per app, per start, **derived and never stored**. Your app verifies it against
-`TOFT_ROLE_KEY` with no round trip.
+The role header (`X-Toft-Role`) is signed per app and per start, and verified
+locally against `TOFT_ROLE_KEY` with no network call. It is signed rather than
+just stripped at the proxy because, in shared mode, another process on the same
+machine could reach your port directly.
 
-It is signed rather than stripped because stripping answers the visitor and not
-the neighbour on loopback — in shared mode, another process on the box can reach
-your port.
-
-**A version this SDK does not know is refused rather than parsed leniently.**
-The fields are positional, and a future format misread as this one is how a
-verifier comes to answer confidently about the wrong thing.
-
-## Comparing
-
-```js
-if (!c.atLeast(toft.ROLE_EDITOR)) return res.status(403).end();
-```
-
-`atLeast` walks `viewer < editor < owner`. `anonymous`, `system`, `app` and
-`unknown` are not on that ladder — **a rung is no longer a human**, and nothing
-here can tell you one is there.
-
-An app key may carry one of two roles as a stored grant, **bounded by the gate's
-answer and never by the ladder's** — narrowed, never widened.
-
-## Why it is not behind the identity switch
-
-`who` is off unless an administrator enables viewer identity. The **role is
-not**, and it may not be off by default: a role is not an identity, and an app
-that cannot tell an editor from a visitor cannot be written safely at all.
+A signature format the SDK doesn't recognize is treated as `unknown`.

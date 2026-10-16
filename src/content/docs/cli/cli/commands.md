@@ -1,97 +1,261 @@
 ---
-title: The eighteen commands
-description: Every command, and the thing about each that is not obvious.
+title: Command reference
+description: Every toft command and flag. Run toft <command> --help for the same text in your terminal.
 ---
 
-Run `toft <command> --help` for a command's own flags. Every command accepts
-`--app`, `--install`, `--json`, `--quiet`, `--yes` and `--no-color`.
+`toft <command> [arguments]`. Run `toft <command> --help` for a command's own
+flags.
 
-## Credentials and linking
+## Global flags
 
-| | |
+Every command accepts these.
+
+| Flag | Effect |
 |---|---|
-| `toft login [url]` | The device flow. `--status`, `--forget [install]`, `--forget-all`, `--token-stdin`, `--no-browser`. Forgetting **does not revoke** — that is the keys page. |
-| `toft link <slug>` | Writes the `[app]` table. Resolves the slug against the install first, so a typo fails here. `--local`, `--install`. |
+| `--app <slug>` | Which app. Otherwise `TOFT_APP`, `.toft.toml`, then `toft.toml`. |
+| `--install <url>` | Which install, by URL or alias. Otherwise the default from `toft login`. |
+| `--json` | Machine-readable output on stdout, **one JSON document per line**. |
+| `-q`, `--quiet` | No narration. The answer still goes to stdout. |
+| `--yes` | Answer confirmations. Required when nothing can be asked. |
+| `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same. |
 
-## Shipping code
+## All commands
 
-| | |
+| Command | Does |
 |---|---|
-| `toft deploy [dir]` | Bundles and uploads. `--logs`, `--no-watch`, `--watch <id>`, `--json`. |
-| `toft create [dir]` | Creates an app and deploys into it. Names the slug **before** claiming it. `--repo`/`--branch`, `--name`, `--execution-mode`, `--link`. |
-| `toft redeploy` | Builds again from the app's repository. Uploads nothing; prints the repository and branch first. |
-| `toft rollback [id]` | No argument means the newest successful release that is not the one serving — **named before it acts**. Refuses rather than hanging when it cannot ask. |
+| [`login`](#toft-login) | Sign this machine in to an install. |
+| [`link`](#toft-link) | Record which app this directory deploys to. |
+| [`create`](#toft-create) | Create an app and deploy this tree into it. |
+| [`deploy`](#toft-deploy) | Bundle this directory and deploy it. |
+| [`redeploy`](#toft-redeploy) | Build the app again from its own repository. |
+| [`rollback`](#toft-rollback) | Make an earlier release current again. |
+| [`status`](#toft-status) | What is serving, since when, and from what. |
+| [`apps`](#toft-apps) | The apps you can see. |
+| [`logs`](#toft-logs) | The app's runtime log, or one build's. |
+| [`events`](#toft-events) | What has gone wrong with this app. |
+| [`deps`](#toft-deps) | What the dependency policy says about the app. |
+| [`restart`, `start`, `stop`](#toft-restart-start-stop) | Lifecycle. |
+| [`job`](#toft-job) | Jobs, which run as their own process. |
+| [`task`](#toft-task) | Scheduled tasks, which are HTTP requests to your app. |
+| [`store`](#toft-store) | Files in a durable store. |
+| [`sdk`](#toft-sdk) | Write the install's app SDK into this directory. |
+| [`api`](#toft-api) | Call the install's HTTP API with your stored credential. |
 
-## Watching
+## `toft login`
 
-| | |
+`toft login [<install-url>]`. See [Signing in](../signing-in/).
+
+| Flag | |
 |---|---|
-| `toft status` | What is serving, since when, from what — plus the divergence sentence for as long as it is true. A batch app shows *batch app — runs jobs, serves no pages* where the address would be. |
-| `toft logs` | The runtime log. `--follow`, `--deploy <id>` for a build log, `--source app\|platform`, `--since`. `--source` and `--since` are **refused with `--deploy`**: a build log has no app half to separate from. |
-| `toft events` | What has gone **wrong** with this app, newest first — a different question from the log. `--since`, `--severity`, `--kind`, `--limit`. |
-| `toft apps` | The estate you can read. `--mine`. |
+| `--status` | Who this machine is signed in as, and where. |
+| `--forget <install>` | Drop one stored credential. Does not revoke the key. |
+| `--forget-all` | Drop every stored credential. |
+| `--token-stdin` | Read a personal or deploy key from stdin. Put flags before the URL. |
+| `--no-browser` | Print the approval URL instead of opening it. |
 
-## Lifecycle
+## `toft link`
 
-| | |
+`toft link <slug>`. Writes an `[app]` table into `toft.toml` after checking the
+slug exists.
+
+| Flag | |
 |---|---|
-| `toft restart` / `toft start` | One route serves both; the platform picks the audit action from the prior status. `--wait` polls until it settles — `running`, `sleeping` and `ready` are exit 0, `crashed` and `failed` are 1. `--wait-timeout` bounds it (default two minutes). Without `--wait`, exit 0 only means the platform accepted it. |
-| `toft stop` | Stops it. |
+| `--local` | Write `.toft.toml` instead, and offer to add it to `.gitignore`. |
+| `--install <url>` | Write the per-install table `[app.installs."<url>"]`. |
 
-A **batch app** has no service, so `restart`, `start` and `stop` are refused
-with `no_service` (exit 1). To keep one from running, switch its jobs off or ask
-an administrator to lock it.
+## `toft create`
 
-## Work
+`toft create [dir]`. Claims a slug, so it names it and asks first.
 
-| | |
+| Flag | |
 |---|---|
-| `toft job list\|run\|runs\|logs\|cancel` | A job runs as a process of its own with its own memory limit — in a container where the install has a cluster, on the install's own machine where it does not — and every listing says so. `list` prints each job's schedule with its time zone, or *on demand*, and its alert window if it declares one. `run` **waits by default** and the run's outcome is the exit code. `--no-wait`, `--logs`, `--timeout`. A failed run prints its tail unasked. `--param k=v` repeats, splits on the **first** `=` only, and is never parsed. `--for <time>` names the instant the run is for — `2026-10-06T03:00:00+01:00`, or a date or date-time with no offset, read as **UTC** — which is how you re-run Tuesday's work on Thursday. `runs` shows the instant each run was for, and marks one that ran on the install's own machine. |
-| `toft task list\|create\|edit\|delete\|run\|runs\|logs` | A task is an HTTP request to a path the app published, in the app's own process. `create` needs `--path` and takes `--schedule` **optionally**, read in UTC unless `--timezone Europe/London` names a zone — a zoned schedule fires once per wall-clock time through daylight saving changes. `--timezone` only travels with `--schedule`: an edit that names `--schedule` alone puts the schedule back on UTC, so repeat the zone. A batch app cannot have tasks — it serves no path to call — and `create` there is refused with `no_service`; `edit` sends only the flags you name; `delete` confirms and takes the run history with it. `run` waits by default, and **`skipped` is exit 1** — a firing that did not happen is not a success. `run` on a task that is switched off is refused with `schedule_disabled`: a disabled task does not run from anywhere. Takes no parameters: a task's belong to its schedule. |
-| `toft deps` | The packages a release installed, the advisories against them, and the versions that would fix a refused deploy. This is the command a refusal points at. `--json` is the install's own answer, unaltered. |
+| `--app <slug>` | The slug. Otherwise `toft.toml`, then the folder or directory name. |
+| `--name <name>` | Display name. Otherwise the slug. |
+| `--repo <url>` | Create from a repository; bundles nothing. Not combinable with `[dir]`. |
+| `--branch <branch>` | With `--repo`. Otherwise the default branch. |
+| `--subdir <folder>` | With `--repo`: build this folder of the repository. The slug defaults to the folder's name. |
+| `--execution-mode <m>` | `shared` or `isolated`, if the install lets you choose. |
+| `--link` | Write the slug into `toft.toml` on success. |
+| `--logs` | Stream the first build's log. |
+| `--no-watch` | Return after starting; print the deployment id. |
 
-## Files and code
+## `toft deploy`
 
-| | |
+`toft deploy [dir]`. Sends the working tree, uncommitted edits included. See
+[Deploying](../deploying/).
+
+| Flag | |
 |---|---|
-| `toft store ls\|put\|get\|rm` | Files in a store you hold a grant on. `--as <name>`, `-o <file>`. **The transfer goes direct to the object store**, so an unreachable bucket is exit 4 naming *that* host; a refusal from the install is 3 and a failed transfer is 1. |
-| `toft sdk vendor` | The install's own SDK into `.toft/sdk-<lang>/`, and it prints the copy's build id. See [Vendoring it](../../sdk/vendoring/). |
+| `--logs` | Stream the build log. |
+| `--no-watch` | Return after starting; print the deployment id. |
+| `--watch <deployID>` | Rejoin a deploy started earlier. |
 
-## The way round a verb that does not exist
+## `toft redeploy`
 
-| | |
+Builds from the repository the app names. Reads and uploads nothing from your
+disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`.
+
+## `toft rollback`
+
+`toft rollback [<deployID>]`. With no argument, rolls back to the previous
+successful release, and names it before acting. Nothing is rebuilt. Flags:
+`--yes`, `--no-watch`.
+
+## `toft status`
+
+What is serving, since when, and from which branch and commit. Shows `folder`
+for an app built from a repository folder. Warns while code pushed with
+`toft deploy` is serving on a repository-backed app. `--json` includes the
+app's `url`.
+
+## `toft apps`
+
+The apps you can see. `--mine` lists only the ones you own.
+
+## `toft logs`
+
+| Flag | |
 |---|---|
-| `toft api <method> <path>` | GET, POST, PATCH, PUT or DELETE against any route, with the stored credential — which nothing prints. `--data` takes JSON inline, `@file`, or `@-` for stdin. |
+| `-f`, `--follow` | Keep printing new lines. |
+| `--lines <n>` | Lines of history to start with. Default 100. |
+| `--source <app\|platform>` | Only one voice. |
+| `--since <t>` | RFC 3339, or a duration such as `2h`. |
+| `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. |
+
+## `toft events`
+
+What the platform noticed going wrong, newest first: crashes, failed builds,
+refused deploys. Run it after a restart that did not take.
+
+Flags: `--since <t>`, `--severity <s>`, `--kind <k>`, `--limit <n>`.
+
+## `toft deps`
+
+The packages a release installed, the advisories against them, and the versions
+that fix a refused deploy. Needs edit access to the app. `--json` returns the
+install's answer unaltered.
 
 ```bash
-toft api GET /api/v1/apps
-toft api GET apps                      # the same call: a bare path is relative to /api/v1/
+toft deps --json | jq '.refused.findings[] | {package, version, fixed_in, path}'
+```
+
+## `toft restart`, `start`, `stop`
+
+`restart` and `start` are the same call: the platform starts a stopped app or
+restarts a running one.
+
+| Flag | |
+|---|---|
+| `--wait` | Wait until the app settles. `running`, `sleeping` or `ready` exits 0; `crashed` or `failed` exits 1. |
+| `--wait-timeout <d>` | How long to wait. Default `2m`. |
+
+Without `--wait`, exit 0 means only that the install accepted the request. A
+batch app has no service, so all three are refused with `no_service`.
+
+## `toft job`
+
+| Subcommand | |
+|---|---|
+| `list` | The jobs this app defines, with schedule, zone and alert window. |
+| `run <name>` | Start one and wait. The run's outcome is the exit code. |
+| `runs` | Recent runs, with the instant each was for. |
+| `logs <runID>` | What one run printed. |
+| `cancel <runID>` | Stop a run that is still going. |
+
+| Flag | |
+|---|---|
+| `--param k=v` | A parameter. Repeatable. Values are strings, never parsed. |
+| `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`. No offset means UTC. |
+| `--no-wait` | Start and return the run id. |
+| `--logs` | Stream the run's log while waiting. |
+| `--timeout <d>` | How long to wait. Default: no limit. |
+| `--follow` | With `logs`: keep reading. |
+| `--limit <n>` | With `runs`: how many. |
+
+See [Jobs](../../sdk/jobs/).
+
+## `toft task`
+
+| Subcommand | |
+|---|---|
+| `list` | The tasks this app schedules. |
+| `create <name>` | Create one. Needs `--path`. |
+| `edit <name>` | Change only the flags you name. |
+| `delete <name>` | Remove one and its run history. Asks first. |
+| `run <name>` | Fire one now and wait. `skipped` exits 1. |
+| `runs <name>` | Recent runs. |
+| `logs <runID> --task <name>` | What one run pushed. |
+
+| Flag | |
+|---|---|
+| `--path </p>` | Path on your app, from its root. |
+| `--schedule <cron>` | Five fields, UTC. Omit for an on-demand task; `--schedule ''` on `edit` removes it. |
+| `--timezone <zone>` | Read the schedule in this zone, e.g. `Europe/London`. Repeat it whenever you pass `--schedule`. |
+| `--method <verb>` | `GET` or `POST`. Default `GET`. |
+| `--overlap <policy>` | `skip` or `allow` when the previous run is still going. |
+| `--enabled` | Whether the schedule fires. Default true. |
+| `--no-wait`, `--timeout <d>` | As for `job run`. |
+
+A disabled task is refused by `run` with `schedule_disabled`. A batch app cannot
+have tasks. `toft task` needs a personal key; a deploy key cannot use it. See
+[Scheduled tasks](../../sdk/tasks/).
+
+## `toft store`
+
+Files in a store an administrator granted you, from outside the platform.
+
+| Subcommand | |
+|---|---|
+| `ls` | What you can reach, and at what level. |
+| `ls <store>[/<folder>]` | One level: folders, then objects. |
+| `put <store> <file>` | Upload. `--as <name>` stores it under another name. |
+| `get <store> <name>` | Download. `-o`, `--out <file>` names the local file. |
+| `rm <store> <name>` | Delete. Needs full access. |
+
+| Access level | Allows |
+|---|---|
+| `read` | Download and list. |
+| `write` | Upload new objects; never replace. |
+| `overwrite` | Also replace existing objects. |
+| `full` | Also delete. |
+
+Transfers go straight to the object store: an unreachable bucket is exit 4
+naming that host. Deploy keys cannot use `toft store`.
+
+## `toft sdk`
+
+`toft sdk vendor` writes the install's SDK into this directory. Flags:
+`--lang <go|python|node>`, `--dir <path>` (default `.toft`). See
+[Vendoring it](../../sdk/vendoring/).
+
+## `toft api`
+
+`toft api <method> <path>`, for anything without a verb. `GET`, `POST`, `PATCH`,
+`PUT` or `DELETE`, with the stored credential, which is never printed.
+
+```bash
+toft api GET apps                                   # same as /api/v1/apps
 toft api PATCH /api/v1/apps/<id> --data @patch.json
 cat body.json | toft api POST /api/v1/apps/<id>/cron --data @-
 ```
 
-The response body goes to stdout **exactly as the install sent it**. The exit
-code is the usual contract and is deliberately coarser than the status: `2` for
-a path matching no route, `3` for a credential or permission refusal, `4` when
-the install could not be reached, and `1` for everything else — including a 400
-or a 422, where the install understood the request and refused it. Read the body
-for those.
+`--data` takes inline JSON, `@file`, or `@-` for stdin. A path without a leading
+slash is relative to `/api/v1/`. The response body goes to stdout as the install
+sent it.
 
-**A path matching no route is exit 2 and names the path.** That is a typo, not
-an authentication problem, and it used to read like one.
+| Exit | Meaning |
+|---|---|
+| 2 | No route matches the path (`route_not_found`). |
+| 3 | Credential or permission refused. |
+| 4 | Install unreachable. |
+| 1 | Anything else, including 400 and 422. Read the body. |
 
-**On Windows, prefer the relative form.** Git Bash and other MSYS shells rewrite
-an argument beginning with a slash into a Windows path before `toft` even starts.
-`toft api GET apps` is never rewritten; `MSYS_NO_PATHCONV=1` stops the rewriting.
-A path an MSYS shell mangled is refused **before the request**, quoting what
-actually arrived — and `toft task create --path` refuses the same way.
+:::tip[Windows]
+Git Bash rewrites arguments that start with `/` into Windows paths. Use the
+relative form, `toft api GET apps`, or set `MSYS_NO_PATHCONV=1`. The same applies
+to `toft task create --path`.
+:::
 
-Where there is a verb, use the verb: it validates, confirms and formats.
-
-## Two habits worth forming
-
-**`toft events`, not `toft logs`, when something is wrong.** The log is what the app
-printed. Events are what the platform recorded going wrong — a crash loop, a
-failed build, a refused deploy. They answer different questions.
-
-**`--json` on anything you script.** The human output is allowed to change.
+Prefer a real verb where one exists: it validates, confirms and explains.
+Things only `toft api` reaches include app environment variables and visibility
+(`PATCH /api/v1/apps/{id}`), tags, and pruning old releases.

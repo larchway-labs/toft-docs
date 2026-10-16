@@ -1,104 +1,117 @@
 ---
 title: Language notes
-description: The same model in four spellings, and what differs.
+description: The SDK in Python, Node, Go and R — how each spells the same calls, and what R lacks.
 ---
 
-One model, four languages. The differences are naming conventions, not
-capabilities.
-
-## Go
-
-```go
-import "toft"
-
-toft.App.Self(ctx)
-toft.Data.Get(ctx)
-toft.Notify.Slack(ctx, "done")
-toft.Jobs.Start(ctx, "reconcile", opts)
-me, err := toft.ViewerFor(r.Header)
-who, err := toft.Who(ctx, r.Header)
-c := toft.CallerFor(r.Header)
-```
-
-`context.Context` first, `error` last. `toft sdk vendor` writes a `go.work` with a
-relative `use` — see [Vendoring it](../../sdk/vendoring/).
-
-## Node
-
-```js
-import toft from "@larchway/toft";
-
-await toft.app.slug();
-await toft.data.update((s) => { s.runs++; });
-await toft.notify.email({ to, subject, text });
-const me = toft.viewer(req.headers);
-const who = await toft.who(req.headers);
-const c = toft.caller(req.headers);
-```
-
-Promises throughout except `caller`, `task` and `run`, which are local.
+One model, four spellings. The source for all four is published at
+[larchway-labs/toft-sdk](https://github.com/larchway-labs/toft-sdk)
+(Apache-2.0).
 
 ## Python
 
 ```python
 import toft
 
-toft.app.slug()
-toft.data.update(bump)
+toft.app.slug                               # properties, not methods
+toft.app.can("email")
+toft.data.update(lambda s: s.update(runs=s.get("runs", 0) + 1))
 toft.notify.slack("done")
-toft.jobs.start("reconcile", params=params)
-toft.viewer(headers); toft.who(headers); toft.caller(headers)
-toft.scratch_dir("uploads"); toft.session_scratch_dir(sid)
+toft.jobs.start("reconcile", params={"month": "2026-03"})
+toft.caller(request.headers).at_least(toft.ROLE_EDITOR)
+toft.who(request.headers); toft.viewer(request.headers)
+toft.scratch_dir("uploads"); toft.storage("reports").path
+toft.run; toft.task(request.headers)
 ```
 
-`snake_case`. Types worth naming are exported: `Identity`, `Caller`, `Viewer`,
-`Send`, `JobRun`, `Document`, `VersionConflict`, `QueueFull`, `ToftError`.
+`snake_case`. Errors are `toft.ToftError` and its subclasses `VersionConflict`
+and `QueueFull`. No third-party dependencies.
+
+## Node
+
+```js
+import toft from "@larchway/toft";
+
+await toft.app.slug();                      // every toft.app call is async
+await toft.app.can("email");
+await toft.data.update((s) => { s.runs = (s.runs ?? 0) + 1; });
+await toft.notify.email({ to, subject, text });
+await toft.jobs.start("reconcile", { params });
+toft.caller(req.headers).atLeast(toft.ROLE_EDITOR);
+await toft.who(req.headers); toft.viewer(req.headers);
+toft.scratchDir("uploads"); toft.storage("reports").path;
+toft.run; toft.task(req.headers);
+```
+
+ES module, Node 18 or later. From CommonJS, use `await import("@larchway/toft")`.
+Network calls return Promises; `caller`, `task`, `viewer`, `run`, `storage` and
+the scratch helpers are synchronous.
+
+## Go
+
+```go
+import "toft"
+
+self, err := toft.App.Self(ctx)
+ok, err := toft.App.Can(ctx, "email")
+doc, err := toft.Data.Update(ctx, bump)
+send, err := toft.Notify.Slack(ctx, "done")
+run, err := toft.Jobs.Start(ctx, "reconcile", toft.StartOptions{Params: params})
+c := toft.CallerFor(r.Header)
+me, err := toft.Who(ctx, r.Header); v, err := toft.ViewerFor(r.Header)
+dir, err := toft.ScratchDir("uploads"); m, err := toft.Storage("reports")
+toft.CurrentRun(); toft.TaskFor(r.Header)
+```
+
+- `context.Context` first on anything that touches the network; `error` last.
+- Options are structs: `toft.EmailMessage`, `toft.StartOptions`,
+  `toft.SlackFileOptions`.
+- `*toft.Error` carries the status and the platform's message. Use `errors.As`
+  for `*toft.QueueFullError` and `*toft.VersionConflictError`.
+- Values read from `toft.Data` have been through JSON, so numbers are `float64`.
+- No `require` line is needed: the build's `go.work` resolves the import. For
+  local builds, see [Vendoring it](../../sdk/vendoring/).
 
 ## R
 
 ```r
+library(toft)
+
 app_info(); app_base_path()
-app_data_get(); app_data_set(list(period = p))
-notify("done")
-job_start("reconcile"); job_status(id); scheduled_for()
-viewer(); caller_role(); caller_can("editor"); verify_role()
-mounts(); storage("reports"); store("drop", "backup")
-scratch_dir("uploads")
+app_data_get(); app_data_set(list(period = p), if_version = NULL)
+notify("slack", text = "done")
+job_start("reconcile", params = list(month = "2026-03")); job_status(id)
+caller_role(req$HEADERS); caller_can(req$HEADERS, "editor")
+viewer(req$HEADERS)                         # who is looking, or NULL
+scratch_dir(); mounts(); storage("reports"); store("drop", "backup")
+store_put(store("reports"), "report.parquet")
+scheduled_for()                             # inside a job
 ```
 
-Flat function names rather than an object. A **narrower surface** than the other
-three — check before designing around a call you saw in the Go docs.
+Flat functions instead of objects, and a **smaller surface** than the other
+three:
 
-`mounts()`, `storage()` and `store()` are there, so an R app asks where a
-resource is mounted rather than parsing the environment variable by hand.
-`scratch_dir()` is scratch space and is **not** where storage lives; they are
-two different questions with two different answers.
+| Not in R | Use instead |
+|---|---|
+| `app.can()` | `app_info()` lists the capabilities. |
+| `data.update()` | `app_data_set(..., if_version = n)` |
+| Acting as a viewer | `job_start(..., act_for = <X-Toft-Act-For header>)` |
+| Session scratch, subfolders of scratch | `scratch_dir()` only |
+| Task helpers | — |
+| Job internals (`run.progress`, results, input, output) | — |
+| `toft sdk vendor` | The build installs the package; nothing to vendor. |
 
-## What is identical everywhere
+`viewer()` in R answers *who is looking* (like `who` elsewhere). Write to a store
+with `store_put()`, never `file.copy()`.
 
-- The [six roles](../roles/), verified against the same vectors in CI. Two
-  implementations of one HMAC exist, and a test runs them against each other.
-- [App data](../../sdk/data/): one document, three distinguishable states,
-  `update` for a second writer.
-- [Notifications](../../sdk/notify/): a send returns a record, never a delivery.
-- [Jobs](../../sdk/jobs/): two objects — the app, and the app acting for a
-  person. Inside a job, the instant the run is for — `run.scheduled_for`,
-  `run.scheduledFor`, `run.ScheduledFor()`, `scheduled_for()` — and sending
-  notifications works the same way it does from the app.
-- **Off-platform, every call fails naming the missing environment variable.**
-  No dry-run mode, in any language.
-- **Where the app is mounted**: `toft.app.base_path`, `basePath()`, `BasePath`,
-  `app_base_path()`, all falling back to `BASE_PATH`.
-- **Addressing one of two mounts by folder**: `folder=` in Python, `{ folder }`
-  in Node, `StorageIn`/`StoreIn` in Go, a second argument in R.
+## The same everywhere
 
-Two guards keep this list honest rather than aspirational: every
-`/api/v1/app/*` path an SDK calls has to be a route the platform serves — in R
-the method too — and every key an SDK reads out of the app's own description has
-to be a key the platform sends.
+- [Roles](../roles/) are verified identically, against shared test vectors.
+- [App data](../../sdk/data/) is one document; `None` and `{}` differ.
+- [Notifications](../../sdk/notify/) return a record, not a delivery.
+- Inside a [job](../../sdk/jobs/), the instant the run is for and sending
+  notifications work the same way.
+- Off-platform, every call that needs the platform fails, naming the missing
+  variable.
 
-## Choosing
-
-Use the language your app is already in. The SDK is not a reason to pick one —
-and an app that is R because it is doing statistics should stay R even though
-its SDK surface is smaller.
+Use the language your app is already written in. The SDK is not a reason to
+switch.

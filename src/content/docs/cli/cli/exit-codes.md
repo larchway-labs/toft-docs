@@ -1,74 +1,62 @@
 ---
 title: Exit codes
-description: The contract, and the distinctions that matter in a pipeline.
+description: What each toft exit code means, and which ones are worth retrying.
 ---
 
-```
-0  it worked
-1  the platform did the thing and it failed
-2  usage or configuration
-3  not authenticated, or refused
-4  could not reach the install
-```
+| Code | Meaning | Retry? |
+|---|---|---|
+| `0` | It worked. | |
+| `1` | The platform did the thing and it failed: a failed build, a failed job run. | No. Fix the cause. |
+| `2` | Usage or configuration: a bad flag, no app linked, a refused prompt. | No. Fix the command. |
+| `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit. | No. Fix the credential. |
+| `4` | The install could not be reached. | Yes. |
 
-Documented and tested. They are a contract, not an implementation detail.
+## Cases that land on 2
 
-## The distinctions that matter
+These exit 2 because nothing was attempted:
 
-**1 and 3 are different failures.** A build that ran and failed is `1`. A
-credential the install rejected is `3`. Retrying `3` forever will not help.
+- **A locked app.** An administrator or the dependency policy locked it. Nothing
+  was built.
+- **A name that does not resolve**, such as `toft job run <unknown>`.
+- **A path matching no route** in `toft api` (`route_not_found`).
+- **A confirmation nothing could answer**, in CI or with stdin redirected.
+- **A token without `TOFT_URL`**, or both `TOFT_TOKEN` and `TOFT_TOKEN_FILE`.
 
-**4 is not 3.** An install you could not reach at all is a network problem;
-retry it. A refusal is an answer; do not.
+## Cases that land on 3
 
-**2 is yours.** Usage or configuration — a missing `[app]` table, a token
-without its URL, a flag combination that is refused. It will not fix itself.
-
-Three things land on `2` that a caller might expect on `1` or `3`, all for the
-same reason — nothing was attempted, so nothing ran and failed:
-
-- **A locked app.** `toft deploy` against one is `2`, and the refusal names who
-  locked it: an administrator, or the dependency sweep.
-- **A name that does not resolve.** `toft job run <unknown>`,
-  `toft task run <unknown>`, `toft link` in a directory already linked.
-- **A path matching no route.** `toft api GET nosuchroute` is `2` naming the path,
-  with `code: route_not_found` — a typo, not a credential problem.
+| Code in the error | What happened |
+|---|---|
+| `key_expired` | Run `toft login` to replace the key. |
+| `key_read_scope` | The key can read but not write. Mint a full key. |
+| `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
+| `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
 
 ## A run's outcome is the exit code
 
-`toft job run` and `toft task run` **wait by default**, and the run's outcome
-becomes the process's exit code.
+`toft job run` and `toft task run` wait by default, and exit with the run's
+outcome:
 
 ```bash
-toft job run nightly-report --param region=emea   # non-zero if the job failed
+toft job run nightly-report --param region=emea   # exits 1 if the job fails
 ```
 
-That is the point: a failing nightly job fails your pipeline without you parsing
-any output.
+A task run that was `skipped` exits 1. The exit code is the same with `--json`.
 
-**`skipped` is exit 1 for a task.** A firing that did not happen is not a
-success, and collapsing it into 0 would make a broken schedule invisible.
+## Restart with `--wait`
 
-**The exit code is the run's in every rendering, `--json` included.** The
-document prints on stdout *and* the process exits non-zero. A caller reading the
-document does not have to also decide what it means.
+`toft restart --wait` exits 0 for `running`, `sleeping` or `ready`, and 1 for
+`crashed` or `failed`. Without `--wait`, exit 0 means only that the install
+accepted the request.
 
-## `--wait` on a restart
+## Errors as JSON
 
-`toft restart --wait` polls until the status settles.
+With `--json`, a refusal also writes one object to stdout. The sentence still
+goes to stderr.
 
-- `running`, `sleeping`, `ready` → 0
-- `crashed`, `failed` → 1
+```json
+{"error":"that key has expired","kind":"auth","code":"key_expired","exit":3}
+```
 
-`ready` is a batch app's settled state: live, and serving nothing because it
-has no service. You will rarely see it here, since a restart of a batch app is
-refused with `no_service` — exit 1, because the install understood the request
-and the app's shape is what refuses it.
-
-**Without `--wait`, exit 0 means the platform accepted the request** — which is
-all a `202` asserts. It does not mean the app came up.
-
-## Nothing client-side decides expiry
-
-`toft` never decides your credential has expired. The install answers `401
-key_expired`, and that is exit 3.
+`kind` is one of `usage`, `auth`, `unreachable`, `locked`, `failed`. `code` is
+the install's own and is present only when it sent one. A failed deploy writes
+its result object instead, with no second document.

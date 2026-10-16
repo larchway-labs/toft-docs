@@ -1,73 +1,64 @@
 ---
 title: App data
-description: The one JSON document, its three states, and writing it safely.
+description: One JSON document per app, up to 256 KiB, that survives restarts, redeploys and rollbacks.
 ---
 
-Every app has **one JSON document**, 256 KiB. No keys, no collections, no
-listing, no queries.
+Every app has **one JSON document**, up to 256 KiB. There are no keys, no
+collections and no queries. Use it for a saved filter, a last-run timestamp, or
+settings someone edited in your UI.
 
-```go
-doc, err := toft.Data.Get(ctx)
-err = toft.Data.Set(ctx, settings)
-err = toft.Data.Update(ctx, bump)
+```python
+doc = toft.data.get()                       # dict, or None
+saved = toft.data.set({"period": p})        # returns the Document written
+toft.data.update(lambda s: s.update(runs=s.get("runs", 0) + 1))
+toft.data.clear()
 ```
 ```js
-await toft.data.get();
+await toft.data.get();                      // object, or null
 await toft.data.set({ period });
-await toft.data.update((s) => { s.runs++; });
+await toft.data.update((s) => { s.runs = (s.runs ?? 0) + 1; });
+await toft.data.clear();
 ```
-```python
-toft.data.get(); toft.data.set({"period": p}); toft.data.update(bump)
+```go
+doc, err := toft.Data.Get(ctx)              // map[string]any, nil if none
+saved, err := toft.Data.Set(ctx, settings)
+saved, err = toft.Data.Update(ctx, func(s map[string]any) (map[string]any, error) { … })
+ok, err := toft.Data.Clear(ctx)
 ```
 ```r
-app_data_get(); app_data_set(list(period = p))
+doc <- app_data_get()                       # list, or NULL
+version <- app_data_set(list(period = p))   # a named list
 ```
 
-## A write hands back what it wrote
+## Writes return what they wrote
 
-`set` and `update` return the **document**, not an empty handle — so you do not
-have to read it back to find out what was saved, and the version you now hold is
-the one you just wrote.
+`set` and `update` return a `Document` with `data`, `version`, `updated_at` and
+`bytes`, so you don't need to read it back. (R's `app_data_set` returns the new
+version.) `read()` returns the same `Document` for the current state.
 
-```python
-saved = toft.data.set({"period": p}).data
-```
+## Two writers need `update`
 
-## The bytes are yours
+`set` is last-write-wins. If a job and a web request both save, one change is
+lost.
 
-Stored as text and **never read** by the platform. There is no schema, no
-indexing, and nothing that will reject a document for its shape.
+`update` reads the document, applies your function, and writes it back only if
+the version is unchanged, retrying if someone else wrote in between. Your
+function may change the document in place or return a replacement. It receives
+`{}` when nothing is stored.
 
-## Three states stay tellable apart
+For a single conditional write, pass the version you read:
+`set(doc, if_version=n)` in Python, `{ ifVersion }` in Node, `SetIf` in Go,
+`if_version =` in R. A mismatch raises `VersionConflict`
+(`*toft.VersionConflictError` in Go).
 
-- **Never written** — nothing has ever been stored.
-- **Cleared** — there was something and it was removed.
-- **`{}`** — an empty object the app deliberately wrote.
+## Empty is not nothing
 
-These are three different answers. Code that folds "never written" into "empty"
-does the wrong thing the first time somebody clears it.
+Nothing stored (never written, or cleared) reads as `None` / `null` / `nil` /
+`NULL`. An empty object, `{}`, is a document the app wrote on purpose. Don't fold
+one into the other.
 
-## `update` is the one to reach for
+## Not a database
 
-`set` is last-write-wins. `update` reads, applies your function, and writes with
-the version it read as a precondition — retrying if somebody got there first.
-
-**The version is always there; the precondition is opt-in.** Two request
-handlers both incrementing a counter with `set` will lose writes. With `update`
-they will not.
-
-```js
-await toft.data.update((s) => { s.runs = (s.runs ?? 0) + 1; });
-```
-
-A conflict that cannot be resolved surfaces as a version-conflict error rather
-than as silent data loss.
-
-## What it is not for
-
-A database. There are no queries, so anything you want to *search* does not
-belong here — and it is one document for the whole app, so nothing per-user
-does either.
-
-It survives restart, redeploy and rollback. It is the right place for a saved
-filter, a last-run timestamp, or configuration somebody edited in your UI.
+The platform stores the bytes and never reads them: no schema, no indexing. It
+is one document for the whole app, so anything per user or anything you need to
+search belongs in a real database.

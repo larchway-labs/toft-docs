@@ -1,209 +1,130 @@
 ---
 title: Jobs
-description: Starting a different entrypoint of this app, as the app or as a person.
+description: Declare jobs in toft.toml, start them from your app, and write the code that runs inside one.
 ---
+
+A job runs a command from your app's release as **its own process**, with its
+own memory limit, deadline and run record. Use it for work too long or too large
+for a web request.
+
+## Declare it
 
 ```toml
 # toft.toml
 [jobs.reconcile]
 command = "python jobs/reconcile.py"
-timeout = 900
-memory  = 2048
+timeout = 900          # seconds
+memory  = 2048         # MiB
 
 [jobs.nightly-report]
 command       = "python -m reports.nightly"
-schedule      = "0 6 * * *"        # optional; omit for a job you start yourself
-timezone      = "Europe/London"    # optional; the schedule is UTC without it
-expect_within = "26h"              # optional; owners are told if it goes this long without succeeding
+schedule      = "0 6 * * *"        # optional; five cron fields
+timezone      = "Europe/London"    # optional; UTC without it
+expect_within = "26h"              # optional; alert owners after this long without a success
+retries       = 2                  # optional; off by default
+viewer_runnable = true             # a viewer may start it
+
+[jobs.nightly-report.params.region]
+type     = "string"
+required = true
 ```
 
-```go
-run, err := toft.Jobs.Start(ctx, "reconcile", opts)
-```
-```js
-await toft.jobs.start("reconcile", { params });
-```
-```python
-toft.jobs.start("reconcile", params=params)
-```
-```r
-job_start("reconcile")
-```
+| Key | |
+|---|---|
+| `command` | Run with the release's own interpreter. |
+| `schedule`, `timezone` | Five cron fields, read in `timezone` (IANA name) or UTC. A zoned schedule fires once per wall-clock time through daylight saving changes. |
+| `timeout`, `memory`, `cpu` | Seconds, MiB, millicores. |
+| `retries` | Extra attempts for unattended runs. Off by default. |
+| `expect_within` | `1h` to `31d`. Owners are told once if the job goes this long without succeeding. |
+| `viewer_runnable` | Lets a viewer start it. |
+| `enabled` | Whether it is switched on. |
+| `params.<name>` | `type`, `required`, `default`, `help`. |
 
-## What it actually does
+The declaration ships with the code, so a rollback takes the job definition back
+with it. The build log names any key it did not read.
 
-Runs a command `toft.toml` declares, **from the same release**, as a
-process of its own with a memory limit, a deadline and a durable record —
-**whatever mode your app runs in**.
+## Where it runs
 
-That last part is the point rather than a side effect: moving twelve minutes and
-six gigabytes out of your request-serving process is why this exists, and it
-should not depend on how the install happens to run apps.
+On an install with a cluster, each run gets its own container. On one without,
+it runs on the install's machine as your app's user, in its own process group;
+there the memory limit is checked by sampling, so a sudden spike can exceed it
+briefly. `toft job runs` marks which.
 
-**Where it runs is the install's choice.** On an install with a cluster, every
-run gets a container. On one without, it runs on the install's own machine,
-under your app's account, in a process group and a working directory of its
-own. `toft job runs` marks a run that ran there. The one difference worth
-designing for: on the install's own machine the memory limit is **checked by
-sampling**, so a sudden spike can pass it before the run is stopped. A job that
-genuinely needs gigabytes belongs on an install with a cluster.
-
-**It never blocks on the work.** You get a run id back.
-
-## Schedules, time zones and silence
-
-A `schedule` is five cron fields, read in **UTC** unless `timezone` names a
-zone. A zoned schedule is applied on the wall clock: `0 6 * * *` in
-`Europe/London` fires at 06:00 London time all year, **once** per scheduled
-time, through both daylight saving changes. Use the `timezone` key — a zone
-typed into `schedule` beside it is refused.
-
-`expect_within` is how long the job may go **without a success** before its
-owners are told — `"26h"`, `"7d"`, anywhere from one hour to 31 days. A job that
-fails already sends a notice; this catches the one that quietly stops running.
-It is reported once, and the job's next success clears it. A job somebody
-switched off is never overdue, and the window starts again when it is switched
-back on.
-
-Like the command, both live in the repository: the next deploy puts back
-whatever the file says.
-
-## As the app, or as a person
-
-```js
-await toft.jobs.start("reconcile", { params });               // as the app
-await toft.viewer(req.headers).jobs.start("reconcile", {});   // as the person
-```
-
-Two objects, not a flag. A flag would make the anonymous case the default
-spelling of the attributed one, so attribution would be lost by omission rather
-than by choice.
-
-**`viewer()` throws when there is nobody to act for.** A silent downgrade would
-move a run out of somebody's name and into nobody's, which is exactly the thing
-an audit trail exists to prevent.
-
-```js
-await toft.viewer(req.headers).jobs.mine("reconcile", { limit: 20 });
-```
-
-An app can only resolve the runs **it triggered**.
-
-## The instant a run is for
+## Start one from your app
 
 ```python
-toft.run.scheduled_for        # datetime, or None
+run = toft.jobs.start("reconcile", params={"month": "2026-03"})
+run = run.wait(timeout=600)
+run.succeeded, run.output(), run.logs()
 ```
 ```js
-toft.run.scheduledFor         // Date, or null; scheduledForText keeps the zone offset
+const run = await toft.jobs.start("reconcile", { params: { month: "2026-03" } });
+const done = await run.wait({ timeoutMs: 600_000 });
 ```
 ```go
-at, ok := toft.CurrentRun().ScheduledFor()
+run, err := toft.Jobs.Start(ctx, "reconcile", toft.StartOptions{Params: params})
+run, err = run.Wait(ctx, 2*time.Second)
 ```
 ```r
-scheduled_for()             # POSIXct in UTC, or NULL; attr(x, "text") keeps the offset
+id <- job_start("reconcile", params = list(month = "2026-03"))
+job_status(id)
 ```
 
-**A scheduled run knows which tick it is.** The 03:00 run is the 03:00 run even
-if it waited behind a full queue and started at 03:40, and the value is written
-in the schedule's own zone. A retry carries its original's.
+`start` returns immediately with a run. Parameters are passed to the process as
+values, never interpolated into the command, so a viewer can safely supply them.
 
-**A manual run has one only if somebody names it** — `toft job run --for`, or the
-*Run for* action on the app's Automation tab. It is **never defaulted to now**, so a
-re-run of Tuesday's work on Thursday processes Tuesday, and a job that finds no
-instant can decide for itself what that means. An app starting its own job does
-not pass one: an app starting itself is acting now.
+`wait()` follows retries: if the platform retried, you get the outcome of the
+retry, not of the first attempt. A full queue raises `QueueFull`
+(`*toft.QueueFullError` in Go).
 
-A run your app started or listed carries the same instant as an RFC 3339 string,
-`""` when there is none — `run.scheduled_for` in Python, `run.ScheduledFor` in
-Go, and `run.scheduledFor` in Node. Note that in Node the same name is a string
-on a run you hold and a `Date` on `toft.run` inside the job.
-
-## Parameters are never a command
+### As a person
 
 ```js
-await toft.jobs.start("reconcile", { params: { region: "emea" } });
+const me = toft.viewer(req.headers);
+await me.jobs.start("reconcile", { params });
+await me.jobs.mine("reconcile", { limit: 20 });
 ```
 
-Parameters are passed to your process as values. They are **never interpolated
-into the command**, which is what makes it safe to let a viewer supply one.
-
-## Waiting, and retries
-
-```js
-const run = await toft.jobs.start("ingest", {});
-await run.wait();
-```
-
-`wait()` reports the outcome of the **chain**, not of its first link. If the
-platform retried, `done` is false on the superseded run and `refresh()` returns
-the newer attempt — so an app polling the run it started is never told `failed`
-for work the platform was in the middle of redoing.
-
-Retries are **opt-in, unattended-only, and never silent**.
-
-## Refusals
-
-- An app can only start **its own** jobs.
-- **A viewer who started a run sees that run and no other.** A run somebody
-  else started is `404` to them, because its existence is theirs.
-- **A document app can still run jobs**, and that surprises people. A rendered
-  `.Rmd`, `.qmd` or `.ipynb` has no process behind the page, but a job is a
-  separate process running a command from the same release, and a document's
-  release carries its venv or R library like any other. So `[jobs]` works, and
-  inside the job the SDK is fully present — `run` populated, `mounts()`
-  answering, storage writable. It is the one way a document app does anything
-  after its build. What it still cannot do is see a request.
-- **A batch app is nothing but jobs.** A `[batch]` table in `toft.toml`
-  deploys a program with no web server — Node, Python, Go or R — and starts
-  nothing; its work is its `[jobs]`. Restart, start and stop answer
-  `no_service`, and it cannot have scheduled tasks. See
-  [Deploying](../../cli/deploying/).
-- **A static app cannot have jobs at all** — a `toft.toml` declaring one
-  fails the deploy with `manifest_invalid`, before anything is built. There is
-  no runtime for a command to mean anything in.
-- A full queue is its own error, not a generic failure.
-- Jobs unavailable on this install is the install's refusal, verbatim.
+The run is recorded in the viewer's name, and they see only runs they started.
+`viewer()` throws when no one is signed in. See [Who is asking](../viewer/).
 
 ## Inside the job
 
-```js
-toft.run     // this run's own view of itself; null everywhere else
-```
+`toft.run` is the run's view of itself, and `null` everywhere else.
 
-Report progress, read the payload, write output — all through `run`, and never
-by handling a credential yourself. Two things about it are worth knowing before
-you write the handler:
+| Python | Node | Go | |
+|---|---|---|---|
+| `run.params` | `run.params` | `run.Params(&v)` | The parameters. |
+| `run.scheduled_for` | `run.scheduledFor` | `run.ScheduledFor()` | The instant this run is for, or none. |
+| `run.progress(n)` | `run.progress(n)` | `run.Progress(ctx, n)` | Report 0–100. |
+| `run.set_result(x)` | `run.setResult(x)` | `run.SetResult(ctx, x)` | Store a structured result. Does not end the run. |
+| `run.read_input()` | `run.readInput()` | `run.ReadInput(ctx)` | The payload, if one was given. |
+| `run.write_output(b)` | `run.writeOutput(b)` | `run.WriteOutput(ctx, b)` | The run's output. |
 
-**A run given no payload is given no input location.** The variable is absent
-rather than pointing at an object that was never written, so *"was I given
-one?"* is answerable by looking. A run started with parameters alone has no
-input — read the parameters.
+In Go, call `toft.CurrentRun()`; it returns `nil` outside a job. In R,
+`scheduled_for()` is the one in-job call. Each variable is also in the
+environment; see [Environment variables](../../reference/environment/#inside-a-job).
 
-**Read the payload at the start of the run.** The link the platform minted for
-it is presigned and expires; a job that reads its input an hour in gets a
-refusal about the link, and the SDKs say so in those words rather than as a
-generic failure.
+- **Read the payload early.** Its link expires. A run started with parameters
+  alone has no payload at all.
+- **The exit code decides the outcome.** A job that records a result and then
+  exits non-zero has failed.
+- **A job can send notifications**, through the app's integrations, and nothing
+  else as the app. Data, viewer identity and starting another job are refused
+  with `job_send_only`.
 
-**Recording a result does not end the run.** `run.set_result(...)` in Python,
-`run.setResult(...)` in Node and `run.SetResult(ctx, ...)` in Go store the run's structured result and the job carries on
-— a send or a log line after it still counts. The run ends when your command
-exits, and its exit code decides how. So a job that records a result and then
-fails is a failed run, as it should be.
+### The instant a run is for
 
-**A job can send, and do nothing else as the app.** `toft.notify` — Slack, email,
-any integration an administrator attached to the app — works inside a job, in
-all four languages, through the run's own credential. It passes the same gates
-as a send from the app, and is recorded the same way. That is how a batch app
-mails its nightly report.
+A scheduled run carries the tick it fired for, in the schedule's zone, even if
+it started late. A manual run has one only if someone named it, with
+`toft job run --for` or **Run for** on the app's **Automation** tab. It is never
+defaulted to now, so re-running Tuesday's work on Thursday processes Tuesday.
 
-Everything else on the app surface is refused from a job with `job_send_only`:
-the app's data document, viewer identity, and starting another job. A job holds
-no app token, and the refusal names the reason rather than reading as something
-broken. Carry anything else out of the run with `set_result` or
-an output file, and let the app fold it in. Once the run has finished its
-credential is refused, so send before your command exits.
+## Which apps can have jobs
 
-`command` is run with the release's own interpreter — `python jobs/report.py`
-means the Python your app resolved, not whichever one is first on the image's
-`PATH`.
+| App type | Jobs |
+|---|---|
+| Web apps | Yes. |
+| Batch apps (`[batch]`) | Yes; jobs are all they do. See [Deploying](../../cli/deploying/#a-program-with-no-web-server). |
+| Rendered documents (`.Rmd`, `.qmd`, `.ipynb`) | Yes. The job has the full SDK; it cannot see a request. |
+| Static sites | No. A `[jobs]` table fails the deploy with `manifest_invalid`. |

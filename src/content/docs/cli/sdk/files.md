@@ -1,122 +1,115 @@
 ---
 title: Files and scratch space
-description: Ephemeral scratch, durable stores, and the session-scoped corner between them.
+description: Ephemeral scratch for work in progress, and durable storage an administrator maps to your app.
 ---
 
-Two different things, and picking the wrong one is the usual mistake.
+| | Scratch | Storage |
+|---|---|---|
+| Lifetime | Wiped on every start, restart and redeploy | Durable |
+| Set up by | The platform, for every app | An administrator, per app |
+| Use for | Uploads being processed, intermediate files | Reports, datasets, anything you keep |
 
-## Scratch — ephemeral, local, no network
+## Scratch
 
-```go
-dir := toft.ScratchDir("uploads")
+```python
+toft.scratch_dir("uploads")          # pathlib.Path, created if needed
 ```
 ```js
 toft.scratchDir("uploads");
 ```
-```python
-toft.scratch_dir("uploads")
+```go
+dir, err := toft.ScratchDir("uploads")
 ```
 ```r
-scratch_dir("uploads")
+scratch_dir()                        # no subfolder argument in R
 ```
 
-Per app. Fast. **Goes away.** For an upload you are about to process, a
-temporary render, an intermediate file in a pipeline.
+Per app, never backed up, never shared. `TMPDIR` points at the same place.
+Off-platform it falls back to the system temp directory, so local runs work.
 
-Never put anything there you would mind losing on a restart.
+### One browser session's corner
 
-## A session's corner of it
-
-```go
-toft.SessionScratchDir(sessionID)
-toft.NewSessionID()          // for a viewer who signed in nowhere
+```python
+sid = request.headers.get("X-Toft-Session") or request.cookies.get("viewer_sid") or toft.new_session_id()
+workdir = toft.session_scratch_dir(sid)
 ```
 ```js
 toft.sessionScratchDir(sessionId);
 toft.newSessionId();
 ```
-
-One browser login's own corner of scratch, hashed from the session id so two
-people working at once do not collide. `newSessionId()` covers the visitor who
-is not signed in to anything.
-
-## Storage — durable, named
-
 ```go
-path := toft.Storage("reports")             // a mapped volume, by name
-err := toft.Store("reports").Put(path, name)  // a file into an object store
+toft.SessionScratchDir(sessionID)
+toft.NewSessionID()
+```
+
+The proxy sends a per-login id in `X-Toft-Session`. Anonymous visitors carry
+none, so mint one with `new_session_id()` and keep it in your own cookie. Never
+substitute a fixed string: every anonymous visitor would share one directory.
+Shiny and Streamlit already separate sessions and don't need this.
+
+## Storage
+
+```python
+toft.storage("reports").path                 # a mapped volume or store, by name
+toft.store("reports").put("nightly.parquet") # copy a file into a store
+toft.mounts()                                # everything mapped
 ```
 ```js
 toft.storage("reports").path;
 await toft.store("reports").put(file);
+toft.mounts();
+```
+```go
+m, err := toft.Storage("reports")            // m.Path
+s, err := toft.Store("reports")
+_, err = s.Put(localPath, "nightly.parquet")
+all, err := toft.Mounts()
 ```
 ```r
 storage("reports")$path
-store_put(store("reports"), path, name)   # a file into an object store
+store_put(store("reports"), "report.parquet")
+mounts()
 ```
 
-**In R, `store_put()` is the write.** `file.copy()` onto a store mount produces a
-zero-byte object: a store has no append, and a copy is not one write.
+Storage is resolved **by name**. The administrator decides what `"reports"`
+points at, so the same code works in either execution mode and on another
+install. Each mount carries its `access` level: Python `read_only`, Node
+`writable`, Go `ReadOnly()`.
 
-Resolved **by name**, not by path. Your app says `"reports"` and the platform
-resolves it to whatever the administrator mapped — so the same code works in
-shared and isolated mode, and on a different install.
+A `.sqlite` or `.duckdb` file on a mapped volume is opened directly at its path.
 
-## When one name is two mounts
+:::caution[R: write with store_put]
+`file.copy()` onto a store mount creates an empty object and returns `FALSE`.
+Use `store_put()`.
+:::
 
-A mapping's identity is `(resource, app, folder)`, so an administrator can
-attach one resource **twice**: the root read-only, and a folder at `write`, at
-two paths in one workload. That is the shape the feature exists for — a corpus
-you read and a drop you write — and both arrive under the same name.
+### One name, two mounts
 
-The folder is what tells them apart:
+An administrator can map one resource twice, for example its root read-only and
+a folder writable. Both arrive under the same name; name the folder to pick one:
 
 ```python
-toft.storage("drop", folder="backup").path
-toft.store("drop", folder="backup")
+toft.storage("drop", folder="backup")
 ```
 ```js
 toft.storage("drop", { folder: "backup" });
 ```
 ```go
-toft.StorageIn("drop", "backup")     // Go has no keyword arguments
-toft.StoreIn("drop", "backup")
+toft.StorageIn("drop", "backup")             // and toft.StoreIn
 ```
 ```r
 storage("drop", "backup")
 ```
 
-**A name matching two mounts, with no folder named, raises** — listing what is
-mounted and at what level — rather than picking one. Returning the first would
-answer by the alphabetical order of paths somebody else chose, which is a silent
-answer to a question the caller did not know they were asking.
+With no folder named, a name that matches two mounts raises and lists what is
+mounted. An empty folder (`""`) means the root.
 
-Omitting the folder means *do not care*, which is the ordinary case and is only
-ambiguous when there genuinely is more than one. An empty folder names the root
-explicitly.
+### Rules
 
-Every key the platform puts in the storage description is a key every SDK reads,
-in both directions, and a test holds that — so a mount you can see on the app's
-page is a mount you can address from code.
-
-## The rules that will bite you
-
-**A mapping is an app's and a grant is a person's, and neither implies the
-other.** Your app having `"reports"` mapped does not mean you can browse it in
-the UI, and you holding a grant does not give your app anything.
-
-**Absent, not off.** If no storage is configured, `storage()` fails naming what
-is missing. It does not return an empty directory that silently swallows files.
-
-**The URL is never more generous than the mount.** A signed URL cannot reach
-outside what was mounted, and a level is *which* mount you got rather than a
-permission you asked for.
-
-**A file is added, never replaced**, through an integration attachment: the
-folder is the attachment's and the name is yours, and a name that is really a
-path is refused rather than sanitised.
-
-## Databases
-
-A `.sqlite` or `.duckdb` file on a mapped volume is opened **directly at the
-path**. There is no SDK call for it, and there does not need to be.
+- **Absent, not empty.** Asking for a name nobody mapped raises and names what
+  is mounted. `mounts()` with nothing mapped returns an empty list.
+- **An app's mapping and a person's grant are separate.** Your app having
+  `"reports"` mapped doesn't let you browse it, and your grant gives your app
+  nothing. People use [`toft store`](../../cli/commands/#toft-store).
+- **`put` never escapes the mount.** A name that is really a path outside it is
+  refused, and so is a write to a read-only mount.

@@ -1,24 +1,13 @@
 ---
 title: CI and automation
-description: Running toft where nobody is watching.
+description: Run toft unattended — credentials, a deploy pipeline, and parsing --json output.
 ---
 
-## Unattended is detected, not remembered
+## Credentials
 
-`toft` detects a non-interactive terminal rather than remembering a flag you set
-once. It will not prompt, and anything that needed a confirmation is **refused
-with exit 2** rather than hanging.
-
-That is the right default for CI: a job that hangs on a prompt burns a runner
-until it times out, and a job that auto-confirmed would be worse.
-
-Pass `--yes` for the confirmations you mean to give.
-
-## The credential
-
-Use a **deploy key** (`lpd_`), not your personal key. It belongs to nobody, so
-it does not stop working when somebody leaves, and what it can do is a strict
-subset of what a personal key can do.
+Use a **deploy key** (`toftd_`) from **Admin → Deploy keys**. It belongs to no
+person, so it keeps working when people leave, and it can do less than a
+personal key.
 
 ```yaml
 env:
@@ -26,84 +15,80 @@ env:
   TOFT_TOKEN: ${{ secrets.TOFT_DEPLOY_KEY }}
 ```
 
-Both, or neither. An environment token is used only when the install came from
-`TOFT_URL` too — every other combination is exit 2 naming both halves.
+Set both or neither. If the runner mounts secrets as files, use
+`TOFT_TOKEN_FILE=<path>` instead of `TOFT_TOKEN`: a path is not sensitive, while
+an environment variable is visible in `/proc` and inherited by child processes.
 
-On a runner with a mounted secret, prefer `TOFT_TOKEN_FILE`: the path is
-not sensitive, while an environment variable is readable through `/proc` and
-inherited by every child process.
+A deploy key can create apps, deploy, roll back, restart, stop, run jobs, and
+read logs, events and dependencies. It cannot manage scheduled tasks, use
+`toft store`, or manage keys and grants. For those, use a full personal key
+(`toftu_`).
+
+## No prompts
+
+`toft` treats a run as unattended when `--yes` is passed, `CI` is set, or stdin
+is not a terminal. It then never prompts: anything that needs a confirmation
+(`create`, `rollback`, `task delete`) is refused with exit 2 unless you pass
+`--yes`.
 
 ## A deploy pipeline
 
 ```bash
 set -euo pipefail
 
-toft deploy --logs --app my-app          # 1 if the build fails
-toft restart --wait --app my-app         # 1 if it does not come up
-toft job run migrate --app my-app --yes  # 1 if the migration fails
+toft deploy --logs --app my-app          # exits 1 if the build fails
+toft job run migrate --app my-app        # exits 1 if the migration fails
+toft restart --wait --app my-app         # exits 1 if the app does not come up
 ```
 
-Three real gates, no output parsing. Add `--json` if you want to record
-anything.
+Each step fails the pipeline on its own; no output parsing is needed. If a step
+fails, `toft events` says what the platform noticed. For a batch app, drop the
+`restart` line.
 
-A **batch app** — one that only runs jobs — has no service to restart, so drop
-the middle line; `toft restart` there is refused with `no_service`.
-
-## Re-running a day that went wrong
+## Re-running a day
 
 ```bash
 toft job run nightly-extract --app my-app --for 2026-10-06T03:00:00+01:00
 ```
 
-`--for` names the instant the run is for, and the job reads it back through the
-SDK. A scheduled run already carries its own — the tick it fired for, even if it
-started late — so this is for backfills and re-runs. A date or date-time with no
-offset is read as UTC, deliberately: a time that meant this machine's zone would
-name a different instant on the next runner.
+`--for` names the instant the run is for; the job reads it as
+`TOFT_SCHEDULED_FOR`. A value without an offset is read as UTC.
 
-## What `--json` gives a program
+## Parsing `--json`
 
-`--json` is on **every** command — a test walks the dispatch table, so a command
-without a machine-readable answer fails the build.
+- **One JSON document per line.** A watched deploy streams a frame per phase,
+  then a result object. A failed job run prints the run, then the error. Read
+  line by line, as `jq` does.
+- **Errors are JSON too**: `{"error", "kind", "code", "exit"}` on stdout, with
+  the sentence on stderr.
+- **A failed deploy carries `reason`**, the message, and its detail (a log tail
+  or dependency findings). Branch on `reason`, not the message.
+- **The human output may change.** Script against `--json`.
 
-Two properties to write your parser against:
+```bash
+toft status --json | jq -r .url
+```
 
-- **One JSON document per line, not one per invocation.** A failed firing prints
-  the run and then the refusal. Read it a line at a time.
-- **A refusal is a document too**, on stdout: `error`, `kind`, `code`, `exit`.
-  The sentence still goes to stderr for whoever is watching. So a script never
-  parses English to find out what happened — including for a bad flag, which
-  reads the same one line in both places, with the `toft:` prefix.
+## Reaching a private app
 
-**A failed deploy carries why in full**: the reason key, the whole message, and
-the detail the reason names — a tail of the build log, or the dependency
-findings. So a program that gets `dependency_blocked` has something to bump,
-rather than a paragraph to regex.
+A new app is private, so an anonymous request answers `authentication
+required`. Send your key as a bearer token; the apps gateway checks it and
+strips it before the app sees the request:
 
-A deploy also reports **what it ignored** as `warnings`, printed and carried in
-the `--json` result. A `[tasks]` table in `toft.toml` produces one.
+```bash
+URL=$(toft status --json | jq -r .url)
+curl -fsS -H "Authorization: Bearer $TOFT_TOKEN" "$URL/"
+```
 
 ## Scanning the estate
 
-A deploy key may read the scan-target list — the only route under `/admin`
-either key scope reaches. An `lp_` app key may not, because an app key is a
-grant on one app and the estate is not one app.
+A deploy key can read the scan-target list at `GET /api/v1/admin/estate/targets`.
+Send `X-Toft-Scan: 1` on scan traffic. It grants nothing; it stops the scan from
+counting as use of the app.
 
-Two neighbouring `/admin` reads are refused to **every** key class, deploy keys
-included: the reach inventory and the compliance surface. A scanner needs
-addresses; a posture is a thing a person reads from a browser.
+## Don't
 
-Send `X-Toft-Scan: 1` on scan traffic. It **grants nothing**; it only stops
-the request counting as evidence somebody wanted the app, so scanning does not
-make quiet apps look busy.
-
-## What not to do
-
-**Do not put a token in a flag.** There is no `--token`, deliberately.
-
-**Do not treat exit 1 as retryable.** The platform did the thing and it failed.
-Retrying builds the same broken commit again.
-
-**Do not re-point a published tag.** Extensions and anything else resolved by
-ref are resolved **at deploy time**, so a moved tag changes what installs get
-with no version change to show for it.
+- Don't retry exit 1. The same commit will fail the same way.
+- Don't read the key out of `credentials.toml`. Use `toft api`.
+- Don't re-point a published git tag. Anything resolved by ref picks up the move
+  at its next deploy.
