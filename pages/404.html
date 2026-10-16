@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found — Toft documentation</title>
+<style>
+  :root { --fg: #18181b; --muted: #52525b; --link: #4f46e5; --bg: #fafafa; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 36rem; margin: 18vh auto 0; padding: 0 1rem; }
+  h1 { font-size: 1.5rem; letter-spacing: -0.01em; margin: 0 0 .5rem; }
+  p { color: var(--muted); margin: .5rem 0; }
+  a { color: var(--link); }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">This page isn’t here</h1>
+  <p id="why">The address doesn’t match a page in Toft’s documentation.</p>
+  <p><a id="here" href="@PREFIX@/latest/">Go to the newest documentation (@LATEST@)</a></p>
+</main>
+<script>
+  // An install links to the folder for the minor it runs. A minor that is not
+  // published yet — a build ahead of its release — lands here, so say which
+  // version was asked for and offer the same page in the newest one. No timed
+  // redirect: the reader chooses.
+  (function () {
+    var prefix = "@PREFIX@", latest = "@LATEST@";
+    var rest = location.pathname.indexOf(prefix + "/") === 0 ? location.pathname.slice(prefix.length + 1) : "";
+    var parts = rest.split("/");
+    var asked = parts[0];
+    if (/^\d+\.\d+$/.test(asked) && asked !== latest) {
+      document.getElementById("title").textContent = "Documentation for Toft " + asked + " isn’t published yet";
+      document.getElementById("why").textContent = "The newest published documentation is for " + latest + ".";
+      var a = document.getElementById("here");
+      a.href = prefix + "/latest/" + parts.slice(1).join("/");
+      a.textContent = "Read this page in the " + latest + " documentation";
+    }
+  })();
+</script>
+</body>
+</html>
