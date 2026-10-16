@@ -1,132 +1,83 @@
 ---
 title: What this install tells an assessor
-description: The control document, the audit report, and the two things neither of them is.
+description: The NIST SP 800-171r3 control document and audit report — what each covers and who can read them.
 ---
 
-Admin → Governance → **Compliance** produces two documents against **NIST SP
-800-171 Revision 3**, from one registry compiled into the binary.
-
-They exist because an organization being assessed has all the facts and no
-document, and an administrator assembling them by hand produces something with
-no provenance, no timestamp, and no statement of what it did *not* cover.
+**Admin → Compliance** produces two documents against **NIST SP 800-171
+Revision 3**, from one registry compiled into the binary.
 
 :::caution
-This is audit **support**. It makes an assessment cheaper to run. It is not
-evidence that one was passed, and nothing here is an attestation.
+This is audit **support**: it makes an assessment cheaper to run. It is not an
+attestation and not evidence that one was passed.
 :::
 
-## Two documents, and why they are two
+## Two documents
 
 | | **Control document** | **Audit report** |
 |---|---|---|
-| A property of | the **build** | the **install** |
-| Reads | nothing | your settings, providers, credentials, sources, apps |
-| Says | what Toft does about each requirement | what this machine is actually set to, now |
-| Goes stale when | you upgrade | you change anything |
-| Renders on a bare install | yes | yes, mostly `absent` |
+| Describes | the **build** — what Toft does per requirement | the **install** — what this machine is set to now |
+| Reads | nothing | settings, providers, credentials, sources, apps |
+| Stale when | you upgrade | you change anything |
+| Download | PDF, `toft-800-171r3-controls-<version>.pdf` | JSON export, `compliance-<install>-<date>.json` |
 
-They cannot disagree about what the controls *are*, because both render the same
-registry. A single document doing both jobs would be one nobody could date.
+Both render the same registry, so they cannot disagree about what the controls
+are. The PDF is generated in the binary, so it works without outbound HTTPS, and
+every page footer names the build.
 
-The control document is the same sentence on every install of a version, so it
-can be circulated once across an estate. **Download it as a PDF** —
-`toft-800-171r3-controls-<version>.pdf` — laid out in the binary itself,
-with no browser involved, so it works on a box with no outbound HTTPS. The build
-is in the footer of every page, because pages get quoted and attached to
-findings on their own.
+## Responsibility
 
-## The responsibility split is the document
-
-Every requirement is one of four:
+Each of the 97 requirements is one of:
 
 | | |
 |---|---|
 | **platform** | Toft does this |
 | **shared** | Toft does part; you do the rest |
-| **inherited** | Your infrastructure does it, not this software |
-| **customer** | Yours entirely — Toft has no part in it |
+| **inherited** | Your infrastructure does it |
+| **customer** | Entirely yours |
 
-**The entries claiming nothing are what make the rest credible.** A pack
-asserting Toft satisfied all 97 requirements would be worthless to an
-assessor: this is software, and it has no part in personnel screening, physical
-protection or awareness training. At least twenty requirements must stay
-*customer* or *inherited*, and a test holds that floor — a registry drifting
-towards claiming everything would drift one requirement at a time.
+At least twenty stay *customer* or *inherited* — a test holds that floor. There is
+**no score**: nineteen requirements have nothing to do with Toft, so an average
+would mean nothing.
 
-## No score, and there never will be one
+## Parameters bound to settings
 
-Nineteen of the requirements have nothing to do with Toft, so any average
-mixes a platform control with a personnel one and produces a figure whose only
-use is to be quoted by somebody who has not read the rest.
+Where SP 800-171 asks you to define a value, the report reads your live setting:
 
-The document reports what it read. The assessor decides. The dashboard tile
-somebody will ask for would be a lie with a number on it.
+| Parameter | Setting |
+|---|---|
+| Account inactivity period | `dormant_lock_days` |
+| Session termination period | `session_idle_minutes` |
+| Malware response | `dependency_block_malware` |
 
-## Parameters bound to live settings
+Parameters the install does not hold are shown as **unbound** and counted.
 
-SP 800-171 asks the organization to define a number of parameters — a period
-here, a threshold there. The sharp part of this feature is that several of them
-are **read back from your actual settings** rather than asked for a second time:
+## Evidence outcomes
 
-- the account-inactivity period *is* `dormant_lock_days`
-- the session-termination period *is* `session_idle_minutes`
-- the malware response *is* `dependency_block_malware`
-
-The rest are shown as **unbound** and counted out loud rather than hidden. A
-coverage figure you cannot see is a coverage figure you cannot trust.
-
-## Four outcomes, kept apart
-
-Every one of the 37 evidence items is a row whatever happens to it — a collector
-that fails is that row's outcome, never a missing row.
+All 37 evidence items always produce a row:
 
 | | |
 |---|---|
-| `ok` | Read, and here is the value |
-| `absent` | This install does not offer that capability, named |
+| `ok` | Read; here is the value |
+| `absent` | The install does not offer that capability — not a finding |
 | `refused` | An access boundary stopped the read |
 | `error` | It should have worked and did not |
 
-**Absent is never amber.** It matters more here than anywhere else in the
-product, because the reader is an assessor who does not know which of
-Toft's capabilities are optional, and a row that looks like a finding will
-be filed as one. `refused` and `error` stay apart for the same reason:
-collapsing them leaves a reader unable to tell a boundary from an outage.
-
-A bare install produces no `error` rows at all.
+A bare install produces no `error` rows.
 
 ## The export
 
-The report itself is computed per request and stored nowhere — no table, no
-retention dial, no sweep. What you can keep is the **export**: a dated JSON
-document naming the install, the day, the collector and a **digest recomputable
-from the file alone**, which deliberately covers its own collection timestamp. A
-digest that ignored part of its own document would be one nobody could verify by
-hashing the document.
-
-It downloads as `compliance-<install>-<date>.json`. Toft generates it,
-streams it and forgets it — you have somewhere to file an artifact and the
-platform does not need one.
+The report is computed per request and never stored. The JSON export names the
+install, the date and the collector, and carries a **digest recomputable from the
+file alone** (it covers its own timestamp). File it wherever you keep evidence.
 
 ## Who can read it
 
-**Administrators in a browser, and nothing else.** All five routes answer 404 to
-anyone who is not an administrator, and every API key class is refused by name —
-deploy keys included, which makes this stricter than the [reach
-read](../../apps/reach/).
+**Administrators in a browser only.** All five routes return 404 to
+non-administrators and refuse every API key class, deploy keys included.
+[Scan targets](../scan-targets/) is the deliberate contrast: a deploy key can read
+addresses, not posture.
 
-That is deliberate. This is the reach inventory *plus* the settings document,
-the identity providers, the credential inventory, the connected git hosts and
-the source policy: the whole install described in one place, assembled for
-somebody whose job is to find weaknesses in it. An assessment is a thing a
-person does, once, from a browser. [Scan
-targets](../scan-targets/) stays reachable by a deploy key and is the deliberate
-contrast — a scanner needs addresses, and addresses are not a posture.
+Not license-gated — a lapsed install can still read its own posture.
 
-**It is not license-gated.** Reads never are, and an install whose license has
-lapsed can still read its own posture against a public standard.
-
-## What it deliberately is not
-
-No second framework, no POA&M, no remediation tracking, no per-app compliance,
-no scheduled generation, and no attestation.
+Out of scope: other frameworks, POA&M, remediation tracking, per-app compliance,
+scheduled generation, attestation.

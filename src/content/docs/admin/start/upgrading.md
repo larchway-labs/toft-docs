@@ -1,68 +1,50 @@
 ---
 title: Upgrading
-description: Moving to a new version, the schema floor, and what a refusal at startup means.
+description: Pin a new image tag and restart — migrations run at startup and only go forward.
 ---
 
-An upgrade is: pull the new image tag, restart. The binary migrates its own
-schema on the way up.
+An upgrade is a new image tag and a restart. The binary migrates its own schema
+on the way up; there is no separate migration step.
 
-## Pin the tag
+| Install | How |
+|---|---|
+| One box | Re-run the `larchway-labs/toft-install` installer. It keeps your `.env`, pulls the new `gopanair/toft:<version>` and restarts. |
+| Helm chart | Upgrade the release; the image tag follows the chart's app version unless you pin `image.tag`. |
 
-The image is tagged with a version and **never `latest`**. Pin it. An install
-that follows a moving tag upgrades itself at a restart you did not plan, which
-is the same class of problem as a git tag that gets re-pointed.
+:::danger[Back up first]
+Migrations are **one-way**. There is no down path, and rolling the binary back
+across a schema change is not supported. On one box:
+`docker compose exec postgres pg_dump -U toft toft > backup.sql`
+:::
 
-## Migrations run at startup
-
-Toft owns its schema. There is no separate migration step and nothing to
-run by hand.
-
-**Nothing runs a migration backwards.** There is no down-path, and a rollback of
-the binary across a schema change is not supported. Take a backup before an
-upgrade that crosses one.
+:::note[0.7.0 is a fresh install]
+0.7.0 does not upgrade a 0.5 or earlier install: the rename to Toft changed its
+variables, containers, volumes and database. Install 0.7.0 beside or in place of
+the old one and redeploy your apps.
+:::
 
 ## The schema floor
 
-At a major version, Toft collapses its migration history into a new
-**baseline**. A database below that baseline's version cannot be migrated by
-this binary, and the process **refuses at startup, by name**:
+Toft periodically collapses its migration history into a new **baseline**. A
+database older than the baseline is refused at startup, untouched:
 
-> this database is at version *N*; this release requires *M*
+> this database is at schema version *N* and this release requires *M*
 
-It does not touch the database. This is a statement about which installs have an
-upgrade path, not a path itself.
+Upgrade through the last release that still carried the older migrations, then
+move on — or restore from a backup. Do not skip releases across a baseline.
 
-The way through it is to upgrade to a release that still carries the older
-migrations, let it bring the database up, and then move to the newer one.
-**The last moment a database can be carried across is the commit before the
-rebaseline** — so do not skip a major.
+## What can change underneath you
 
-## What upgrading can change underneath you
-
-Read the release notes, but two categories are worth knowing about generally:
-
-- **A default that moved.** A capability that was off can ship on. The most
-  recent example is whether every app is listable to everyone signed in — see
-  [Listing and access requests](../../apps/listing/), which is written for
-  somebody deciding whether to turn it back off.
-- **A check that is new.** The [checks page](../../operate/checks/) may light up
-  with a warning about something that was always true and was not being looked
-  at.
-
-Neither takes an install down. Both are worth looking at the same day.
+- **A default moves.** A capability that was off can ship on — for example
+  whether every app is [listable](../../apps/listing/) to everyone signed in.
+- **A new check appears.** [System checks](../../operate/checks/) may warn about
+  something that was always true.
+- **An interpreter moves** (one box). Python apps rebuild their dependencies on their next
+  start, automatically; a new Node major needs each Node app redeployed.
 
 ## After an upgrade
 
-1. **Run the checks.** The `migrations` row tells you if the database moved
-   underneath a running process — a restore from an older backup, for instance.
-   A *pending* migration at boot is a startup refusal, not a row on a page.
-2. **Look at Admin → Info** for the version, the build, and the toolchains this
-   process actually found.
-3. **Nothing to do about apps.** A restart replaces a workload's tree from its
-   stored release; apps come back on the releases they were serving.
-
-## The other artifacts
-
-The Helm chart and the Compose bundle are versioned with the binary and are
-published alongside it. The `toft` client is published separately and is
-backward-compatible across a release; people do not need to upgrade it in step.
+1. **Open Admin → System checks.** The **Schema migrations** row flags a database
+   that moved under a running process, such as a restore.
+2. **Open Admin → System info** for the version, build and toolchains found.
+3. **Apps need nothing.** Each comes back on the release it was serving.

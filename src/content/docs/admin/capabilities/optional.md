@@ -1,59 +1,30 @@
 ---
 title: What is optional
-description: The rule that governs every optional capability, and the one exception.
+description: Unconfigured capabilities are absent, not disabled — the rule, the one exception, and the list.
 ---
 
-Toft has a rule about capabilities you have not configured, and it holds
-everywhere:
+An optional capability you have not configured is **absent**: no greyed-out
+control, no empty tab, no button that explains itself. A disabled control invites
+a support question; an absent one reads as what it is.
 
-## Absent, not dormant
+| Not configured | Result |
+|---|---|
+| Artifact store | Its routes 404; nothing in the UI |
+| Isolated backend | The mode is not offered |
+| App storage | No storage on any app |
+| Background jobs | No jobs (no *cluster* still allows jobs on the platform's machine) |
 
-An unconfigured capability is **not there**. Not greyed out, not a tab that
-explains why it is empty, not a button that raises a support ticket.
+**Admin → System info** and **[Admin → Checks](../../operate/checks/)** show what is
+on. On Checks an unconfigured capability reads `skip` with a reason, never `fail`.
 
-- No artifact store configured → the routes 404 and nothing appears in the UI.
-- No isolated backend → the mode is not offered.
-- No app storage → there is no storage on an app.
-- No jobs → no jobs. (No *cluster* is not no jobs: a run can be placed on the platform's own machine.)
+:::note[The one exception: not licensed is visible]
+A capability your [license tier](../../operate/licensing/) withholds is **shown as
+locked**. Unconfigured is your decision; unlicensed is someone else's, and you are
+entitled to see it.
+:::
 
-## Why
-
-Because a disabled control is an advertisement, and an advertisement in an
-enterprise product is a support call. A developer who can see a button they
-cannot press will ask you about it, every time, forever.
-
-It also means an install that has decided not to use something looks like an
-install that does not have it — which is the honest rendering.
-
-## Where the rule decays, and how that is held
-
-**The [checks page](../../operate/checks/) is where it decays**, because it is a
-page whose whole job is to talk about things that are not configured. So its list
-is the specification, and five rules hold it:
-
-- Only reads. It configures nothing.
-- Never a third party. It does not dial out to test somebody else's service.
-- **`skip` over `warn`.** An unconfigured capability is a `skip` with a reason,
-  never a failure.
-- **A check the platform could not ask is not a bad answer.** A timeout is
-  "did not answer", not `fail`.
-- **No detail carries a credential.**
-
-## An operating dial is neither a fact nor a capability
-
-Also stated because it is the other place the rule does not apply: a
-[dial](../../config/operating-dials/) always has a value. The environment is its
-floor and is never taken away, zero at any level means the level beneath, and a
-quantity's two unit spellings are peers of which only one may be set.
-
-## The one exception, and it is the opposite
-
-**Not licensed is visible.** A capability withheld by [license
-tier](../../operate/licensing/) is shown, and shown as **locked**.
-
-That is deliberate and it is the inverse of the rule: unconfigured is a decision
-you made and should not be nagged about; unlicensed is a decision somebody else
-made, and you are entitled to see what you do not have.
+[Operating dials](../../config/operating-dials/) are not capabilities: a dial
+always has a value, with the environment as its floor.
 
 ## The list
 
@@ -61,16 +32,13 @@ made, and you are entitled to see what you do not have.
 |---|---|
 | [App storage](../storage/) | A storage resource, and a mount or a bucket |
 | [Integrations](../integrations/) | A connection per kind |
-| [Email](../email/) | A relay or a sending API |
-| [The gallery](../gallery/) | A switch, and it is off by default |
+| [Email](../email/) | An SMTP relay or a sending API |
+| [The gallery](../gallery/) | A setting; off by default |
 | [Telemetry](../telemetry/) | A collector endpoint |
-| [The artifact store](../../apps/artifact-store/) | `ARTIFACT_*` |
-| Isolated execution | A cluster or an ECS cluster |
-| [Jobs](../../operate/automation/#where-a-job-runs) | A switch, and somewhere to run: the isolated backend, or the platform's own machine |
-| [Reachability](../../security/reachability/) | `PRESENCE_ENDPOINT` |
-| [Dependency policy](../../security/dependencies/) | A switch, and a feed |
+| [The artifact store](../../apps/artifact-store/) | `ARTIFACT_*` variables |
+| Isolated execution | A Kubernetes or ECS cluster |
+| [Jobs](../../operate/automation/#where-a-job-runs) | `background_jobs_enabled`, and the cluster or the platform's machine |
+| [Reachability](../../security/reachability/) | Nothing — active whenever an app is public; inert if the internet cannot resolve the install |
+| [Dependency policy](../../security/dependencies/) | A setting, and an advisory feed |
 | [Connected git hosts](../../security/git-connections/) | A connection |
-| The metrics endpoint | `METRICS_ADDR` |
-
-Before you design a process around any of them, check it is actually on. Admin →
-Info and the checks page both answer that in one screen.
+| Metrics endpoint | `METRICS_ADDR` |

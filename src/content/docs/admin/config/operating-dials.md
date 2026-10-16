@@ -1,77 +1,45 @@
 ---
 title: The operating dials
-description: Seven numbers that are both configuration and setting, and how zero is read.
+description: Seven numbers with an environment floor and a live setting override.
 ---
 
-A **dial** is a quantity, a pace, a ceiling or a verbosity. Each has an
-environment variable *and* a setting, and they are not two knobs for one thing:
+A **dial** has an environment variable *and* a setting on **Admin → Settings**:
 
-- **The environment is the floor** — the install's own number.
-- **The setting is an override** an administrator can change from Admin →
-  Settings, without a restart and without shell access.
-- **A cleared or zero setting means the environment's number**, never "off".
+- The **environment** value is the install's floor.
+- The **setting** overrides it, live, with no restart.
+- A **cleared or zero** setting means "use the environment value", never "off".
 
-## The seven
-
-| Dial | Environment | Setting | Read at |
+| Dial | Environment | Setting | Takes effect |
 |---|---|---|---|
-| Memory ceiling per app | `APP_MEMORY_LIMIT_MB` / `_GB` | `app_memory_limit_mb` / `_gb` | each start |
-| CPU reserved per app | `APP_CPU_REQUEST_MILLICORES` / `_CORES` | `app_cpu_request_millicores` / `_cores` | each start |
-| CPU ceiling per app | `APP_CPU_LIMIT_MILLICORES` / `_CORES` | `app_cpu_limit_millicores` / `_cores` | each start |
-| Builds at once | `MAX_CONCURRENT_BUILDS` | `max_concurrent_builds` | each dequeue |
-| Auto-deploy interval | `AUTO_DEPLOY_POLL_INTERVAL` | `auto_deploy_poll_seconds` | each tick |
-| R package repository | `TOFT_R_REPOS` | `r_package_repository` | each build |
-| Platform log level | `LOG_LEVEL` | `log_level` | immediately |
+| Memory ceiling per app | `APP_MEMORY_LIMIT_MB` / `_GB` | `app_memory_limit_mb` / `_gb` | Each app start |
+| CPU reserved per app | `APP_CPU_REQUEST_MILLICORES` / `_CORES` | `app_cpu_request_millicores` / `_cores` | Each app start |
+| CPU ceiling per app | `APP_CPU_LIMIT_MILLICORES` / `_CORES` | `app_cpu_limit_millicores` / `_cores` | Each app start |
+| Builds at once | `MAX_CONCURRENT_BUILDS` | `max_concurrent_builds` | Each dequeue |
+| Auto-deploy interval | `AUTO_DEPLOY_POLL_INTERVAL` | `auto_deploy_poll_seconds` | Each tick |
+| R package repository | `TOFT_R_REPOS` | `r_package_repository` | Each build |
+| Platform log level | `LOG_LEVEL` | `log_level` | Immediately |
 
-**A dial reaches a workload the next time that workload starts.** Lowering the
-memory ceiling does not reach into running apps.
+Resource dials reach a running app only when it next starts.
 
-## Two spellings, and only one may be set
+**Two units, one at a time.** `_MB`/`_GB` and `_MILLICORES`/`_CORES` are
+alternatives; setting both is refused.
 
-Each quantity dial has a small unit and a large one — `_MB` and `_GB`,
-`_MILLICORES` and `_CORES`. They are **peers**, not a fallback chain, and setting
-both is refused rather than resolved by precedence.
+## Details that matter
 
-## Three of them have structure worth knowing
+| Dial | Behavior |
+|---|---|
+| **Builds at once** | Limits how many builds may *start*; lowering it interrupts nothing. A value above the worker pool is refused, naming `MAX_CONCURRENT_BUILDS`. |
+| **Auto-deploy interval** | `AUTO_DEPLOY_POLL_INTERVAL=0` in the environment turns auto-deploy off entirely, and the setting field is disabled. A stored `0` setting means the environment value. |
+| **Log level** | The only dial that applies immediately. A restart re-applies the stored level. `LOG_FORMAT` is configuration only, shown read-only beside it. |
+| **CPU ceiling** | Off by default on purpose: over a CPU limit a workload is throttled, not killed, so a burst becomes a slow app. |
 
-**Build concurrency is how many builds may *start*.** Lowering it interrupts
-nothing already running — a build in flight holds a token it took when the
-number was higher. Raising it above the worker pool is **refused, naming
-`MAX_CONCURRENT_BUILDS`**, because the page cannot conjure a worker and a
-silently clamped field is a field that lies.
+## Scope
 
-**The auto-deploy interval's zero means two things, deliberately.**
-`AUTO_DEPLOY_POLL_INTERVAL=0` in the environment means no poller is ever
-constructed. A stored `0` in the setting means the environment's number, like
-every other dial. Whether auto-deploy is offered at all is a capability
-question, not a pace — so it stays in the environment. The settings page renders
-the field disabled rather than silently doing nothing.
+- **Memory** applies in both modes; **CPU** in isolated mode only.
+- **Per-app override:** an administrator can raise one app's memory ceiling. There
+  is no per-app CPU.
+- A job on the platform's own machine has its memory limit enforced by sampling,
+  not the kernel — see [where a job runs](../../operate/automation/#where-a-job-runs).
 
-**The log level takes effect immediately, and it is the only one that does.**
-It may, because it reaches no workload — it is the platform's own verbosity.
-A restart re-applies the stored level, so an administrator's change is not
-quietly reverted.
-
-**`LOG_FORMAT` is not a dial** and never will be: it is a fact about who is
-reading the stream, and changing it mid-flight hands a collector a format change
-it did not ask for. It is reported read-only on the settings document, beside
-the effective log level.
-
-## Per-app overrides
-
-**Memory has one and CPU does not.** An administrator can give a single app a
-higher memory ceiling than the install's; there is no per-app CPU, and no
-per-job-definition CPU. Those numbers are the operator's.
-
-## The resource envelope
-
-Install-wide. CPU applies in isolated mode only; memory applies in both. A job run on
-the platform's own machine has its memory limit enforced by sampling, not by the
-kernel (see [where a job runs](../../operate/automation/#where-a-job-runs)).
-
-A CPU **ceiling** is off by default, and that is deliberate: over its memory
-limit a workload is killed, but over a CPU limit it is merely throttled — which
-turns a burst into a slow app and is usually worse than letting it burst.
-
-Admin → Info shows the resolved envelope on one screen: what the environment
-says, what a setting overrides, and what an app will actually get.
+**Admin → System info** shows the resolved envelope: the environment value, any
+override, and what an app actually gets.

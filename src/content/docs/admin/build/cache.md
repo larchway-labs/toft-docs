@@ -1,65 +1,32 @@
 ---
 title: The build cache
-description: What is shared between builds, how big it is, and how to empty it.
+description: The shared package caches under CACHE_DIR — how big they are and how to empty them.
 ---
 
-`CACHE_DIR` holds the shared package caches — npm, uv, Go's module and build
-caches. It is the difference between a cold rebuild and a warm one, and on a busy
-install it is the largest thing on disk after releases.
+`CACHE_DIR` holds the package caches every build shares: npm, uv, and Go's module
+and build caches. It is what makes a rebuild warm, and on a busy install it is
+the largest thing on disk after releases.
 
-## Its size
+## Size
 
-Reported on the checks page's **build cache directory** row, and as a block on the
-same report.
+Shown on **Admin → System checks** as the **build cache directory** row. It is
+measured on a timer, never on a request. A size not yet measured shows as absent,
+not as zero.
 
-**Measured on a ticker, never walked on a request.** Reading the size does not
-send the platform off to stat a hundred thousand files while somebody is waiting
-for a page.
+## Reclaiming it
 
-**Never-measured is not zero.** A size that has not been taken yet is absent, and
-the page says so rather than showing a confident nought.
+**Admin → System checks → Reclaim** (API: `POST /api/v1/system/build-cache/reclaim`).
 
-## Emptying it
-
-A **Reclaim** button on Admin → Checks, above the checks themselves. It is not a
-check — it is an action — which is why it sits in a card of its own.
-
-What happens:
-
-- Each tool is asked to **clear its own cache**, rather than the platform tidying
-  the directory underneath them. Deleting files out from under npm's or uv's own
-  bookkeeping is how you get a cache that is worse than empty.
+- Each tool clears its own cache rather than having files deleted underneath it.
+- A reclaim waits for running builds to finish; new builds wait for the reclaim.
 - The bytes freed are recorded in the audit log.
-- **A reclaim that freed nothing says so**, rather than claiming a number it did
-  not achieve.
+- A second reclaim while one runs is refused with `409`.
+- API keys are refused: it is an administrator's action.
 
-## What it refuses
-
-**A second reclaim while one is running** — `409`. That is the only thing it
-refuses.
-
-It does **not** refuse while a build is running. A build holds the cache's read
-side, and the list of paths that do so is the specification: a reclaim waits for
-them rather than racing them.
-
-It is denied to API keys, as a decision rather than a default: emptying a shared
-cache is an administrator's act.
+Releases and running apps are untouched. The only effect is that the next builds
+are slower.
 
 ## When to reclaim
 
-Rarely. The cache is doing its job when it is large.
-
-The honest reasons:
-
-- **Disk pressure**, and you want the space back today.
-- **A poisoned cache** — a package that resolved wrongly and keeps resolving
-  wrongly. Rare, and usually there is a better fix.
-
-It is not a routine hygiene task and there is deliberately **no timer** for it. A
-scheduled cache wipe is a scheduled slow morning.
-
-## What it does not promise
-
-Emptying the cache does not touch releases, does not restart anything, and does
-not affect apps that are running. The next build after a reclaim is slower. That
-is the whole effect.
+Rarely — a large cache is a working cache. Reclaim for disk pressure, or for a
+package that keeps resolving wrongly. There is deliberately no schedule for it.

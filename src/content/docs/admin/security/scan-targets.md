@@ -1,67 +1,46 @@
 ---
 title: Scan targets and security.txt
-description: Handing a security team a list of what to point a scanner at.
+description: Give a security team the list of app addresses to scan, and publish where to report findings.
 ---
 
-Toft publishes **what to scan** and **how to be contacted**. It does not
-scan.
+Toft publishes **what to scan** and **how to contact you**. It does not scan.
 
-## The reader
+## Scan targets
 
-Admin → Scan targets lists the apps on this install with their addresses, so a
-scanner can be pointed at them.
+**Admin → Scan targets** (`GET /api/v1/admin/estate/targets`) lists every app with
+the URL a scanner should hit — the apps origin on a split-origin install.
 
-**The reader never omits an app.** When its coverage is incomplete, that is about
-*addresses* — an app with no resolvable address, because nothing has been
-deployed to it — and never about rows it skipped. It tells you which.
+- **No app is omitted.** Apps with no URL (never deployed, batch apps) are still
+  listed; `apps_addressable` counts the ones that have one. Locked apps are marked.
+- **Visibility is the effective one.** A public app reads `authenticated`, with
+  `visibility_withheld`, when [anonymous access](../anonymous/) is off or
+  [reachability](../reachability/) has suspended it.
 
-That is the difference between "here is everything" and "here is everything we
-could construct a URL for", and a security team needs the second sentence.
+| Caller | Access |
+|---|---|
+| Administrator | Yes |
+| Deploy key (`toftd_`) | Yes — the only `/admin` route a key reaches |
+| App key (`toft_`) | No — it is a grant on one app |
+| Other signed-in users | 404 |
 
-## One construction of an address
+## Marking scan traffic
 
-An app's address is built in one place. On a split-origin install the list
-reports the **apps** origin, which is where a scanner should actually go.
-
-The visibility on a row is the **effective** one — after [anonymous
-access](../anonymous/) and [reachability](../reachability/) have had their say —
-so the list does not claim an app is public when the install is not publishing.
-
-## Who may read it
-
-A **deploy key** may. It is the only route under `/admin` that either key scope
-reaches, and that is deliberate: a CI-driven scan should not need a person's
-credential.
-
-An **`lp_` app key may not.** An app key is a grant on one app; the estate is not
-one app.
-
-## A scan is never usage
-
-`X-Toft-Scan: 1` from an `lp_` key marks a request as a scan. It **grants
-nothing** — it only stops the request counting as evidence that somebody wanted
-the app, so a sweep does not make every [quiet](../../apps/quiet/) app look busy.
-
-The header never reaches the workload.
+Send `X-Toft-Scan: 1` with an app key (`toft_`) and the request is not counted as
+usage, so a sweep does not keep [quiet](../../apps/quiet/) apps looking busy. It
+grants nothing else, is ignored from any other credential, and is stripped before
+the request reaches the app.
 
 ## security.txt
 
-Four settings on Admin → Settings, and filling in the contact is what publishes
-`/.well-known/security.txt` on **both origins**.
+Set on **Admin → Settings**. Filling in the contact publishes
+`/.well-known/security.txt` on both origins; clearing it removes the file (404).
 
 | Setting | |
 |---|---|
-| `security_txt_contact` | Where a finder should send it. Filling this in publishes; clearing it stops. |
-| `security_txt_expires` | **Required** whenever there is a contact. |
-| `security_txt_policy` | An `https://` page describing how you want reports made. Optional. |
-| `security_txt_languages` | Language tags the mailbox can read. Optional. |
+| `security_txt_contact` | Where to send reports. Use a role address, not a person's. |
+| `security_txt_expires` | **Required** with a contact. A past date is refused at save. |
+| `security_txt_policy` | Optional `https://` page describing how to report. |
+| `security_txt_languages` | Optional language tags the mailbox reads. |
 
-**Absent rather than empty.** An empty `security.txt` is worse than none: it looks
-like an answer.
-
-**The expiry is required, never invented and never rewritten.** Toft will not
-silently extend it — an expired `security.txt` is a fact you should see, and the
-checks page warns 30 days out and again once it has passed.
-
-Put a **role address** in the contact field, not a person's. It outlives them, and
-it is the field a stranger will use during your worst week.
+Toft never extends the expiry for you. **Admin → System checks** warns 30 days
+before it lapses and again once it has.

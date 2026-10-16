@@ -1,75 +1,62 @@
 ---
 title: At-rest encryption
-description: The key ring, the backends, and the difference between retiring a key and revoking it.
+description: The key ring, rotating keys with toft rotate-key, and the KMS backends.
 ---
 
 Secrets Toft stores — app environment variables, provider client secrets,
-integration credentials, held credentials — are encrypted at rest.
+integration and held credentials — are encrypted at rest.
 
-## Every ciphertext names the key that wrote it
+## The key ring
 
-One record format, across both backends, parsed in exactly one place. There is no
-ciphertext whose key is inferred from context.
+| Variable | Role |
+|---|---|
+| `ENCRYPTION_KEY` | Encrypts every new write. Required unless `ENCRYPTION_KEY_URI` is set. |
+| `ENCRYPTION_KEY_OLD` | Comma-separated keys kept for **reading** only. |
+| `ENCRYPTION_KEY_URI` | Wraps the data key in a KMS: `aws-kms://`, `hcvault://` or `azurekeyvault://`. |
 
-**The key id is derived, never configured.** You cannot label a key wrongly,
-because you do not label it at all.
-
-## One writes, all read
-
-**`ENCRYPTION_KEY` writes. Every key in the ring reads** — the current one plus
-whatever is in `ENCRYPTION_KEY_OLD`, comma-separated.
-
-That is what makes rotation possible without a migration: new secrets are written
-under the new key, and old ciphertexts keep being readable under the key that
-wrote them.
-
-**A key that is not held is refused by name.** You are told which key is missing,
-not given a generic decryption failure.
+Every ciphertext records the ID of the key that wrote it. The ID is derived from
+the key itself, so it cannot be mislabeled. A record whose key is not in the ring
+is reported by key ID, not as a generic decryption failure. Unreadable secrets are
+counted at startup and never stop the server — sign-in does not depend on this key.
 
 ## Rotating
 
-1. New key in `ENCRYPTION_KEY`, the previous one in `ENCRYPTION_KEY_OLD`.
+1. Put the new key in `ENCRYPTION_KEY` and the previous one in `ENCRYPTION_KEY_OLD`.
 2. Restart. Everything still reads; new writes use the new key.
-3. `toft rotate-key` — a subcommand that talks to Postgres and exits — sweeps
-   the stored records onto the new key.
-4. When the sweep is done, drop the old key.
+3. Run the sweep with the server's environment (`--dry-run` to survey first):
+   ```bash
+   toft rotate-key
+   ```
+   It checks every record is readable before rewriting any, and refuses rather
+   than half-finishing.
+4. When it reports nothing left under the old key, remove it from
+   `ENCRYPTION_KEY_OLD`.
 
-The swap is a restart; the sweep is what lets you drop the old key.
+:::danger[Retiring is not revoking]
+A key in `ENCRYPTION_KEY_OLD` still opens everything it wrote. A compromised key is
+neutralized only after the sweep and its removal. Removing a key whose records
+still exist makes them unreadable for good.
+:::
 
-## Retiring is not revoking
+## The KMS backend
 
-**Retiring** a key stops it being used to write. It stays in the ring and keeps
-reading.
+Setting `ENCRYPTION_KEY_URI` selects it; there is no mode flag and no runtime
+fallback. If the KMS is unreachable, Toft fails to start rather than using a local
+key. The local backend is a legitimate choice, not a degraded one.
 
-**Revoking is a different thing, and it is destructive**: anything only that key
-can read becomes unreadable. Do not reach for it as a tidier form of retirement.
+Refused at startup:
 
-## The backend
+- an unknown scheme (the error lists the three);
+- an `azurekeyvault://` URI without a key version — a vault-side rotation would
+  otherwise silently change which key wraps yours.
 
-**Presence decides the backend, and there is no runtime fallback.**
-`ENCRYPTION_KEY_URI` puts the key that encrypts the key into a KMS. If that is
-configured and unavailable, Toft **refuses** rather than quietly falling back
-to a local key.
+## Apps never get a key
 
-The local backend is a **peer, not a fallback**. It is a legitimate choice.
+Workloads receive decrypted values Toft chose to give them, never a key or the
+KMS URI.
 
-Two startup refusals worth knowing:
+## Back up the key
 
-- **An unknown KEK scheme** is refused, naming the three that exist.
-- **A versionless `azurekeyvault://` URI** is refused, saying why: rotation in the
-  vault would silently change which key wraps yours.
-
-## No key reaches a workload
-
-Apps never receive a key. They receive decrypted values Toft chose to give
-them. An app cannot decrypt anything on its own, including its own variables'
-ciphertext.
-
-## What is in the backup
-
-The checks page's **encryption** row always reads `pass` and carries the backend,
-the encrypt key id, the ring size and the KEK URI.
-
-That row exists so the answer to **"which key must be in the backup?"** is one
-place, in writing, before you need it. A database restored without its key is a
+The **encryption** row on **Admin → System checks** names the backend, the current
+key ID, the ring size and the KMS URI. A database restored without its key is a
 database of unreadable secrets.

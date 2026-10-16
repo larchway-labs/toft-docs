@@ -1,85 +1,53 @@
 ---
 title: Email and notifications
-description: The relay, the audiences, and the rule that keeps a dead relay from becoming an outage.
+description: Configure the mail relay, who gets notified, and where links point — a dead relay never fails anything.
 ---
 
-Admin → Email. Runtime settings, with a test send.
+Configure mail in **Admin → Email**, which has a test send. Changes apply at
+runtime.
 
-## Optional and never load-bearing
+:::note[Never load-bearing]
+No send can fail or block the action that triggered it. Notifications tell people
+sooner; the record is the [audit log](../../security/audit/).
+:::
 
-**No send may fail or block the request that triggered it.** A notification that
-cannot go out does not fail the thing it was about. An app that crashed still
-crashed, whether or not anyone could be told.
+## Transport
 
-Design around that: **notifications are how people find out sooner, not the record
-that something happened.** The record is the [audit log](../../security/audit/).
+SMTP, or an HTTPS sending API (Resend) where outbound 587 is blocked and 443 is not.
 
-A dead relay does not fail an action anywhere in the product.
-
-## Transports
-
-**SMTP**, or an **HTTPS sending API** for the install where outbound 587 is closed
-and 443 is not.
-
-| | |
+| Setting | Use |
 |---|---|
+| `email_enabled` | Send email at all |
+| `email_transport` | SMTP or sending API |
 | `email_host`, `email_port` | 587 for STARTTLS, 465 for implicit TLS |
 | `email_security` | STARTTLS, implicit TLS, or none |
-| `email_username`, `email_password` | Blank for a relay that needs no credential |
-| `email_api_provider`, `email_api_key` | When the transport is a sending API |
-| `email_skip_verify` | For an internal relay with an unverifiable certificate. A workaround, not a fix |
+| `email_username`, `email_password` | Leave blank for a relay that needs no login |
+| `email_api_provider`, `email_api_key` | For the sending API; a separate field from the SMTP password |
+| `email_skip_verify` | Accept a self-signed certificate on an internal relay (a workaround) |
+| `email_from_address`, `email_from_name`, `email_reply_to` | Sender identity |
 
-**The API key is a field of its own**, not a second use of the password: a
-transport switch must never offer an SMTP password as a bearer token.
+Passwords and API keys are write-only: never read back and never in a settings export.
 
-## Credentials are not settings
+## Who is notified
 
-Passwords and API keys are **credentials, not setting values**. Write-only, never
-read back, and they do not appear in a settings export.
+| Setting | Sends |
+|---|---|
+| `email_notify_admin` | Mail to system administrators about the install |
+| `email_admin_group_address` | Sends administrator mail to one distribution list instead of each administrator — recommended |
+| `email_notify_app` | Mail to people about their own apps and access |
 
-## Audiences
+A notification's audience is set on its template, not its channel. Template copy
+must read correctly on any channel — don't write "this email".
 
-**A notification's audience lives on its template**, not on the channel it goes out
-on. Change who gets something in one place.
+## Links in mail
 
-Two switches:
+`public_base_url` (**Address**) is the address links in mail use. Leave it blank to
+use the address the install was started with.
 
-- **`email_notify_admin`** — mail to system administrators about this install.
-- **`email_notify_app`** — mail to the people who use Toft, about their own
-  apps and access.
+## Channels and replies
 
-**`email_admin_group_address`** sends administrator notifications to a distribution
-list instead of to each administrator's own address. Use it: a list outlives the
-people on it.
-
-## Copy may not promise mail
-
-A template whose words assume email is wrong the moment somebody routes it to a
-channel. Write copy that is true on any transport.
-
-That rule matters because **a notification renders once and each channel turns
-that one rendering into its own format** — one poster interface and a slice of
-posters, with mail outside it. That design cost the mail-only rule its structural
-enforcement, which is said out loud rather than hidden: mail is no longer
-prevented *by construction* from receiving something written for a channel. It is
-prevented by the copy rule.
-
-## Where links point
-
-**The install's own address.** `public_base_url` is what a link in an email says;
-leave it blank to use the address the install was started with.
-
-This is the one place an install is told about itself, and it exists because a
-link in an email has no request to derive an address from.
-
-## Channels
-
-The platform can post to a connected channel where an audience allows it. Slack
-and PagerDuty carry platform audiences; the file kinds carry none.
-
-That is separate from [what apps send](../integrations/) — same connections,
-different sender.
-
-Replies to mail an app sends go to the app's **owner**. A group-owned app has no
-address to reply to, so those go to the install's reply-to instead, and the
-app's Integrations tab says which of the two applies to it.
+- The platform can also post notifications to a connected Slack or PagerDuty
+  [integration](../integrations/) where an audience allows it. File kinds carry none.
+- Replies to mail **an app** sends go to the app's owner. A group-owned app has no
+  owner address, so replies go to the install's reply-to; the app's
+  **Integrations** tab says which applies.

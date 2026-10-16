@@ -1,76 +1,58 @@
 ---
 title: Connected git hosts
-description: Holding the clone credential centrally, so developers never do.
+description: Hold your git host's clone credential once, centrally, so developers never handle a token.
 ---
 
-A **connection** is your organization's git host, attached once by you. Apps then
-point at a repository instead of carrying a credential of their own.
+A **connection** attaches your organization's git host once, on **Admin →
+Sources**. Apps then point at a repository instead of carrying their own token.
 
-Admin → Sources.
-
-## What it buys
-
-- **Developers get a repository picker** instead of a URL box, and are never asked
-  for a token.
-- **Private repositories work** without a secret in an app's settings.
-- **Auto-deploy on push**, via a webhook the connection owns.
-- **One credential to rotate**, rather than however many people pasted a PAT
-  somewhere.
+| Developers get | |
+|---|---|
+| A repository picker | Instead of a URL box, and no token prompt |
+| Private repositories | Without a secret in the app's settings |
+| Auto-deploy on push | Through the connection's webhook |
+| One credential to rotate | Instead of personal access tokens scattered across apps |
 
 ## Auto-deploy
 
-Two mechanisms, and an install rarely chooses:
+A **webhook** speeds things up when the host can reach this install; **polling**
+on `AUTO_DEPLOY_POLL_INTERVAL` (seconds, default `60`) is the mechanism underneath.
+`AUTO_DEPLOY_POLL_INTERVAL=0` turns auto-deploy off entirely. See
+[operating dials](../../config/operating-dials/).
 
-- **A webhook** the connection owns, when the host can reach this install.
-- **Polling**, on `AUTO_DEPLOY_POLL_INTERVAL`, when a hook cannot reach in.
+## Testing
 
-The interval is a [dial](../../config/operating-dials/). Whether a poller exists
-at all is the environment's answer — `AUTO_DEPLOY_POLL_INTERVAL=0` constructs
-none — because "is auto-deploy offered" is a capability question rather than a
-pace.
+Every connection has a **Test** button and a list of the apps using it. Run it
+when you create or rotate the connection. A failed test reports which of four
+things is wrong: refused credential, unreadable credential, wrong base URL, or
+rate limit.
 
-## Testing it
+## Expiry
 
-Every connection has a **test**, and a list of the apps using it. Run the test
-when you make it and when you rotate it; a connection that authenticates and
-cannot see the repositories you expect is a specific, fixable state.
+The **Clone credentials** row on **Admin → System checks**:
 
-## Expiry is watched
+| Status | When |
+|---|---|
+| `fail` | A credential has expired — the row names how many apps it affects |
+| `warn` | Expiry within 14 days, or the last mint failed |
+| — | Disabled connections are excluded |
 
-The checks page has a **clone credentials** row:
+## Only a signed-in person attaches one
 
-- `fail` past expiry, **naming the app count** it affects.
-- `warn` inside 14 days, or after a failed mint.
-- A disabled connection is excluded.
+Pointing an app at a connection (`git_connection_id`) needs a browser session.
+Personal and deploy keys get **403 `session_required`** before anything is
+written. Any signed-in person may attach, but only to a repository the connection
+covers — anything else is refused, naming both. See [keys](../keys/).
 
-That is the row that stops a token expiring quietly and taking every deploy with
-it on a Monday morning.
+## Disable or remove
 
-## Only a person attaches one
+| Action | Effect |
+|---|---|
+| **Disable** | Immediate and always allowed. Running apps keep serving. |
+| **Remove** | Refused (409) while apps depend on it, naming them. |
 
-Pointing an app at a connection is done from a signed-in session, never with a
-key. A **personal key** and a **deploy key** are both refused (403
-`session_required`) before anything is written, so a CI pipeline cannot create an
-app on your credential or re-point one at it. Any signed-in person may attach — no
-role gates it — because the boundary is the one you drew: the connection has to
-cover the repository, and a request for one it does not cover is refused naming
-both. See [keys](../keys/).
+## Credentials stay hidden
 
-## Disable versus remove
-
-**Disable is immediate and unrefusable.** You can always stop using a source right
-now.
-
-**Remove is refused, naming the apps** that depend on it. You cannot delete one
-out from under running apps without being told what you would break.
-
-Those are two different actions on purpose, and the pair is the shape you want
-during an incident: stop it now, clean it up when you know what it touched.
-
-## No credential is ever shown
-
-Not to a developer, not to another administrator, not through the API — and **not
-in a checks report**. A connection with all three of its ciphertexts set renders a
-report containing none of them.
-
-Rotation is replacing the credential, not reading it.
+No credential is shown to developers, other administrators, the API or a checks
+report. Rotating means replacing it, never reading it. Developers are not told
+which auth method a connection uses.

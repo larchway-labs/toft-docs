@@ -1,87 +1,62 @@
 ---
 title: How apps are isolated
-description: Origin isolation, what it protects, and what it does not.
+description: Separate origins, the environment an app receives, what shared mode does not isolate.
 ---
 
-## Apps are on a different origin
+## Apps run on a separate origin
 
-The platform serves on one address; apps are served on another. That is not a
-deployment convenience — it is the boundary that stops an app's JavaScript from
-reading the platform API, or forging writes, as the person looking at it.
+The platform serves on one origin (`:8080`); apps on another (`:8081`,
+`APPS_PORT`). That stops an app's JavaScript from calling the platform API as the
+person viewing it. A single-origin install gives this up: app JavaScript runs on
+the platform's origin. See [listeners and origins](../../config/listeners-and-origins/).
 
-An install can be single-origin, and some are. Understand what you give up: on a
-single-origin install, an app's JavaScript runs on the same origin as the
-platform's own pages.
+The same reasoning puts the [metrics endpoint](../../capabilities/telemetry/) on
+a listener of its own, never a path on `:8080`.
 
-It is also why the [metrics endpoint](../../capabilities/telemetry/) gets a
-listener of its own and is never a path on `:8080`.
-
-## What decides a response is the platform's
-
-**Not the path.** Which responses are the platform's own is decided by *resolving
-the app*, never by matching a path prefix — because a path rule is one clever URL
-away from being wrong, and an app that owns a path looking like the platform's
-still gets it.
-
-An unknown route on the apps gateway is **not** the SPA. It answers differently
-from `:8080`, deliberately.
+Which responses are the platform's is decided by resolving the app, never by path
+prefix. An unknown route on the apps origin is not the SPA.
 
 ## Framing
 
-Who may frame an app is the install's answer, with a per-app override. The
-default is the install itself.
+Every app response carries `Content-Security-Policy: frame-ancestors`. By default
+only the app itself and this install may frame it. An owner widens it per app
+under **Settings → Access → Embedding** — exact origins only, no wildcards.
 
-**Empty is not "anyone".** An empty list means nobody.
+## Environment
 
-## The environment
+A workload never inherits Toft's environment. It gets exactly:
 
-**Never `os.Environ()`.** A child process gets the variables the platform chose
-to give it and nothing else. The workload's environment has exactly three
-sources: the app's declared variables, the platform's contract variables, and
-credentials an administrator attached.
+- the app's declared variables,
+- the platform's contract variables (such as `PORT` and `TOFT_APP_TOKEN`),
+- credentials an administrator attached.
 
-So a database password in Toft's own environment is not in every app's. Nor
-is the collector credential, nor any encryption key.
+So the database password, the telemetry credential and the encryption keys are
+never in an app's environment.
 
-## On disk
+## On disk and cookies
 
-Per-app secrecy is enforced by **a directory the app does not own**, never by a
-mode bit on one it does. An app cannot widen its own permissions by changing a
-file it controls.
-
-The app's **primary group** belongs to the egress rule; the per-app group reaches
-the workload only through the launcher.
-
-## Cookies
-
-Every cookie the platform sets is named `toft_*`. Any other cookie name on
-an app's origin is the app's own. That is how the two are told apart with no
-ambiguity, and an app may set whatever it likes.
+- Per-app secrecy is enforced by a directory the app does not own, so an app
+  cannot widen its own permissions.
+- Every platform cookie is named `toft_*`. Any other cookie on the apps origin
+  belongs to an app.
 
 ## Cloud metadata
 
-`BLOCK_AWS_METADATA=1` stops deployed apps reaching the endpoints that hand out
-instance and task IAM credentials.
+Set `BLOCK_AWS_METADATA=1` so apps cannot reach the instance or task metadata
+endpoints that hand out IAM credentials. Do **not** use an IMDS hop limit of 1
+instead — it blocks Toft's own pod too.
 
-Set it. And do **not** instead set the IMDS hop limit to 1 — that blocks
-Toft's own pod as well.
+## What is not isolated
 
-## The thing this does not cover
+:::caution[Shared mode]
+In [shared mode](../../apps/execution-modes/) apps are processes on one machine.
+App-to-app isolation is an **accepted risk**: per-app OS accounts narrow it but do
+not close it. Origin isolation is about browsers, not processes. If you need
+app-to-app isolation, use isolated mode.
+:::
 
-**In [shared mode](../../apps/execution-modes/), app-to-app isolation is an
-accepted risk.** Apps are processes on one machine.
+Other accepted risks:
 
-Origin isolation is about browsers. It says nothing about one app's process
-reaching another's files or sockets. **Never present it as if it did.** If you
-need app-to-app isolation, that is isolated mode.
-
-Per-app OS accounts narrow it considerably and do not close it.
-
-## Other accepted risks, stated
-
-- **Builds are unsandboxed.**
-- **PM2's dump file** exists on a shared-mode install.
-- **Build logs are held in memory** while a build runs.
-
-These are written down rather than hidden, so a security review reads them here
-rather than discovering them.
+- Builds are not sandboxed.
+- PM2's dump file exists on a shared-mode install.
+- Build logs are held in memory while a build runs.

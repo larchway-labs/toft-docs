@@ -1,70 +1,53 @@
 ---
 title: The built-in administrator
-description: The account that is always there, and why.
+description: The local admin account every install has, switching password sign-in off, and recovery.
 ---
 
-One local administrator, `admin`, exists on every install. It cannot be removed.
+Every install has one local administrator, **`admin`**. It cannot be deleted —
+if it goes missing it is re-created at the next start. It exists to:
 
-## Why it exists
+- **bootstrap** an install that has no providers yet, and
+- **recover** one whose identity provider is misconfigured, expired or down.
 
-Two jobs:
+## Its password
 
-- **Bootstrap.** A fresh install has no providers, so something has to let you in
-  to configure the first one.
-- **Recovery.** Your identity provider will one day be misconfigured, expired, or
-  down. This account is how you fix it.
+There is no default. The first password comes from `BOOTSTRAP_ADMIN_PASSWORD` or
+is generated and printed once — see [First run](../../start/first-run/). It is
+**must-change**: it signs nobody in and only lets you replace it.
 
-An install that deletes its way out of local sign-in is an install one
-certificate rotation away from nobody being able to get in.
-
-## No shipped password
-
-There is no default. Either you set `BOOTSTRAP_ADMIN_PASSWORD` where the
-deployment has somewhere safe to keep one, or the server generates one and prints
-it once at first boot.
-
-Either way it carries *must change*: it authorizes nothing except setting a real
-password. **A first password mints no session** — setting one and signing in are
-separate steps, so the request that sets a credential never also hands out
-access.
+Ten wrong passwords lock the account for 15 minutes; a successful sign-in clears
+the count.
 
 ## Switching local sign-in off
 
-You can, and the route then **404s rather than 403s** — absent, not refused.
+On **Admin → Authentication** you can disable local sign-in. Its routes then
+**404** and the login page shows no password form.
 
-Two protections:
-
-- **It is refused while no administrator could sign in another way.** The refusal
-  names the reason.
-- The [checks page](../../operate/checks/) raises a **lockout risk** row when
-  there is one administrator and local sign-in is off.
-
-Do not switch it off with one administrator. The second one is the whole point.
+- **Refused** unless another provider is ready **and** an unlocked administrator
+  can sign in through it.
+- **Admin → System checks** shows **Lockout risk** when local sign-in is off and
+  there is only one administrator.
+- **It cannot be switched back on from the web or API.** Only the command below
+  can.
 
 ## Getting back in
 
+On the host, with the server binary (not the `toft` CLI):
+
 ```bash
-toft local-admin
+toft local-admin enable          # one box: docker compose exec toft toft local-admin enable
 ```
 
-A subcommand of the binary that **talks to Postgres and exits** — it does not
-need the server it is repairing. It re-enables local sign-in and resets the
-password.
+It talks to Postgres directly — the server need not be running — switches local
+sign-in on, unlocks `admin` and prints a new password. `toft local-admin status`
+reports the state; `--password` sets your own instead of a generated one.
 
-That is the entire recovery model: **proof you have the machine**, not proof you
-control an email address. There is no reset link, and there is no vendor who can
-let you in.
+Recovery requires a shell on the machine. There is no reset email.
 
 ## Keeping it safe
 
-- Long, unique password, in the place your team keeps break-glass credentials —
-  not in one person's password manager.
-- It is an administrator. Everything it does is audited like everything else.
-- **The dormancy sweep never locks an administrator**, so it will not quietly
-  disable itself while you are not looking.
-
-## Do not use it day to day
-
-Give your administrators their own accounts through a provider, so the audit log
-names people rather than a shared account. `admin` should appear in the audit log
-twice a year, and both times you should remember why.
+- Store the password where your team keeps break-glass credentials.
+- Do not use it day to day. Give administrators their own accounts so the audit
+  log names people.
+- The dormancy sweep never locks an administrator, so `admin` will not disable
+  itself.

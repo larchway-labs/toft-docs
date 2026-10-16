@@ -1,66 +1,49 @@
 ---
 title: Users and roles
-description: Three roles, what each one may do, and the pages that answer questions about a person.
+description: The three system roles, the People pages, locking, deleting and publisher requests.
 ---
 
-## Three system roles
+## Roles
 
-| Role | May |
+| Role | Can |
 |---|---|
-| **Viewer** | Open apps they have been granted. Nothing else. |
-| **Publisher** | Everything a viewer may, plus create, deploy and own apps. |
-| **System admin** | Run the install. |
+| **Viewer** | Open apps they are granted |
+| **Publisher** | Also create, deploy and own apps |
+| **Admin** (`system_admin`) | Run the install |
 
-That is the whole ladder. A role is set on People → a person, and every change is
-audited.
-
-**A viewer cannot hold *editor* on an app.** Editing means deploying, and
-deploying is what a publisher is — so the grant is refused with that reason
-rather than creating an account that can deploy without being allowed to. The
-order is: promote, then grant.
+Set a role on **People → the person**; every change is audited. A viewer cannot
+be granted **editor** on an app — promote to publisher first.
 
 ## The pages
 
-| Page | Answers |
+| Page | Shows |
 |---|---|
-| **People** | Everyone on the install, their role, their state. |
-| **A person** | Their apps, their groups, their keys, their sign-in history. |
-| **Their access** | **Everything they can reach**, in one list. |
+| **People** | Everyone, filterable by role and by state: active, pending, locked, dormant |
+| **People → the person** | Their apps, groups, sign-in identities, API keys, and an **access** table — everything they can reach |
+| **Me → Access** | The same access list, for yourself |
 
-That last one is the page to open before an offboarding conversation, an access
-review, or a "does she already have this?" question. People can see the same
-list for themselves under Me → Access.
+Open a person's access before an offboarding, an access review or a "do they
+already have this?" question.
 
 ## Locking
 
-Locking an account takes effect **immediately**: sessions stop working, keys stop
-working. Unlocking is your action, and both directions are audited.
+Locking is **immediate**: sessions and personal API keys stop working. The person
+sees `locked_account_message` from **Admin → Messages**. Lock and unlock are both
+audited.
 
-A locked person is turned away with the **locked account message** you wrote on
-Admin → Messages.
-
-**The last administrator who can sign in is protected.** Locking, demoting or
-deleting the one unlocked administrator is refused — from the pages, from the
-API, and by a [directory feed](../directory-feed/) deactivating them — because
-the alternative is an install nobody can unlock.
+**The last unlocked administrator is protected.** Locking, demoting or deleting
+them is refused — from the pages, the API and a
+[directory feed](../directory-feed/).
 
 ## Deleting
 
-Deleting a user is available and is usually the wrong first step. **Their apps do
-not go away** — an app owned by a person who is gone is still there and still
-serving, which is correct, but it is a thing to deal with rather than assume
-away.
+Deletion is **refused while the person owns apps**. Transfer them first — the
+person's page has a bulk transfer. Deleting removes their identities, group
+memberships, grants and keys; the audit log keeps their name. Usually locking is
+enough — see [Offboarding](../offboarding/).
 
-Transfer their apps first. There is a bulk transfer on a person's own page for
-exactly this.
+## Publisher requests
 
-## Promotion requests
-
-A viewer can ask to become a publisher. The queue is Admin → Publisher requests;
-you approve or deny, and both are audited.
-
-Deny rather than leaving one open. A denial is a conversation; an unanswered
-request is the only outcome with no information in it.
-
-Service accounts cannot request promotion, and only viewers can — asking is not
-deciding, and the route says so rather than pretending.
+A viewer can ask to become a publisher. Approve or deny on **Admin → Publisher
+requests**; both are audited. Only viewers can ask, and service accounts cannot.
+Answer every request — a denial tells them something, silence does not.

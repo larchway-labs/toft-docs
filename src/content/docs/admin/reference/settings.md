@@ -1,90 +1,83 @@
 ---
 title: Settings reference
-description: Every runtime setting, what it does, and where it is rendered.
+description: All 96 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
-Every setting an administrator can change, by the name the API uses for it,
-grouped by the page that renders it.
+Every install-wide setting, by the name the API uses, grouped by the page that
+renders it. There are **96**. Settings for one app are on that app's own pages
+and are not listed here.
 
-Ninety-six of them. **A setting missing from this index is a test failure** —
-the same index feeds the settings page, its filter, and the command palette, so a
-setting cannot be findable by one and invisible to another.
+| | |
+|---|---|
+| Stored in | The database. Changed at runtime, no restart. |
+| Audited | Every change. |
+| Find one fast | `⌘K` with the words in any order (`idle sleep`) jumps to the control. |
+| Conflicting saves | A save from a page loaded before someone else's save is refused with `settings_changed`. Reload and save again. |
 
-Everything here is a **database row**, changed at runtime, **audited**, and needs
-no restart. For the environment side, see the [environment
-reference](../environment/). For the seven that are both, see [operating
-dials](../../config/operating-dials/).
-
-:::note
-`⌘K` finds any of these by name — the words in any order, so `idle sleep` finds
-**Sleep idle apps after** — and takes you to the control. That is usually faster
-than this page.
-:::
-
-**Two administrators saving at once do not overwrite each other.** A save from
-a page that loaded before somebody else's save landed is refused as *settings
-changed* rather than applied over theirs. Reload, and save again.
+For what comes from the environment, see the [environment
+reference](../environment/). The seven settings that also have an environment
+variable underneath are the [operating dials](../../config/operating-dials/).
 
 ## Admin → Settings
 
-| Setting | Name | What it does |
-|---|---|---|
-| `public_base_url` | Address | Where links in email point. Leave blank to use the address the install started with. |
-| `security_txt_contact` | Security contact | Where to report a security problem. Filling this in publishes /.well-known/security.txt. |
-| `security_txt_expires` | Good until | When the published contact expires. Required when there is a contact. |
-| `security_txt_policy` | Disclosure policy | An https:// page on how you want problems reported. Optional. |
-| `security_txt_languages` | Preferred languages | Languages a report can be written in, separated by commas. Optional. |
-| `isolated_execution_enabled` | Isolated execution | Lets an app run as its own workload, with its own network and resource limits. |
-| `default_execution_mode` | New apps are born | The mode a new app starts in when its creator doesn’t choose. |
-| `background_jobs_enabled` | Background jobs | Lets apps run scheduled and on-demand work as a process of its own. |
-| `app_memory_limit_mb` | Memory limit per app | Memory one app may use before it is restarted, in MB or GB. 0 uses the install default. |
-| `app_cpu_request_millicores` | CPU reserved per app | CPU each isolated app reserves, in millicores. 0 uses the install default. |
-| `app_cpu_limit_millicores` | CPU ceiling per app | The most CPU one isolated app may use, in millicores. 0 uses the install default. |
-| `max_concurrent_builds` | Builds at once | How many deploys may build at the same time. 0 uses the install default. |
-| `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. |
-| `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. |
-| `log_level` | Platform log level | How much the platform logs about itself. |
-| `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. |
-| `max_run_retries` | Most automatic retries | The most extra attempts an automation may ask for. 0 turns retries off everywhere. |
-| `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. |
-| `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. |
-| `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. |
-| `max_scheduled_tasks_per_app` | Most scheduled tasks an app may have | Counted per schedule. |
-| `scheduled_task_timeout_seconds` | Give up waiting for the app after | Past this, the run is recorded as failed. |
-| `scheduled_run_result_bytes` | Keep of each response | How much of the app’s answer is stored as the run’s result. 0 stores none. |
-| `gallery_deploy_mode` | Gallery | What the gallery offers: nothing, extensions only, or extensions and examples. |
-| `job_log_retention_days` | Keep job logs for | A background job’s log lines. |
-| `job_run_retention_days` | Keep job runs for | Job runs and their output files. |
-| `scheduled_run_retention_days` | Keep run history for | Scheduled task runs, by age. |
-| `scheduled_log_retention_days` | Keep task logs for | Lines an app logs while a task runs. |
-| `app_event_retention_days` | Keep failure events for | Failures nobody caused: failed builds, failed health checks, runs that couldn’t start. |
-| `platform_log_retention_days` | Keep the platform’s own log for | What Toft logged about each app: fetches, starts, repairs and refusals. |
-| `announcement_recipient_retention_days` | Keep announcement recipients for | Who each announcement was mailed to, and what happened to each send. |
-| `max_versions_per_app` | Most versions an app may keep | The most releases one app keeps. 0 means no limit. |
-| `environment_tag` | Environment name | This install’s environment, such as stage or prod. Leave blank to turn this off. |
+| Setting | Label | What it does | Range |
+|---|---|---|---|
+| `public_base_url` | Address | Where links in email point. Leave blank to use the address the install started with. | — |
+| `security_txt_contact` | Security contact | Where to report a security problem. Filling this in publishes /.well-known/security.txt. | — |
+| `security_txt_expires` | Good until | When the published contact expires. Required when there is a contact. | — |
+| `security_txt_policy` | Disclosure policy | An https:// page on how you want problems reported. Optional. | — |
+| `security_txt_languages` | Preferred languages | Languages a report can be written in, separated by commas. Optional. | — |
+| `isolated_execution_enabled` | Isolated execution | Lets an app run as its own workload, with its own network and resource limits. | — |
+| `default_execution_mode` | New apps are born | The mode a new app starts in when its creator doesn’t choose. | — |
+| `background_jobs_enabled` | Background jobs | Lets apps run scheduled and on-demand work as a process of its own. | — |
+| `app_memory_limit_mb` | Memory limit per app | Memory one app may use before it is restarted, in MB or GB. 0 uses the install default. | 64–1,048,576 MB, or 0 |
+| `app_cpu_request_millicores` | CPU reserved per app | CPU each isolated app reserves, in millicores. 0 uses the install default. | 1–64,000 m, or 0 |
+| `app_cpu_limit_millicores` | CPU ceiling per app | The most CPU one isolated app may use, in millicores. 0 uses the install default. | 1–64,000 m, or 0 |
+| `max_concurrent_builds` | Builds at once | How many deploys may build at the same time. 0 uses the install default. | 1–64 builds, or 0 |
+| `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. | 10–86,400 seconds, or 0 |
+| `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. | — |
+| `log_level` | Platform log level | How much the platform logs about itself. | — |
+| `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
+| `max_run_retries` | Most automatic retries | The most extra attempts an automation may ask for. 0 turns retries off everywhere. | 0–10 retries |
+| `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. | 60–3,600 seconds |
+| `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. | 60–3,600 seconds |
+| `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |
+| `max_scheduled_tasks_per_app` | Most scheduled tasks an app may have | Counted per schedule. | 1–100 tasks |
+| `scheduled_task_timeout_seconds` | Give up waiting for the app after | Past this, the run is recorded as failed. | 30–900 seconds |
+| `scheduled_run_result_bytes` | Keep of each response | How much of the app’s answer is stored as the run’s result. 0 stores none. | 0–262,144 bytes |
+| `gallery_deploy_mode` | Gallery | What the gallery offers: nothing, extensions only, or extensions and examples. | — |
+| `job_log_retention_days` | Keep job logs for | A background job’s log lines. | 1–365 days |
+| `job_run_retention_days` | Keep job runs for | Job runs and their output files. | 1–3,650 days |
+| `scheduled_run_retention_days` | Keep run history for | Scheduled task runs, by age. | 1–365 days |
+| `scheduled_log_retention_days` | Keep task logs for | Lines an app logs while a task runs. | 1–365 days |
+| `app_event_retention_days` | Keep failure events for | Failures nobody caused: failed builds, failed health checks, runs that couldn’t start. | 7–3,650 days |
+| `platform_log_retention_days` | Keep the platform’s own log for | What Toft logged about each app: fetches, starts, repairs and refusals. | 7–3,650 days |
+| `announcement_recipient_retention_days` | Keep announcement recipients for | Who each announcement was mailed to, and what happened to each send. | 30–3,650 days |
+| `max_versions_per_app` | Most versions an app may keep | The most releases one app keeps. 0 means no limit. | 2–100 versions, or 0 |
+| `environment_tag` | Environment name | This install’s environment, such as stage or prod. Leave blank to turn this off. | — |
 
 ## Admin → Authentication
 
-| Setting | Name | What it does |
-|---|---|---|
-| `dormant_lock_enabled` | Lock unused accounts | Locks an account nobody has used for the period below. Administrators are never locked. |
-| `dormant_lock_days` | Lock after | How long an account may go unused before it is locked. At least 30 days. |
-| `session_absolute_hours` | Sign in again after | How long a session lasts from sign-in, however much it is used. |
-| `session_idle_minutes` | End an unused session after | How long an unused session lasts. 0 turns this off. |
-| `public_apps_enabled` | Apps open to anyone | Whether an app may be opened by someone who isn’t signed in. |
-| `apps_listable_to_authenticated` | Everyone signed in can see every app | Every app appears in everyone’s list by name and owner, without being openable. |
-| `sign_in_providers` | Sign-in providers | Your identity provider, who it lets in, and which social logins are offered. |
-| `local_admin_enabled` | Built-in administrator | A local username and password for setup, and for recovery when sign-in breaks. |
+| Setting | Label | What it does | Range |
+|---|---|---|---|
+| `dormant_lock_enabled` | Lock unused accounts | Locks an account nobody has used for the period below. Administrators are never locked. | — |
+| `dormant_lock_days` | Lock after | How long an account may go unused before it is locked. At least 30 days. | 30–730 days |
+| `session_absolute_hours` | Sign in again after | How long a session lasts from sign-in, however much it is used. | 1–24 hours |
+| `session_idle_minutes` | End an unused session after | How long an unused session lasts. 0 turns this off. | 5–480 minutes, or 0 |
+| `public_apps_enabled` | Apps open to anyone | Whether an app may be opened by someone who isn’t signed in. | — |
+| `apps_listable_to_authenticated` | Everyone signed in can see every app | Every app appears in everyone’s list by name and owner, without being openable. | — |
+| `sign_in_providers` | Sign-in providers | Your identity provider, who it lets in, and which social logins are offered. | — |
+| `local_admin_enabled` | Built-in administrator | A local username and password for setup, and for recovery when sign-in breaks. | — |
 
 ## Admin → API keys
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `api_keys_enabled` | Personal API keys | Lets people hold long-lived keys so a script can act as them. |
 
 ## Admin → Dependencies
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `dependency_policy` | Dependency policy | Checks the packages each app installs against published advisories. |
 | `dependency_block_malware` | Refuse malicious packages | Refuses a deploy that installs a known malicious package, whatever its score. |
@@ -103,7 +96,7 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Sources
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `source_policy` | Source policy | Which repositories this install deploys from, and whether uploads may become apps. |
 | `source_uploads_enabled` | Archive uploads | Whether a folder uploaded from a browser may become an app. |
@@ -111,7 +104,7 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Messages
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `announcement` | Announcement banner | A line across the top of every page. |
 | `announcement_emails` | Announcements | Email a message to the people on this install. |
@@ -124,7 +117,7 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Email
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `email_enabled` | Send email | When off, no notification is sent and nothing fails. |
 | `email_transport` | Transport | SMTP, or an HTTPS sending API where outbound port 587 is blocked. |
@@ -145,7 +138,7 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Telemetry
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `telemetry_enabled` | Export telemetry | When off, nothing is exported and nothing fails. |
 | `telemetry_endpoint` | Collector endpoint | The collector’s base URL. |
@@ -157,7 +150,7 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Integrations
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `integration_connections` | Connections | One credential for one place. Each connection is attached to apps separately. |
 | `integration_catalog` | What you can connect | Everything this version can send to. |
@@ -166,41 +159,33 @@ changed* rather than applied over theirs. Reload, and save again.
 
 ## Admin → Features
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `feature_switches` | Optional features | What this build offers, what the license covers, and what is switched on. |
 
 ## Admin → License
 
-| Setting | Name | What it does |
+| Setting | Label | What it does |
 |---|---|---|
 | `license_key` | License key | The key this install was issued. Its term and entitlements come from the license service. |
 
-## Notes on a few of them
+Ranges are the bounds the Settings page accepts. "or 0" means 0 is also
+accepted; what 0 means is in the row.
 
-**The dials** — `app_memory_limit_mb`/`_gb`, `app_cpu_request_*`,
-`app_cpu_limit_*`, `max_concurrent_builds`, `auto_deploy_poll_seconds`,
-`r_package_repository`, `log_level` — have an environment variable underneath
-them. **Zero or empty means the environment's number, never "off"**, and only one
-of a quantity's two unit spellings may be set.
+## Rules worth knowing
 
-**`public_apps_enabled`** and **`apps_listable_to_authenticated`** both default
-**on** and both *take a capability away* when you turn them off. Their default is
-read from an **absent row**, which is why the query asks whether the value is
-`false` rather than whether it is `true`.
+| Rule | Applies to |
+|---|---|
+| **0 or blank means "use the environment's value"**, never "off". The memory and CPU values can be sent in either unit (`app_memory_limit_gb`, `app_cpu_request_cores`, `app_cpu_limit_cores`), but not both in one save. | The operating dials: `app_memory_limit_mb`, `app_cpu_request_millicores`, `app_cpu_limit_millicores`, `max_concurrent_builds`, `auto_deploy_poll_seconds`, `r_package_repository`, `log_level` |
+| **Default on, and an absent row reads as on.** Turning one off takes a capability away. | `public_apps_enabled`, `apps_listable_to_authenticated` |
+| **Write-only.** Never returned to a browser; leaving the field blank keeps the stored value. | `email_password`, `email_api_key`, `telemetry_headers`, `dependency_feed_credential` |
+| **Required together.** An expiry is required whenever there is a contact; a date in the past is refused. | `security_txt_contact`, `security_txt_expires` |
+| **Floored at 30 days.** | `integrations_retention_days` |
+| **Blank turns `.env.<tag>` defaults off.** 1–32 lowercase letters, digits, dashes or underscores. | `environment_tag` |
 
-**Write-only fields** — `email_password`, `email_api_key`, `telemetry_headers`,
-`dependency_feed_credential` — are credentials, not setting values. They never
-come back to a browser, and leaving one blank keeps what is stored.
-
-**`log_format` is not here.** It is reported read-only on the settings document,
-beside `effective_log_level`: it is a fact about who is reading the stream, and
-changing it mid-flight hands a collector a format change it did not ask for.
-
-**`security_txt_expires` is required whenever `security_txt_contact` is set**, and
-is never invented or rewritten.
-
-**`integrations_retention_days` is floored at 30.**
-
-**`environment_tag`** left blank turns `.env.<tag>` environment defaults off
-entirely.
+:::note[Not settings]
+`log_format` is reported read-only beside `effective_log_level`. The settings API
+refuses `docs_url`, `gallery_catalog_url`, `gallery_catalog_source` and
+`gallery_sync`: set `DOCS_URL` and `GALLERY_CATALOG_URL` in the
+[environment](../environment/) instead.
+:::

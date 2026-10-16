@@ -1,57 +1,32 @@
 ---
 title: The build queue and its limits
-description: How many builds run at once, what happens to the rest, and the ceilings.
+description: How many builds run at once, the timeouts, and what to check when the queue stops moving.
 ---
 
-Admin → Queue shows what is building, what is waiting, and what each one is
+**Admin → Queue** shows what is building, what is waiting, and what each build is
 doing.
 
-## Concurrency
+## Limits
 
-**`MAX_CONCURRENT_BUILDS`**, overridable as the `max_concurrent_builds`
-[dial](../../config/operating-dials/).
-
-It is how many builds may **start**. Lowering it interrupts nothing already
-running — a build in flight holds a token it took when the number was higher.
-
-Raising it above the worker pool is **refused, naming the variable**, because the
-page cannot conjure a worker and a silently clamped field is a field that lies.
-The pool has a floor of four so the dial has room on an install that never
-touched the variable.
-
-## Timeout
-
-**`build_timeout_seconds`**, with a per-app override.
-
-It bounds any one build step — installing dependencies, compiling, bundling. Past
-it the deploy fails and the release already serving stays up.
-
-A notebook render has its own: **`notebook_render_timeout_seconds`**, because
-executing a document is a different shape of work from compiling one.
+| Limit | Set by | Notes |
+|---|---|---|
+| Builds at once | `MAX_CONCURRENT_BUILDS`; overridable as **Builds at once** (`max_concurrent_builds`) on **Admin → Settings** | Lowering it interrupts nothing running. It cannot exceed the worker pool, which has a floor of four; a higher value is refused, naming the variable. |
+| Build step timeout | **Let a build command run for** (`build_timeout_seconds`), with a per-app override | Bounds each step — install, compile, bundle. Past it the deploy fails; the serving release stays up. |
+| Notebook render timeout | **Let a notebook render for** (`notebook_render_timeout_seconds`) | Separate, because executing a document is different work. |
 
 ## Memory
 
-Builds compete with running apps for the machine. On a one-box install this is
-the usual cause of "builds are queued and not starting", and the usual culprits
-are a Next.js build or an R package that compiles from source.
+Builds compete with running apps. On a one-box install, memory is the usual
+reason builds queue without starting — typically a Next.js build or an R package
+compiling from source. Run fewer builds at once, add memory, or point R at a
+[binary repository](../languages/#r).
 
-Two levers: fewer concurrent builds, or more machine. A [binary R
-repository](../languages/) is the third and is often the largest single win.
+The [build cache](../cache/) is shared across builds.
 
-## The cache
+## When the queue is not moving
 
-Shared across builds — npm, uv, Go's module and build caches. See [The build
-cache](../cache/).
-
-## When a queue is not moving
-
-In order:
-
-1. **Admin → Queue.** Is something building, or is nothing building?
-2. **The concurrency dial.** Is it lower than you think?
-3. **The machine.** Memory, and disk under `CACHE_DIR` and `APPS_DIR`.
-4. **The checks page.** `stuck_work` finds work claimed and abandoned; `db_pool`
-   reports pool saturation.
-
-A build that is running and slow is a different problem from a build that never
-started, and the queue page is what tells them apart.
+1. **Admin → Queue** — is anything building at all?
+2. **Builds at once** — is it lower than you think?
+3. **The machine** — memory, and disk under `CACHE_DIR` and `APPS_DIR`.
+4. **Admin → System checks** — `stuck_work` finds work claimed and abandoned;
+   `db_pool` reports pool saturation.

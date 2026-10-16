@@ -1,61 +1,29 @@
 ---
 title: Anonymous access
-description: The switch that decides whether this install publishes anything at all.
+description: One switch that decides whether any app on this install can be opened without signing in.
 ---
 
-An install may decline to publish anything. One switch —
-`public_apps_enabled` — and it is **on by default**, meaning anonymous access is
-permitted unless you turn it off.
+`public_apps_enabled` on **Admin → Authentication** decides whether anything on
+this install is reachable without signing in. It is **on by default**.
 
-## It takes a capability away
+## What off does
 
-This is the mental model to keep. The switch does not *offer* publishing; it
-**removes** it. Off means no app on this install can be reached without signing
-in, whatever its own setting says.
+| | |
+|---|---|
+| Apps set to **Public** | Behave as **Authenticated** — every signed-in person keeps access. Never narrowed to private. |
+| Stored visibility | Untouched. Turn the switch back on and every public app is public again. |
+| Making an app public | Refused. Narrowing visibility is always allowed. |
+| Running apps | Keep running. The switch gates the transition, not the app. |
+| [Reachability](../reachability/) | No round runs — with no public app there is no outbound request. |
 
-## What happens to apps set to public
+There is no per-app exemption. The point of the switch is to say "nothing here is
+anonymous" without a list of exceptions.
 
-They become **`authenticated`** — not private.
+## Related
 
-The platform **never rewrites an app's stored visibility**. What changes is the
-answer the authorizer gives, and the substitution is deliberately the *nearest*
-thing rather than the strictest: an app whose owner shared it as widely as
-possible stays shared as widely as this install allows.
-
-Turn the switch back on and everything that was public is public again. Nothing
-was lost, because nothing was written.
-
-## What it gates
-
-**The transition, not the state.** It is not a lock, and it does not stop
-anything already running.
-
-## Off means no outbound request
-
-An install with anonymous access off makes no outbound request related to it — no
-[reachability probe](../reachability/), nothing. Off is genuinely off, not "on
-but ignored".
-
-## There is no per-app exemption
-
-You cannot except one app. That is on purpose: an exemption list is a thing that
-grows, and the value of this switch is being able to say "nothing on this install
-is reachable anonymously" without qualification.
-
-## The other suppressor
-
-[Reachability](../reachability/) can also subtract anonymity, independently.
-
-Both reach the authorizer as **one fact carried on the app row**, through the same
-two seams — so there is one place where the effective answer is decided, not two
-that can disagree. The [scan-target](../scan-targets/) list reports the effective
-value, not the stored one.
-
-## Not to be confused with listing
-
-`public_apps_enabled` is about **people who are not signed in**.
-[`apps_listable_to_authenticated`](../../apps/listing/) is about people who are.
-
-They sit beside each other on Admin → Authentication because they are the same
-question about two audiences, and they are otherwise unrelated: one decides who
-may open an app, the other whether its name appears in a list.
+- [Reachability](../reachability/) can also withdraw anonymous access, per app.
+  Both feed one effective visibility, which is what
+  [scan targets](../scan-targets/) reports.
+- [`apps_listable_to_authenticated`](../../apps/listing/), beside it on the same
+  page, is about signed-in people seeing an app's *name* in a list — a separate
+  question.

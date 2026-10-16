@@ -1,65 +1,45 @@
 ---
 title: Usage, consumption and cost
-description: Who uses this install, what it costs, and what the numbers do not say.
+description: Admin → Usage — which apps are used, what they consume, and what the numbers do not say.
 ---
 
-Admin → Usage. Three questions on one page.
+**Admin → Usage** joins demand and cost per app over one window, so you can see
+which apps matter and which only hold resources.
 
-## Which apps are used
+## The usage table
 
-Requests and distinct viewers per app, over a window. Plus the **quiet** list —
-apps nobody has shown any sign of wanting. See [Quiet apps](../../apps/quiet/).
+| Column | Meaning |
+|---|---|
+| Requests | Requests in the window, with a daily sparkline |
+| Viewers | Distinct people who opened the app |
+| Last visit | Most recent request |
+| CPU time | CPU consumed in the window |
+| Peak memory | Highest sampled memory |
 
-Two things deliberately do not count as usage: a [reachability
-probe](../../security/reachability/), and a request marked as a scan. Both exist
-so quiet means something.
+- Apps with no traffic are listed too.
+- Days are cut at midnight **UTC**, whatever your browser's zone.
+- Counts only — who visited an app is on that app's own **Usage** tab, for people
+  who can manage its access.
+- [Reachability probes](../../security/reachability/) and requests marked as scans
+  do not count as usage.
+- A metric a backend does not measure is **blank, never `0`**. CPU reservation and
+  ceiling do not apply to shared-mode apps and are omitted.
 
-Traffic through a personal key is listed under the person who holds it, by
-name, so an owner can tell who is hitting their app from a script.
-
-Days are cut at midnight **UTC**, whatever the browser's zone, so a window is
-the same window on every page and for every reader.
-
-## What it costs
-
-CPU and memory, sampled per app, plus the estate's totals.
-
-**A metric a backend does not measure is absent, never zero.** Blank and `0` are
-different facts. A comparison between two apps that treats them as the same is a
-comparison that is wrong.
-
-**CPU reservation and ceiling are absent from a shared workload's payload
-entirely** — they are cluster concepts, and reporting a zero would imply a limit
-of none rather than a question that does not apply.
+Below the table, **Quiet apps** lists apps nobody has used in a long time — see
+[Quiet apps](../../apps/quiet/).
 
 ## Active users
 
-How many people actually use this install, over a window.
+**Admin → System info** shows distinct people who opened an app today, in the last
+7, 30 and 365 days (`GET /api/v1/system/active-users`). It is usually far smaller
+than the account count.
 
-This is the number people mean when they ask "how many users do we have", and it
-is usually much smaller than the account count. Both are worth knowing; only one
-of them is a fact about demand.
+Host CPU, memory and disk are on [Processes](../health-and-processes/).
 
 ## What this is not
 
-**It is not chargeback.** There is no billing model, no rate card, and no
-per-app cost in currency. What you get is consumption, and turning that into
-money is your finance team's arithmetic, not the platform's.
+- **Not chargeback.** No rate card or currency — consumption only.
+- **Not product analytics.** No funnels or per-page breakdowns; that belongs in the app.
 
-**It is not product analytics.** No funnels, no per-page breakdown, no events an
-app can send. That belongs inside an app.
-
-## Presence
-
-Where `PRESENCE_ENDPOINT` is configured, you can see who is *currently* in an app.
-A live fact, not history, and absent on installs that have not set it up.
-
-## The license counts
-
-Separately, and only where licensing is on, the install sends counts to the
-vendor at check-in. **Nothing in that payload is a name** — no app names, no user
-names, no hostnames — the install renders it before sending, and the counts can be
-switched off with one stated exception a paid license cannot suppress.
-
-**The install count refuses nothing and never will**, and neither does the seat
-count beside it. See [Licensing](../licensing/).
+The counts sent to the vendor at license check-in contain no names; see
+[Licensing](../licensing/#outbound-traffic).

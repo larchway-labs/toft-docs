@@ -1,75 +1,55 @@
 ---
 title: The platform's own subcommands
-description: Five things the binary does without starting a server.
+description: What the toft server binary does besides serving — recovery, offline imports, key rotation and route listings.
 ---
 
-The Toft binary is a server when you run it with no arguments. It also
-carries five subcommands, and three of them talk to Postgres and exit — which is
-what makes them usable on an install that will not start.
+Run with no arguments, the platform binary starts the server. These subcommands
+do one job and exit; the first three talk only to Postgres (reading
+`DATABASE_URL` from the environment or `.env`), so they work on an install that
+will not start.
+
+| Command | Does | See |
+|---|---|---|
+| `toft local-admin status \| enable [--password <value>] \| disable` | Reports, switches on (setting the built-in administrator's password, generated unless given) or switches off local sign-in | [Built-in administrator](../../identity/local-administrator/) |
+| `toft advisory-import --ecosystem <name> --as-of <date> <file.zip>` | Imports a vulnerability-advisory snapshot from a file, for installs with no outbound HTTPS | [Dependency policy](../../security/dependencies/) |
+| `toft rotate-key [--dry-run]` | After a key swap and restart, re-encrypts stored records onto the new key so the old one can be dropped | [At-rest encryption](../../security/encryption/) |
+| `toft routes [--json] [--router <name>]` | Prints every route on both listeners (platform and apps). Reads no configuration, opens no database | — |
+| `toft openapi [--server <url>]` | The same routes as an OpenAPI document, for scanners | — |
 
 ```bash
-toft local-admin
-toft advisory-import <file>
-toft rotate-key
-toft routes
-toft openapi
+# Nobody can sign in: run on the host
+toft local-admin enable
 ```
 
-## `local-admin`
+:::tip
+`local-admin` is the only recovery path when nobody can sign in, and it cannot be
+done through the API. It needs a shell on the host, not a stolen session.
+:::
 
-**Re-enables local sign-in and resets the built-in administrator's password.**
+## The OpenAPI document
 
-It does not depend on the server it is repairing: it talks to Postgres and exits.
-This is the recovery path when nobody can sign in, and it is deliberately the only
-one. **Proof you have the machine**, not proof you control an email address.
+Also served at `GET /api/v1/admin/openapi.json` (404 to non-administrators). Its
+paths are exactly the routes the install serves. Operations a personal API key
+cannot reach are marked `x-toft-key-denied` — hand this to anyone asking what a
+key can do.
 
-See [The built-in administrator](../../identity/local-administrator/).
+## Internal subcommands
 
-## `advisory-import`
+You never run these by hand; the platform starts them.
 
-Imports the vulnerability corpus **from a file**, for an install with no outbound
-HTTPS — which is the customer this product is for rather than an edge case.
+| Command | Purpose |
+|---|---|
+| `toft serve-static` | The file server for static apps and rendered documents |
+| `toft runner` | A job run on the platform's machine when there is no cluster ([Automation](../automation/#where-a-job-runs)) |
 
-Also talks to Postgres and exits. See [Dependency
-policy](../../security/dependencies/).
+## Startup refusals
 
-## `rotate-key`
+The server exits, naming the reason, rather than start unsafely. Examples:
 
-The second half of a key rotation. The swap is a restart; **this is the sweep**
-that moves stored records onto the new key so the old one can be dropped.
+- `JWT_SECRET` missing or under 32 bytes; `ENCRYPTION_KEY` (or `ENCRYPTION_KEY_URI`) or `DATABASE_URL` missing
+- A database below the [schema floor](../../start/upgrading/), or a pending migration
+- An unknown `ARTIFACT_STORE` or `STORE_BACKEND`, or one missing its bucket or account
+- Two isolated backends configured at once
+- A boolean, origin or CIDR it cannot parse
 
-See [At-rest encryption](../../security/encryption/).
-
-## `routes`
-
-Prints every route the router serves, and exits. **Neither a database nor a
-server** — the router can describe itself.
-
-Useful when you are putting a WAF or a reverse proxy in front of the install and
-need to know what actually exists.
-
-## `openapi`
-
-The same question in the form a scanner reads. Also available at
-`GET /api/v1/admin/openapi.json`, which **404s to non-administrators**.
-
-The document's paths are exactly the routes this install serves — not a
-hand-maintained file that drifts.
-
-**Every route reachable by a personal API key is marked in it**, with
-`x-toft-key-denied` on exactly the operations that refuse a key. That is the
-artifact to hand somebody asking what a key can do.
-
-## Two more things the binary does
-
-**It serves static apps.** A subcommand runs the file server for a static app or a
-rendered document — the same implementation in both execution modes, which is why
-neither needs a generated `server.js` or a fetched file server.
-
-**It refuses to start** rather than doing something unsafe: a `JWT_SECRET` under 32
-bytes, a database below the [schema floor](../../start/upgrading/), an unknown
-artifact or store backend, an unknown KEK scheme, a versionless Key Vault URI,
-both isolated backends configured at once, or a boolean it cannot read.
-
-Every one of those exits naming the reason. A refusal at startup is the cheapest
-place for a configuration error to land.
+The full list of variables is in [Environment](../../reference/environment/).

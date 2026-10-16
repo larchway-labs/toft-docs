@@ -1,113 +1,70 @@
 ---
 title: Publishing from RStudio
-description: The Posit Connect publishing API — what RStudio and rsconnect can do here, what it depends on, and what it costs to leave on.
+description: The Posit Connect publishing API — what rsconnect can do here, what it depends on, and how to turn it off.
 ---
 
-Toft answers the part of Posit Connect's API that the `rsconnect` R package
-uses to publish. People who publish from RStudio or Posit Workbench keep using
-the **Publish** button and `rsconnect::deployApp()`, and add your Toft as a
-server the way they would add a Connect server. They do not need `toft`.
+Toft answers the part of Posit Connect's API that the `rsconnect` R package uses
+to publish. People keep using RStudio's **Publish** button and
+`rsconnect::deployApp()`, adding Toft as a server; they don't need `toft`. The
+developer's side is in the user guide under **Deploying → From RStudio**.
 
-The developer's side is in the user guide, under **Deploying → From RStudio**.
-This page is what you decide and what you can see.
+## How Connect maps onto Toft
 
-## What it is, and what it is not
-
-**A translation onto things Toft already does.** Nothing in it is a second
-way of running an app:
-
-| Connect's term | What it is here |
+| Connect | Toft |
 |---|---|
-| Content | An app. Its `name` is the app's address, `/apps/<name>/`. |
-| A bundle | An uploaded archive, unpacked by the same code as any other upload. |
-| A deploy | An upload deploy: the same build, the same steps, the same history. |
-| A task | The deployment, and its build log streamed back to RStudio. |
-| Environment variables | The app's variables, stored **sensitive**. |
+| Content | An app; its `name` is the address `/apps/<name>/` |
+| Bundle | An uploaded archive, unpacked like any upload |
+| Deploy | An ordinary upload deploy — same build, steps and history |
+| Task | The deployment, with its build log streamed back to RStudio |
+| Environment variables | The app's variables, stored as sensitive |
 
-**What Connect has and Toft does not is not imitated.** Content settings,
-access lists, vanity URLs and schedules set from `rsconnect` are refused; people
-manage those on the app in Toft. An app published from RStudio is an
-ordinary app from the moment it exists.
+Content settings, access lists, vanity URLs and schedules sent from `rsconnect`
+are refused — manage those on the app in Toft.
 
-The API lives at **`/__api__`** on the platform's own address, because that is
-the path `rsconnect` sends. If a reverse proxy sits in front of Toft and
-forwards only selected paths, it must forward `/__api__` and `/cli`.
+The API is at `/__api__` on the platform's address. A reverse proxy that forwards
+selected paths must forward `/__api__` and `/cli`.
 
 ## What it depends on
 
-There is no switch for this surface by itself. It follows the decisions you
-have already made:
+There is no separate switch. It follows settings you already govern:
 
-- **Personal API keys** (`api_keys_enabled`). Both ways RStudio signs in end in
-  a personal key, so with keys off, publishing from RStudio is off — the
-  sign-in is absent and every request is refused. See
-  [Machine credentials](../../security/keys/).
-- **Archive uploads** (`source_uploads_enabled`). What RStudio sends is an
-  archive. With uploads off, creating an app from RStudio is refused, and so is
-  publishing into an app that deploys from a git repository. See
-  [Trusted app sources](../../security/sources/).
-- **Roles.** Creating an app needs the publisher role; publishing into one needs
-  the right to edit it. Exactly as in the web interface.
-- **Everything else a deploy meets** — the license's app cap, app locks, the
-  dependency policy, retention, the execution mode a new app is born in —
-  applies unchanged, because it is the same deploy.
+| Requirement | Effect when missing |
+|---|---|
+| `api_keys_enabled` ([Machine credentials](../../security/keys/)) | RStudio cannot sign in; every request is refused |
+| `source_uploads_enabled` ([Trusted sources](../../security/sources/)) | Creating an app from RStudio is refused, as is publishing into a git-deployed app |
+| Publisher role / edit right | Needed to create / publish into an app, as in the web UI |
 
-**Deploy keys cannot use it.** An app created from RStudio needs a person to own
-it, and a pipeline has `toft`.
+License caps, locks, dependency policy, retention and the default execution mode
+apply unchanged. **Deploy keys cannot use it** — an app created from RStudio
+needs a person to own it.
 
 ## How RStudio signs in
 
-Two ways, and both end in an ordinary personal key.
+Both ways end in an ordinary personal key, listed in **Admin → API keys** with
+owner, scope and last use. Revoking it signs RStudio out on its next request; it
+expires on the 90-day personal-key default.
 
-**RStudio's own Add account dialog.** `rsconnect` generates a key pair on the
-publisher's machine and registers the public half. RStudio opens a page in their
-browser — the same approval page `toft login` uses, titled **Sign in RStudio** —
-showing the address the request came from. When they approve, Toft creates
-a personal key named **RStudio (rsconnect)** and binds it to that key pair.
-From then on every request RStudio makes is **signed**; no secret travels with
-it. The private key stays on the publisher's machine.
+| Way | How |
+|---|---|
+| RStudio's **Add account** dialog | `rsconnect` registers a key pair; the person approves in the browser on the same page `toft login` uses, which names the requesting address. Toft creates a key named **RStudio (rsconnect)**; every request is then signed and the private key stays on their machine |
+| Pasted key | `rsconnect::connectApiUser()` with a personal key the person created |
 
-**A key pasted into the console.** `rsconnect::connectApiUser()` with a personal
-key the person created themselves.
+If Toft is behind a proxy, set `TRUSTED_PROXY_CIDRS` so the approval page shows
+the real requesting address — see [Listeners, origins and proxies](../../config/listeners-and-origins/).
 
-Either way, what you see is a personal key. It is on **Admin → API keys** with
-its owner, scope and last use, and you revoke or disable it there like any
-other. **Revoking an RStudio key signs that RStudio out** on its next request.
-It expires on the personal-key default of 90 days, after which the person adds
-the account again.
-
-The approval page is the defence against somebody being sent a sign-in they did
-not start. It names the requesting address, so if Toft sits behind a proxy,
-`TRUSTED_PROXY_CIDRS` has to name it — otherwise every request appears to come
-from the proxy. See [Listeners, origins and proxies](../../config/listeners-and-origins/).
-
-### What the signature protocol fixes
-
-`rsconnect` decides how requests are signed, and Toft cannot change it:
-
-- **RSA with SHA-1.** An install running in a FIPS-only mode refuses SHA-1
-  signatures, and RStudio's sign-in will not work there. A pasted key still does.
-- **A five-minute clock window.** A signed request carries its time, and one
-  more than five minutes from Toft's clock is refused. A publisher whose
-  machine has a wrong clock is told so. Within the window, a captured request
-  could be replayed — the same exposure Connect has. TLS is what stops it being
-  captured.
+:::caution[Fixed by rsconnect's protocol]
+Requests are signed with **RSA/SHA-1**, so a FIPS-only host refuses them (a pasted
+key still works). A request more than **5 minutes** from Toft's clock is refused;
+within that window a captured request could be replayed, so serve over TLS.
+:::
 
 ## What you can see
 
-- **Admin → API keys** — every RStudio key, by owner, with last use.
-- **The audit log** — the approval, and the key's creation recorded as via
-  `rsconnect`; then every deploy and change as the person, with the key beside
-  it.
-- **The app** — its deployments, marked as uploaded, with the build log RStudio
-  showed.
+- **Admin → API keys**: every RStudio key, by owner, with last use.
+- **Audit log**: the approval and key creation (via `rsconnect`), then each deploy as the person.
+- **The app**: deployments marked as uploaded, with the build log.
 
 ## Turning it off
 
-Switch off personal API keys, or archive uploads. There is nothing to configure
-for this surface alone, which is deliberate: it is two capabilities you already
-govern, reached by a different client.
-
-`/__api__/server_settings` still answers when keys are off. It reports that
-neither way in is available, and Toft's version — the same version the
-login page already tells anyone who can reach it.
+Turn off personal API keys or archive uploads. `/__api__/server_settings` still
+answers, reporting that no sign-in is available and the Toft version.

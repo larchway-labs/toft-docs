@@ -1,79 +1,60 @@
 ---
 title: Ways to install
-description: One box or a cluster, and which one you want.
+description: One box with Docker Compose, or a cluster with the Helm chart — same image behind both.
 ---
 
-Two supported shapes, and the same image behind both.
+Two supported shapes. Both run the published image **`gopanair/toft:<version>`**
+(multi-arch, linux/amd64 and linux/arm64), always pinned to a version — there is
+no `latest` tag.
 
-## One box, with Docker Compose
+| | One box (Docker Compose) | Cluster (Helm chart) |
+|---|---|---|
+| **Apps run** | In **shared mode**: processes under PM2, each as its own OS account | In **isolated mode**: one container per app, with its own network policy |
+| **Choose it for** | A team, a department, a first install | App-to-app isolation, mixed resource profiles, an existing Kubernetes |
+| **Not available** | Isolated execution, the artifact store, background jobs, telemetry export | — |
 
-The whole install on one Linux machine: Toft, Postgres, and the apps it
-runs. Apps run in **shared mode** — as processes on that machine, bound to
-loopback.
+## One box
 
-The right choice for a team, a department, or a first install. One machine to
-back up and one thing to upgrade. [Jobs](../../operate/automation/#where-a-job-runs)
-and [batch apps](../../operate/automation/#batch-apps-only-jobs) run here too, on
-the same machine, under the app's own account — with a memory limit that is a
-sampled watchdog rather than a boundary.
+```bash
+curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-install/main/install.sh | sh
+```
 
-The bundle is published to its own public repository and is what a customer
-installs. It runs on loopback and expects a proxy or an SSH tunnel in front of
-it.
+The installer, from the public `larchway-labs/toft-install` repository, checks
+the machine, offers to install Docker, and prints the administrator password
+once. It needs Linux (x86_64 or arm64), 4 GB of RAM and 20 GB free.
 
-## A cluster, with the Helm chart
+The install listens on **loopback only** (`:8080` and `:8081`). Reach it over an
+SSH tunnel forwarding both ports, or put a TLS proxy in front and set `BASE_URL`,
+`APPS_BASE_URL` and `TRUSTED_PROXY_CIDRS`. Its README covers backup, upgrade,
+uninstall and adding durable storage.
 
-Apps run in **isolated mode** — one workload per app, each in its own container
-with its own network policy.
+## A cluster
 
-Choose this when you need app-to-app isolation, when apps have very different
-resource profiles, or when you already run Kubernetes.
+The Helm chart defaults to `gopanair/toft` at the chart's app version. Isolated
+mode also needs:
 
-Isolated mode also needs an [artifact store](../../apps/artifact-store/) — a
-workload in a cluster cannot read the platform's local `APPS_DIR` — at least one
-[runner image](../../build/runner-images/), and a callback address a workload can
-resolve.
+- an [artifact store](../../apps/artifact-store/) — a workload cannot read the
+  platform's local `APPS_DIR`;
+- at least one [runner image](../../build/runner-images/);
+- a callback address the workloads can resolve.
 
-There is a second isolated backend on Amazon ECS. **Exactly one** may be
-configured: `KUBE_NAMESPACE` and `ECS_CLUSTER` both set is refused at startup
-rather than resolved by precedence.
+Amazon ECS is a second isolated backend. Set **one** of `KUBE_NAMESPACE` or
+`ECS_CLUSTER`; both is refused at startup. Execution mode is always `shared` or
+`isolated`, never a backend name, and an install can offer both — see
+[Execution modes](../../apps/execution-modes/).
 
-## Which mode, and can you change it
+:::caution[Adapting the chart]
+Five things are compiled into the binary and must never be templated: the
+`app.kubernetes.io/name: toft` pod label, workload UID `10001`, the
+unauthenticated `/api/v1/config` probe, the `toft-workload` ServiceAccount, and
+the `toft-bootstrap` token audience. Change one and the install starts but cannot
+start a workload.
+:::
 
-Execution mode is `shared` or `isolated` — **never a backend name**, because
-which technology implements a mode is an implementation detail and the mode is
-the contract.
-
-An install can offer both. See [Execution modes](../../apps/execution-modes/).
-
-## The image
-
-Both pull the same published image, `gopanair/toft`, multi-arch, **tagged
-with a version and never `latest`**.
-
-Pinning is the point: an install that follows `latest` upgrades itself at a
-restart you did not plan.
-
-## What you have to provide
+## What you provide
 
 | | |
 |---|---|
-| **Postgres 17** | The schema is migrated by the binary at startup. |
-| **A hostname** | For outbound links. The install works out its own inbound address. |
-| **TLS** | Terminated in front of Toft, by your own proxy or ingress. |
-| **An apps address** | Apps are served on a **different origin**. A second port is enough; a second hostname is better. |
-
-## What the chart must not template
-
-Five things in the Helm chart are compiled into the binary and must never be
-made configurable:
-
-- The `app.kubernetes.io/name: toft` pod label — every isolated workload's
-  NetworkPolicy admits ingress from it.
-- The workload UID `10001`.
-- The unauthenticated `/api/v1/config` probe.
-- The `toft-workload` ServiceAccount, and the `toft-bootstrap` token
-  audience that names it.
-
-If you are adapting the chart, leave those alone. Changing one produces an
-install that comes up and then cannot start a workload.
+| **Postgres 17** | The binary migrates the schema at startup. The one-box bundle runs its own. |
+| **TLS** | Terminated by your proxy or ingress. |
+| **An apps address** | A second origin. A second port works; a second hostname is easier to put TLS in front of. |
