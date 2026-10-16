@@ -1,68 +1,62 @@
 ---
 title: Notebooks and documents
-description: Publishing a Jupyter, Quarto or R Markdown document as a page anyone can read.
+description: Publish a Jupyter notebook, Quarto or R Markdown document as a page.
 ---
 
-A repository holding one `.ipynb`, `.qmd` or `.Rmd` at its root is a **document
-app**: executed once at build time, and served as the page that fell out.
+A repository with one `.ipynb`, `.qmd` or `.Rmd` at its root is a **document
+app**: Toft runs it once during the deploy and serves the HTML it produces.
 
-| Source | Engine |
+| Source | Rendered with |
 |---|---|
-| `.ipynb` | Python |
-| `.qmd` | Python or R, depending on its engine |
+| `.ipynb` | nbconvert (Python), or Quarto if you declare `engine = "quarto"` |
+| `.qmd` | Quarto, with Python or R depending on its engine |
 | `.Rmd` | R Markdown |
-| `.Rmd` with `runtime: shiny` | not a document — that is a [Shiny app](../r/) |
+| `.Rmd` with `runtime: shiny` | Not a document — a [Shiny app](../r/) |
 
-## It is executed once, at build time
+For a document viewers can interact with, use marimo, Streamlit or Shiny
+instead.
 
-This is the thing to understand. Your document runs **during the deploy**, with
-your app's own environment variables, and what gets served is the output.
-Visitors execute nothing. Nobody gets a kernel.
+## It runs at deploy time
 
-That means:
+Visitors execute nothing; they read the output.
 
-- The numbers on the page are the numbers from deploy time. To refresh them,
-  deploy again — or put a [render schedule](../reports/) on it.
-- A notebook that takes ten minutes to run makes a ten-minute deploy.
-- A notebook that fails fails the **deploy**, with the error in the build log,
-  and the previously published document keeps serving.
+- The numbers are from deploy time. Refresh them by redeploying, or with a
+  [render schedule](../reports/).
+- A slow document is a slow deploy. Past the render timeout your administrator
+  sets, the deploy fails.
+- A failing document fails the deploy, and the previously published version
+  stays up.
 
-There is a render timeout your administrator sets. Past it the deploy fails and
-what was already published stays up.
+:::danger[Output is published]
+The document runs with your app's environment variables. Anything it prints —
+a connection string included — ends up on the page. The build log lists which
+variables were available.
+:::
 
-## Your environment variables are in the output
+## Dependencies
 
-Your document runs with your app's environment, and whatever it prints goes into
-a published document. **If you print a connection string, the connection string
-is on the page.**
+Toft installs the renderer (Jupyter, nbconvert or Quarto). Declare only what
+your document imports: `requirements.txt` for Python, `renv.lock` for R.
 
-The build log names which variables were available, so this is not a surprise.
-Treat a published document as public-facing output even when the app is private.
+Only the rendered output is served. Your source files, `renv.lock` and
+everything else in the repository return 404.
 
-## The renderer is provided
+## Choosing the file
 
-You do not add `jupyter`, `nbconvert` or `quarto` to your dependencies.
-Toft installs the renderer. Declare the libraries your document *imports*.
+With more than one candidate at the root, or a document in a subfolder, name it:
 
-The rendered output is served from a directory Toft owns — never from your
-release — so your `.qmd`, your `.Rmd`, `renv/` and `renv.lock` are 404 at any
-depth. The source is not published with the document.
+```toml
+# toft.toml
+[notebook]
+file = "reports/weekly.qmd"
+```
 
-## Quarto: which engine
+## Quarto: Python or R
 
-A `.qmd` is Python or R depending on its **engine**, decided at detection time
-in this order:
+A `.qmd` runs as R when, in this order:
 
-1. `[notebook] engine = "knitr"` in `toft.toml`
-2. `engine:` or `knitr:` in the document's YAML header
-3. A fenced ` ```{r} ` chunk
-4. Otherwise, Python
+1. `toft.toml` sets `[notebook] engine = "knitr"` (or `"jupyter"` for Python).
+2. The document's YAML header has `engine: knitr` or a top-level `knitr:` key.
+3. It contains an R chunk (` ```{r} `).
 
-A `.qmd` with neither a declaration nor R chunks stays a Python notebook. That
-rule exists so a document deployed before R was available does not silently
-change framework underneath you.
-
-## Interactive documents are a different thing
-
-If a viewer needs to change an input and see the result recomputed, you do not
-want a document — you want a server. Use marimo, Streamlit or Shiny.
+Otherwise it runs as Python.

@@ -1,41 +1,23 @@
 ---
 title: Tags
-description: The taxonomy your install defines, and why filling it in is worth your time.
+description: Label your app with your install's tags so people can browse and filter the estate.
 ---
 
-Tags are how a Toft estate gets browsed. Your administrator defines the
-**tags** and their allowed **values**; you set values on your app's Settings
-tab.
+Your administrator defines the tags, such as `team`, `environment` or `data-classification`, and the values each one allows. You pick values for your app under **Settings → Tags**. You cannot type a new value; if one you need is missing, ask your administrator.
 
-A typical taxonomy: `team`, `environment`, `data-classification`, `criticality`.
+## Browsing by tag
 
-## You cannot invent a value
+| Page | Shows |
+|---|---|
+| `/tags/<tag>` | The values of one tag. |
+| `/tags/<tag>/<value>` | Every app with that value. |
 
-Tags and their values are the administrator's. You choose among them; you do not
-type a new one. That is what makes browsing by tag mean anything — a taxonomy
-where everyone invents values is a free-text field with extra steps.
+Both pages are linkable, so a URL such as `/tags/team/payments` works in a runbook. The app list filters by tag too.
 
-If a value you need is missing, ask for it. That is a normal request.
+## The framework tag
 
-## Browsing
+Toft sets a `framework` tag on every app from what it detected at build time. You cannot edit it.
 
-`/tags/<tag>` lists the values in a tag; `/tags/<tag>/<value>` lists the apps
-carrying it. Both are ordinary pages that survive a refresh, so they are
-linkable — a `team/payments` URL is a reasonable thing to put in a runbook.
-
-The app list filters by tag too.
-
-## Framework is a tag you do not set
-
-Toft maintains a `framework` tag itself, from what detection decided. You
-cannot edit it, and it is the honest answer to "what is this app written in"
-rather than what somebody typed a year ago.
-
-## Why bother
-
-Because somebody will eventually have to answer a question about every app at
-once — which apps touch customer data, which belong to a team that no longer
-exists, which have to be reviewed before an audit.
-
-Tags are the only mechanism that makes those questions answerable without a
-spreadsheet, and they are only useful if the apps are actually tagged.
+:::tip
+Tag every app you own. Tags are what make questions like "which apps touch customer data?" answerable across the whole install.
+:::

@@ -1,44 +1,33 @@
 ---
 title: Usage and resources
-description: Who has opened your app, how often, and what it is consuming.
+description: Who opens your app, how often, and what it consumes.
 ---
 
-The **Usage** tab answers two different questions.
+The **Usage** tab shows traffic and consumption over the last **7d**, **30d** or **90d**. Anyone who can open the app can see it.
 
-## Who used it
+| Figure | Meaning |
+|---|---|
+| **Requests** | Requests to the app in the window. |
+| **Unique viewers** | Distinct people and keys that made them. |
+| **Requests / day** | The average. |
+| **CPU time** | CPU used, with the reservation if one is set. |
+| **Peak memory** | The highest reading, against the memory the app is allowed. |
 
-Requests and distinct viewers over a window. Useful for the ordinary questions:
-is anyone actually opening this, did the announcement land, has traffic changed
-since the release.
+A daily chart sits below the figures. A batch app shows only CPU time and peak memory.
 
-Two things do not count as usage:
+The list of individual viewers is shown only to people who manage the app's sharing.
 
-- **A reachability probe.** The platform checking that a public app answers is
-  not somebody wanting it.
-- **A security scan** that identifies itself. A scanner sweeping the estate does
-  not make every app look busy.
+## What doesn't count
 
-Both of those exist so [quiet](../quiet/) means something.
+- **Reachability probes.** The platform checking that a public app answers.
+- **Security scans** that identify themselves.
 
-## What it costs
+Neither is somebody using the app, so neither makes it look busy or keeps it from looking [quiet](../quiet/).
 
-CPU and memory, sampled per app.
+## Missing is not zero
 
-**A metric that was not measured is absent, never zero.** If a number is
-missing, it means nobody could take the reading — not that the reading was
-nought. That distinction is worth respecting when you are comparing two apps:
-blank and `0` are different facts.
+A dash means nobody could take the reading, not that the reading was zero. When part of the window wasn't observed, the tab says **These figures are a lower bound**.
 
-Uptime is zero for anything that is not up. A stopped app does not accumulate.
-
-## Presence
-
-Where your install has it configured, you can see who is *currently* in an app.
-It is a live fact, not history, and it is absent on installs that have not set
-it up.
-
-## What this is not
-
-It is not analytics. There is no funnel, no session recording, no per-page
-breakdown, and no event you can send from your own code. If you need product
-analytics, that belongs in your app.
+:::note
+Usage is not product analytics. There are no funnels, page breakdowns or custom events. If you need those, build them into your app.
+:::

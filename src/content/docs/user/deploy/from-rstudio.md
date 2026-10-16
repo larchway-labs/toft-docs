@@ -1,60 +1,42 @@
 ---
 title: From RStudio
-description: Publishing from RStudio or Posit Workbench with the Publish button and rsconnect, as you would to Posit Connect.
+description: Publish from RStudio or Posit Workbench with the Publish button and rsconnect, as you would to Posit Connect.
 ---
 
-If you publish from RStudio today, you can keep doing it. Toft answers the
-same calls Posit Connect does, so the **Publish** button and
-`rsconnect::deployApp()` work unchanged — you add Toft as a server once,
-and from then on you publish to it like any Connect server.
-
-You do not need `toft` for any of this. RStudio talks to Toft through the
-`rsconnect` package it already uses.
+Toft answers the same calls as Posit Connect, so RStudio's **Publish** button
+and `rsconnect::deployApp()` work unchanged. Add Toft as a server once, then
+publish as usual. You do not need `toft`.
 
 ## Before you start
 
-- **You need to be a publisher.** A viewer can sign in but cannot create
-  content. See [Becoming a publisher](../../account/becoming-a-publisher/).
-- **Personal API keys must be switched on for your install.** Signing RStudio in
-  creates one for you. If adding the account fails before a browser opens, this
-  is the usual reason — ask your administrator.
-- **A recent `rsconnect`.** Version 1.0 or later; RStudio updates it with your
-  other packages.
+- You are a [publisher](../../account/becoming-a-publisher/).
+- Personal API keys are switched on for your install — signing RStudio in
+  creates one.
+- `rsconnect` is version 1.0 or later.
 
 ## Add Toft as a server
 
-In RStudio:
+1. In RStudio, open **Tools → Global Options → Publishing → Connect…** and
+   choose **Posit Connect**.
+2. Enter your Toft address, such as `https://toft.your-company.com`, with no
+   path.
+3. A browser page titled **Sign in RStudio** opens in Toft. Select
+   **Approve**.
+4. RStudio finishes adding the account.
 
-1. **Tools → Global Options → Publishing**, then **Connect…**, and choose
-   **Posit Connect**.
-2. Enter your Toft address — the one you sign in to, such as
-   `https://toft.your-company.com`. Leave off any path.
-3. RStudio opens a Toft page in your browser titled **Sign in RStudio**.
-4. Check it, and select **Approve**.
-5. Back in RStudio, the account finishes adding itself.
+:::caution[Approve only your own request]
+Approving creates a personal API key that acts as you. If you did not just
+start this sign-in, select **Deny**.
+:::
 
-### What the approval page is asking
-
-Approving creates a **personal API key** that acts as you — it can deploy, roll
-back and read anything you can. The page shows the address the request came
-from and the `rsconnect` version that asked.
-
-**Approve only if you just added the account yourself.** Anyone can start a
-sign-in and send you the link; approving somebody else's gives them a key that
-is you. If you did not just do this, select **Deny** — nothing is created, and
-the request cannot be reused.
-
-### From the R console instead
-
-The same sign-in, without the dialog:
+From the R console instead:
 
 ```r
 rsconnect::addServer("https://toft.your-company.com", name = "toft")
 rsconnect::connectUser(server = "toft")
 ```
 
-`connectUser()` opens the same approval page. If you already have a
-[personal key](../../cli/api-keys/), you can register it directly and skip the
+Or register an existing [personal key](../../cli/api-keys/) and skip the
 browser:
 
 ```r
@@ -63,87 +45,58 @@ rsconnect::connectApiUser(server = "toft", apiKey = "toftu_…")
 
 ## Publish
 
-Use the **Publish** button in RStudio, or from the console:
+Select **Publish**, or:
 
 ```r
 rsconnect::deployApp(server = "toft")
 ```
 
-The build log streams into RStudio's **Deploy** pane while Toft builds the
-app. When it finishes, RStudio opens the app's page in Toft.
+The build log streams into RStudio's **Deploy** pane, and RStudio opens the
+app in Toft when it finishes.
 
-What happens on Toft's side:
-
-- **A new app is created** the first time, named after the folder — or after
-  `appName` if you pass one. That name becomes its address:
-  `/apps/<name>/`.
-- **It starts private.** Only you can open it until you share it. See
-  [Who can see your app](../../share/visibility/).
-- **Your packages come from the bundle.** `rsconnect` records the packages your
-  app uses in a `manifest.json`, and Toft installs exactly those. You do
-  not need an `renv.lock` for a publish from RStudio. See [R](../../build/r/).
-- **It is an ordinary Toft app.** Logs, settings, sharing, schedules and
-  rollback all work the way the rest of this guide describes.
-
-## Publish again
-
-Publish from the same folder and `rsconnect` updates the same app — it
-remembers which app it published to. Each publish is a new release, and the
-previous one keeps serving until the new one is ready. See
-[Releases and rollback](../releases/).
-
-If the deploy fails, the app keeps serving its last good release, and the
-build log in the Deploy pane says where it stopped.
+- The first publish **creates an app** named after the folder (or `appName`),
+  at `/apps/<name>/`. It starts **Restricted** — [share it](../../share/visibility/)
+  from the **Access** tab.
+- **Packages come from the bundle's `manifest.json`.** No `renv.lock` needed.
+  See [R](../../build/r/).
+- **Publishing again** from the same folder updates the same app. The previous
+  release serves until the new one is ready; see
+  [Releases and rollback](../releases/).
 
 ## Environment variables
-
-Variables you pass to `deployApp()` are stored on the app:
 
 ```r
 rsconnect::deployApp(server = "toft", envVars = c("DB_PASSWORD"))
 ```
 
-`rsconnect` reads each value from your own R session and sends it. Toft
-stores every variable set this way as **sensitive**: it is never shown back,
-on the app's Settings tab or anywhere else. To change one, publish again with a
-new value, or edit it on the app's [Settings](../../run/settings/).
+Each value is read from your R session and stored as **sensitive** — never
+shown back. Change it by publishing again or on
+[Settings](../../run/settings/).
 
-## What is different from Posit Connect
+## Differences from Posit Connect
 
-Publishing works the same. Managing the app afterwards happens in Toft
-rather than through `rsconnect`:
-
-- **Sharing, access and visibility** are on the app's **Access** tab — not set
-  from RStudio.
-- **Custom URLs** do not exist. An app's address is its name.
-- **A name already in use is refused**, rather than renamed. Pick a different
-  `appName`.
-- **Scheduled re-renders** are set up in Toft. See
-  [Scheduled re-renders](../../build/reports/).
+- Sharing and visibility are managed in Toft, on the **Access** tab.
+- There are no custom URLs; the address is the app's name.
+- A name already in use is refused, not renamed. Choose another `appName`.
+- [Scheduled re-renders](../../build/reports/) are set up in Toft.
 
 ## Signing RStudio out
 
-The key RStudio uses is listed under **Me → Credentials** as
-**RStudio (rsconnect)**, with when it was last used. **Revoke** it there to sign
-RStudio out; the next publish fails, and RStudio asks you to add the account
-again.
+The key appears under **Your account → Credentials** as **RStudio (rsconnect)**.
+**Revoke** it to sign RStudio out. It expires after 90 days; then remove the
+account in RStudio and add it again.
 
-Like other personal keys it **expires after 90 days**. When it does, remove the
-account in RStudio's Publishing options and add it again.
+Posit Workbench works the same way; the approval page opens in the browser you
+use Workbench from.
 
-## Posit Workbench
+## Troubleshooting
 
-Everything above works the same in RStudio on Posit Workbench. The approval
-page opens in the browser you are using Workbench from.
-
-## When it goes wrong
-
-| What you see | What it means |
+| Message | Fix |
 |---|---|
-| Adding the server fails before a browser opens | Personal API keys are switched off for your install. Ask your administrator. |
-| RStudio waits and the approval page never appeared | Open the address RStudio prints in its console. |
-| `unknown token — add the account again` | The key behind the account was revoked, expired, or the sign-in was denied. Remove the account and add it again. |
-| `the request's Date is … more than five minutes from this server's clock` | The clock on the machine running RStudio is wrong. Fix it and try again. |
-| `the name "…" is already in use` | Another app has that name. Publish with a different `appName`. |
-| `this key is read-scoped` | The key you registered with `connectApiUser()` is read-only. Create a full-scope key, or use the sign-in above instead. |
-| The deploy fails at `library()` | A package your app loads was not recorded in the bundle. Load it at the top of your app and publish again. |
+| Adding the server fails before a browser opens | Personal API keys are off. Ask your administrator. |
+| The approval page never appeared | Open the address RStudio prints in its console. |
+| `unknown token — add the account again` | The key was revoked, expired or denied. Remove the account and add it again. |
+| `the request's Date is … more than five minutes from this server's clock` | Fix the clock on the machine running RStudio. |
+| `the name "…" is already in use` | Publish with a different `appName`. |
+| `this key is read-scoped` | Register a full-scope key, or use the browser sign-in. |
+| The deploy fails at `library()` | The package was not recorded in the bundle. Load it at the top of your app and publish again. |

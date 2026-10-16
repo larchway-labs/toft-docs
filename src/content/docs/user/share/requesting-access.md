@@ -1,52 +1,27 @@
 ---
 title: Asking for access to an app
-description: The refusal that is a door, and what happens on the other side of it.
+description: Request access to an app you can see but not open, and answer requests for your own apps.
 ---
 
-You can see an app in the list and you cannot open it. That is a state, not a
-bug, and there is a way through it.
+If an app is in your list but you cannot open it, request access.
 
-## Asking
+1. Open the app, or use **Request access** next to it in the app list.
+2. Under **Why you need it (optional)**, say what you are working on. A clear note gets a faster answer.
+3. Select **Request access**.
 
-Open the app. Instead of its page you get a gate that says you may not open it,
-and offers to ask.
+The request asks for **Viewer** access. While it is pending, the app's page shows it, and you can **Withdraw** it. The owner's answer appears on the same page, including the reason for a declined request.
 
-Write a sentence. **The note is the whole difference between a request that gets
-approved today and one that sits for a week** — "I am covering for Priya on the
-month-end pack" beats an empty field every time.
+:::note
+Nobody gets access because a request went unanswered. There is no automatic approval and no timeout.
+:::
 
-Your open requests are visible to you, so you can see one is pending rather than
-wondering whether it sent. You can withdraw one you no longer need.
+## What you cannot ask for
 
-## What the owner sees
+- **An app you cannot see.** If an app is not in your list, Toft answers "not found". Ask the owner directly.
+- **Editor access while your account role is viewer.** That request is declined automatically. [Become a publisher](../../account/becoming-a-publisher/) first.
 
-The request arrives on their app's **Access** tab, with your name and your note.
-They can approve it at a level of their choosing, or deny it.
+## Answering requests for your app
 
-There is no automatic approval and no timeout that grants anything. Nobody gets
-access because a request went unanswered.
+Pending requests appear at the top of your app's **Access** tab, with each person's note. Select **Approve** or **Decline**; you can add a reason when you decline. For a group-owned app, any member of the owning group can answer.
 
-## What you cannot do
-
-**You cannot ask for an app you cannot see.** A request is about a specific app,
-and an app nobody has put in your list is not one you can name.
-
-**You cannot ask to be an editor if you are a viewer.** That is a question about
-your account, not about the app — see [Becoming a
-publisher](../../account/becoming-a-publisher/).
-
-## If the app is not in your list at all
-
-Then either your install does not list every app to everybody, or the owner has
-withdrawn this one. Ask a human. The platform will not tell you an app exists
-that nobody has shown you — a stranger gets "not found", not "not allowed".
-
-## On the other side
-
-When you own an app, requests are a queue on its Access tab. Two habits make it
-work:
-
-- **Answer, including "no".** A denial is a conversation. Leaving a request open
-  is the only outcome with no information in it.
-- **Grant the smallest useful rung.** Somebody who needs to read a dashboard
-  wants **Can view**, not **Can edit**.
+Grant the smallest role that does the job, and answer every request, including with "no".

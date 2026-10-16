@@ -1,63 +1,69 @@
 ---
 title: From a git repository
-description: Pointing an app at a repository, choosing a branch, and deploying a subdirectory.
+description: Point an app at a repository, a branch and optionally one folder of it; Toft clones and builds it.
 ---
 
-The normal way to get code onto Toft: the app names a repository, and
-Toft clones it.
+The standard way to deploy: the app names a repository and branch, and Toft
+clones it on every deploy.
 
-## Creating it
+## Create the app
 
-**New app → paste a URL.** Any git URL your install is willing to deploy from.
-Your administrator may restrict that list, and if the URL is refused you are
-told so at creation time rather than at 3am during a deploy.
+In the browser, **New app → Git repository**:
 
-**New app → pick a repository.** If your administrator has connected your
-organization's git host, you get a picker instead of a text box. You are never
-asked for a token — Toft holds the credential, and you are not told which
-one it used.
+| Field | |
+|---|---|
+| **Repository URL** | Any URL your install's source policy allows. A refused URL is refused at creation. |
+| **Branch** | Defaults to `main`. |
+| **Folder (optional)** | Build one folder of the repository. See [Monorepos](#monorepos). |
+| **Deploy through** | Shown when an administrator has connected a git host. Pick it and no token is needed. |
+| **Access token (private repos)** | Otherwise, a read token for a private repository. Stored encrypted. |
 
-## Private repositories
+From the terminal:
 
-You do not paste a token into Toft. Either the git host is connected by an
-administrator, or the clone fails and says so.
+```bash
+toft create --repo https://github.com/acme/reports
+toft create --repo https://github.com/acme/platform --subdir apps/web --branch release
+```
 
-If your repository is private and there is no connected host, that is a
-conversation with your administrator, not something to work around by making
-the repository public.
+`toft create --repo` uses the repository's default branch unless you pass
+`--branch`.
 
-## Branch and subdirectory
+## Monorepos
 
-On the **Settings** tab:
+Set **Folder** to build one app out of a repository that holds several:
 
-- **Branch** — which ref to clone. Defaults to the repository's default branch.
-- **Subdirectory** — deploy a folder inside the repository rather than its root.
-  Useful for a monorepo: detection, `toft.toml`, dependency files and the
-  entry point are all resolved relative to that folder.
+- Only that folder becomes the release — no `.git`, nothing outside it.
+  Detection, `toft.toml` and dependency files are read from the folder.
+- The slug defaults to the app name, or else the folder's name.
+- Paths containing `..` or `.git`, and folders that are symlinks, are refused.
+- `toft status` prints the `folder` an app builds from.
 
-Both are read at deploy time, so changing one takes effect on the next deploy.
+:::caution[Auto-deploy in a monorepo]
+A push to *any* folder of the repository rebuilds every auto-deploying app on
+that branch, not only the app whose folder changed.
+:::
 
-## Redeploying
+## Redeploy
 
-**Deploy** on the app's page pulls the current commit of the configured branch
-and builds it. Nothing is cached between the git host and you: what is on the
-branch now is what you get.
+**Redeploy** on the app page builds the branch's current head. From the
+terminal:
 
-From the terminal, that is `toft redeploy` — which rebuilds from the repository
-and uploads nothing. (`toft deploy` is a different thing: it pushes your working
-tree. See [From your machine](../from-your-machine/).)
+```bash
+toft redeploy
+```
 
-## Deploying automatically
+`toft redeploy` uploads nothing. To send your working tree instead, use
+[`toft deploy`](../from-your-machine/).
 
-An app can rebuild itself when the branch moves. See
-[Deploying on every push](../auto-deploy/).
+## Change branch, folder or token
 
-## Changing where the code comes from
+**Settings → Source & deploys** holds **Tracked branch**, **Folder**,
+**Auto-deploy on push** and **Git access token**. Changes apply on the next
+deploy. The app keeps its slug, URL, history, variables and access.
 
-You can repoint an app at a different repository, branch or subdirectory. The
-app keeps its slug, its URL, its history, its variables and its access — a
-source change is not a new app.
+Pointing an app at a *different repository* is an administrator action.
 
-What you cannot do is convert an app between sources by accident. An app
-created from an archive stays an archive app until you tell it otherwise, and
-`toft redeploy` on one is refused by name rather than guessing.
+## Next
+
+- [Deploying on every push](../auto-deploy/)
+- [Watching a deploy](../watching/)

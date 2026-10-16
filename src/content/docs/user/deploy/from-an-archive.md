@@ -1,53 +1,42 @@
 ---
 title: From an archive
-description: Uploading a zip or a tarball, and what an upload loses.
+description: Upload a .zip or .tar.gz to create an app, or to ship a new version of one.
 ---
 
-You can create an app by uploading `.zip` or `.tar.gz`, and you can upload a new
-archive over an existing app. Both formats go through the same unpacker and
-behave identically.
+Upload an archive when the code is not in git — a build produced elsewhere, a
+one-off, or an air-gapped transfer. For anything you iterate on,
+[`toft deploy`](../from-your-machine/) sends the same bytes without making an
+archive.
 
-Your administrator can switch archive uploads off for the whole install. If the
-option is not on the New app page, that is why.
+## Upload
 
-## When to use it
+- **New app → Upload an archive** creates an app from a `.zip`, `.tar.gz` or
+  `.tgz`.
+- **Upload version** on the app page ships a new archive to an existing
+  uploaded app.
 
-- A build produced somewhere else that you want to serve.
-- A one-off you are not going to keep in version control.
-- An air-gapped transfer.
+If **Upload an archive** is missing, your administrator has switched uploads
+off.
 
-For anything you are iterating on, [`toft deploy`](../from-your-machine/) is
-better: it sends the same bytes without you making an archive.
+| Limit | |
+|---|---|
+| Archive size | 100 MB |
+| Unpacked size | 500 MB, 20,000 files |
 
-## What an upload loses, and what it says about it
+## What Toft does to it
 
-An archive is normalised before anything is counted or built:
+- **Unwraps** a single top-level folder, so `myapp-main/` does not become the
+  app's root.
+- **Removes** `node_modules/`, `venv/`, `.venv/`, `__pycache__/` and VCS
+  folders — the build reinstalls dependencies.
+- **Drops** unsafe entries: absolute paths, paths escaping the root, symlinks
+  pointing outside.
 
-- A single top-level wrapper directory is unwrapped, so `myapp-main/` inside the
-  zip does not become the root of your app.
-- Dependency directories — `node_modules/`, `.venv/`, `__pycache__/` — are
-  **removed**, because the build reinstalls them.
-- Entries that cannot be trusted (absolute paths, paths escaping the root,
-  symlinks pointing outside) are dropped.
+What was removed is reported on the deploy. If a file is missing, look there
+first.
 
-**This happens before the size caps are counted**, so a zip that is mostly
-`node_modules` is usually well inside the limit once unpacked.
+## An uploaded app has no repository
 
-**What was dropped is reported on the deploy that dropped it.** If a file you
-expected is missing, that report is the first place to look.
-
-## An upload is not a git app
-
-An app created from an archive has no repository, so it has no branch, no
-subdirectory and no auto-deploy. `toft redeploy` on it is refused by name and
-tells you to use `toft deploy`.
-
-You can point it at a repository later from the **Settings** tab.
-
-## A refusal is not a deploy — but a failed upload is
-
-If the platform refuses before anything is stored — an archive that is too
-large, a source your install will not accept — no deployment is recorded.
-
-If the upload started and then failed, it *is* recorded, with the reason, so
-there is something to look at. The two are different on purpose.
+It has no branch, folder or auto-deploy, and `toft redeploy` refuses it — use
+`toft deploy` or **Upload version**. An uploaded app cannot be converted into a
+git app; create a new app from the repository instead.

@@ -1,48 +1,32 @@
 ---
 title: Becoming a publisher
-description: Asking for the role that lets you create apps.
+description: Request the role that lets you create and deploy apps.
 ---
 
 Every account has one system role.
 
 | Role | Can |
 |---|---|
-| **Viewer** | Open apps shared with them. |
-| **Publisher** | Everything a viewer can, plus create, deploy and own apps. |
-| **Administrator** | Runs the install. |
+| **Viewer** | Open apps shared with them |
+| **Publisher** | Everything a viewer can, plus create, deploy and own apps |
+| **Administrator** | Run the install |
 
-New accounts are usually viewers. There is no rule anywhere that makes the first
-person to sign in an administrator.
+New accounts are usually viewers.
 
-## Asking
+## Request it
 
-From **Me → Overview**, ask to become a publisher. An administrator approves or
-denies it.
+1. Open **Your account → Overview**.
+2. Select **Request publisher access**. Your administrators are notified.
+3. Once approved, sign out and back in to use it.
 
-Say why. "I am building the reconciliation dashboard for finance" is a request
-somebody can act on; an empty one is a request somebody has to chase.
+While it is pending you can **Withdraw request**.
 
-You can see your own request, and withdraw it.
+## What changes
 
-## What it changes
+You get the **New app** button and can own apps. You do not get access to anyone else's app — sharing is per app. See [Asking for access](../../share/requesting-access/).
 
-You get the **New app** button, and you can own apps.
+:::note
+A viewer cannot be granted **can edit** on an app, because editing means deploying. Become a publisher first, then ask for the grant.
+:::
 
-It does not give you access to anybody else's app. Sharing is per app, and being
-a publisher is not a way around it — see [Asking for
-access](../../share/requesting-access/) for that.
-
-## Why you cannot be given "can edit" as a viewer
-
-Editing an app means deploying it, and deploying is exactly what being a
-publisher is. So a grant of **can edit** to a viewer is refused, naming the
-reason, rather than creating an account that can deploy without being allowed
-to.
-
-The order is: become a publisher, then be granted the app.
-
-## Administrators are made deliberately
-
-Nobody becomes an administrator by asking through this flow, and activating a
-waiting account never mints one. That is on purpose — it is the one role that
-cannot be arrived at by accident.
+Administrators are appointed directly; this request never makes you one.

@@ -1,89 +1,39 @@
 ---
 title: API keys
-description: The three kinds of key, and which one you want.
+description: Personal, app and deploy keys — what each one is, and which to use.
 ---
 
-There are three key classes. They are never blurred, and which one you want
-depends on **who the key belongs to**.
+Pick a key by **who it belongs to**. The prefix tells you which kind you hold.
 
-| Prefix | What it is | Belongs to |
-|---|---|---|
-| `lpu_` | A **personal key** — an identity. It acts as you. | You |
-| `lp_` | An **app key** — a grant on exactly one app. | An app |
-| `lpd_` | A **deploy key** — for CI. | Nobody |
+| Prefix | Kind | Belongs to | Use it for |
+|---|---|---|---|
+| `toftu_` | Personal key | You | `toft`, and scripts that act as you |
+| `toft_` | App key | One app | A script or integration that calls one app |
+| `toftd_` | Deploy key | Nobody | CI pipelines |
 
-## Personal keys — `lpu_`
+## Personal keys
 
-What `toft login` gives you, what signing RStudio in gives you (see
-[From RStudio](../../deploy/from-rstudio/)), and what you create under
-**Me → Credentials**.
+`toft login` and [RStudio](../../deploy/from-rstudio/) create one for you. To make one yourself, open **Your account → Credentials** and choose a name, scope and expiry (30 days to never). You can hold 10, and see when each was last used.
 
-It is *you*: anything you can do, it can do, across every app you can reach.
-Treat it like your password. If a script only ever needs to touch one app, give
-it an app key instead.
-
-You can name, list, disable and revoke your own keys, and see when each was last
-used.
-
-### Full or read
-
-Every key you create has a **scope**, and you pick it once:
+A personal key acts as you, on every app you can reach — treat it like a password.
 
 | Scope | What it can do |
 |---|---|
-| **Full** | Everything you can do, except manage credentials or change who may do what. This is what you get if you do not choose. |
-| **Read** | Reads only. Every write is refused. |
+| **Full** (default) | Anything you can do, except manage keys or permissions |
+| **Read** | Reads only. It still sees everything you can, logs and source included |
 
-A read-scoped key cannot change anything in Toft. It can still read
-anything you can read — including your apps' source archives and logs — and it
-can still call your apps. So a read key is narrower, not safe to leave lying
-around: whoever has it can see everything you can see.
+Scope is fixed at creation; to change it, create a new key and revoke the old one. `toft login` always creates a full key — a read key used with `toft` fails every deploy with exit 3.
 
-Pick **Read** for anything that only ever looks: a dashboard that pulls figures,
-a report, an inventory tool. Pick **Full** for anything that deploys or changes
-something.
+## App keys
 
-The scope cannot be changed afterwards. To move a key between scopes, create the
-other one and revoke this. `toft login` always creates a full-scope key, since
-`toft`'s main commands write; to use a read key with `toft`, create it in the
-browser and pass it to `toft login --token-stdin`.
+Created on the app and valid only there. Use one to call the app from a script, or to give a security scanner access without lending it a person. An app key can carry a viewer or editor role, which can only narrow what the app allows.
 
-A read key that is refused answers `403` with `key_read_scope`, which means a
-full-scope key would have worked. `session_required` means no key would.
+## Deploy keys
 
-## App keys — `lp_`
+An administrator creates these. A deploy key belongs to nobody, so it keeps working when people leave. It can create, deploy, roll back and restart apps, but cannot delete apps or change who can see them. Use one in CI instead of someone's personal key.
 
-Created on an app, scoped to that app. Useful for a script or an integration
-that only ever needs it — and for handing to whoever is running a security scan
-against your app, since it authenticates without being anybody.
+## Limits on every key
 
-An app key can carry a stored role, but only one of two, and only within what
-the app's own access already allows. It can narrow what the key may do; never
-widen it.
+No key can create keys, change permissions or change who can see what — that needs a browser session. A revoked key stops working on the next request.
 
-## Deploy keys — `lpd_`
-
-For CI, created by an administrator. A deploy key belongs to no person, so it
-does not stop working when somebody leaves. What it can do is a **strict subset**
-of what a personal key can do.
-
-A deploy key cannot attach a git connection, as a personal key cannot.
-
-Use one in a pipeline. A personal key in CI is a person's identity in a place
-nobody is watching.
-
-## What no key can do
-
-**No key manages credentials or authorization.** A key cannot mint another key,
-change a permission, add a provider, or alter who can see what. That is refused
-for every key class, and it fails closed — a route that forgot to say so is not
-reachable by a key at all.
-
-## Turning one off
-
-Off means **absent**, and off means **now**. A revoked key stops working on the
-next request; there is no cache to wait out and no grace period.
-
-Your administrator can see and revoke every key on the install, and can switch
-personal keys off entirely — in which case existing ones stop working
-immediately.
+Your administrator can revoke any key, or turn personal keys off; existing ones then stop working.

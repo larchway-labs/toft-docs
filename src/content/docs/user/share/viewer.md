@@ -1,76 +1,56 @@
 ---
 title: What your app learns about a viewer
-description: The role header, asking who someone is, and what your app must never assume.
+description: The signed role on every request, asking who the viewer is, and the rules for using either.
 ---
 
-Every request Toft forwards to your app tells your app **what the caller
-may do**. It does not, by default, tell your app **who they are**.
+Every request Toft forwards tells your app **what the caller may do** to this app. Your app learns **who they are** only if an administrator turns on viewer identity for it.
 
 ## The role
 
-Each forwarded request carries `X-Toft-Role`, one of exactly six words:
+Each forwarded request carries a signed `X-Toft-Role` header.
 
-```
-unknown  anonymous  viewer  editor  owner  system  app
-```
+| Role | Meaning |
+|---|---|
+| `owner`, `editor`, `viewer` | A signed-in person, by their role on this app. An administrator with no grant reads as `viewer`. |
+| `anonymous` | A visitor who is not signed in. Only a public app sees it. |
+| `system` | Toft firing a scheduled task on its schedule. |
+| `app` | The app's own credential, such as an app key. |
+| `unknown` | The header is missing, unsigned, tampered with or expired. Treat it as no role. |
 
-Three rules matter more than the list:
-
-- **It is signed**, per app and per start. Verify it rather than trusting the
-  header text. The SDK does this for you.
-- **Absent, unverifiable and expired are one word, and that word refuses.** A
-  role you cannot verify is not a weaker role; it is no role.
-- **A role is not an identity.** Two people with the same role are
-  indistinguishable to your app, and nothing in it tells you whether a human is
-  involved at all.
-
-The role is **not** behind the viewer-identity switch below, and it may not be
-off by default: your app is always told what the caller may do.
-
-## Asking who someone is
-
-Where an administrator has switched it on, per app, your app can ask Toft
-who the current viewer is.
-
-- **It is off unless switched on.** Not being permitted and there being nobody
-  signed in are **different answers** — `403` and `204` — and they never
-  collapse into one.
-- It is not available to a [static app](../../build/static/) or a rendered
-  [document](../../build/notebooks/): those have no process to hold a token.
-- It works on a **public** app too. A colleague who is signed in and opens a
-  public app is identified to it; a visitor who is not is asked once per
-  browser and then left alone, so a public app is never slower for the people
-  it is public for.
+The signing key is per app and changes on every start, and one signed role is good for two minutes. Let the SDK verify it:
 
 ```python
-from toft import viewer, caller
+import toft
 
-who = viewer()          # None if nobody, refused if not permitted
-role = caller()         # always available
+c = toft.caller(request.headers)
+if not c.at_least(toft.ROLE_EDITOR):
+    return Response(status_code=403)
 ```
 
-## What your app must never do
+An [app key](../../cli/api-keys/) reaches your app as `app` unless it was given `viewer` or `editor`. A key's role can be narrowed later, never widened.
 
-**Never trust a header your app did not verify.** Anything that can reach your
-app can send anything.
+## Asking who the viewer is
 
-**Never use the role as a user id.** It is a permission word, not a person.
+When an administrator turns on viewer identity for your app, your app can ask who is looking:
 
-**Never assume a viewer exists.** Scheduled tasks, health checks and probes reach
-your app with nobody behind them, and "nobody in particular" is a valid caller.
+```python
+me = toft.who(request.headers)    # Identity, or None for nobody
+if me and "finance" in me.group_names:
+    render_ledger()
+```
 
-**Never enforce Toft's rules for it.** The platform refuses first. Your app
-enforces its own rules, on its own screens, and does not try to re-implement
-visibility or grants.
+| Result | When |
+|---|---|
+| An identity | A signed-in person who can open the app: `id`, `name`, `email`, `role`, `is_admin` and `groups`. |
+| `None` | An anonymous visitor, or someone whose access was revoked while their page stayed open. |
+| An error | Viewer identity is not turned on for this app. Check `toft.app.can("viewer.identity")` at startup. |
 
-## An API key can carry a role
+On a public app, `email` is always empty. Viewer identity is not available to [static apps](../../build/static/), rendered [documents](../../build/notebooks/) or batch apps: they have no process serving requests.
 
-A key acting on your app carries one of two roles as a stored grant — bounded by
-what the app's own access already allows. It can narrow what a key may do, never
-widen it. From inside your app it looks like any other role.
+## Rules for your app
 
-## Groups are not sent
-
-If your app needs to know which team somebody is on, it has to get that from
-somewhere else. Toft tells your app what a viewer may *do*, not which
-groups they are in.
+- **Verify, never trust a raw header.** Anything that can reach your app can send any header. Use the SDK.
+- **A role is not a person.** Two people with the same role look the same. Use `toft.who` when you need an identity.
+- **A role is not domain authority.** "Owners may approve invoices" is a rule about invoices; put it on a group and check `group_names`.
+- **Do not assume a viewer exists.** Scheduled tasks and health checks reach your app with nobody behind them.
+- **Do not re-implement Toft's rules.** Visibility and grants are enforced before your app is reached. Your app enforces only its own rules on its own screens.

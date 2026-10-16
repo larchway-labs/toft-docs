@@ -1,45 +1,25 @@
 ---
 title: Credentials an administrator attaches
-description: Values your app needs and you never hold.
+description: Shared secrets an administrator gives your app without you ever holding them.
 ---
 
-Some values your app needs are not yours to hold: the password to the corporate
-warehouse, a shared API key, a service account. An administrator can hold those
-centrally and **attach** them to your app.
+Some values your app needs aren't yours to hold: a warehouse password, a shared API key, a service account. An administrator stores them centrally and **attaches** them to your app.
 
 ## What you see
 
-On your app's Settings tab, an attached credential shows as **the key names it
-supplies** — `DATABASE_URL`, `WAREHOUSE_PASSWORD` — and nothing else.
-
-**The values are returned by no route, to anybody.** Not to you, not to an
-administrator, not through the API. You find out what a credential supplies, not
-what it contains.
+Under **Settings → Runtime → Credentials**, each attached credential shows its name and the keys it supplies, such as `DATABASE_URL` or `WAREHOUSE_PASSWORD`. Never the values: no route returns them, to anybody.
 
 ## What your app sees
 
-At start, the keys are in your app's environment exactly like your own
-variables. Your code cannot tell the difference and does not have to.
+At start, the keys are in your app's environment like any other variable. They don't appear in your own variable list.
 
-They do **not** appear in the app's own variable list — the list is what you
-set. Two lists, two owners.
+## Rules that affect you
 
-## The rules that will affect you
+- **One source per key.** You can't set a variable a credential already supplies. The save is refused and names the credential.
+- **Detaching restarts your app** onto its current release.
+- **Changing a credential's values doesn't restart anything.** Your app shows the **Saved, but not running yet** notice until it restarts.
+- **A credential attached to apps can't be deleted** until it is detached.
 
-**One source per key.** If a credential supplies `DATABASE_URL`, you cannot set
-`DATABASE_URL` yourself. The write is refused, naming the key and what already
-supplies it.
+## Asking for one
 
-**Detaching restarts your app.** Removing a credential takes effect immediately,
-which means the workload is restarted onto its current release. Editing the
-*values* inside a credential does not restart anything — it raises the same
-unapplied-change banner an ordinary variable edit does.
-
-**A credential in use cannot be deleted.** An administrator trying to delete one
-attached to apps is refused, and told which apps.
-
-## When you want one
-
-Ask. The conversation is short: which app, which key names, and why it should
-not simply be a variable you set. The usual answers are "several apps need the
-same value" and "I should not be able to read it".
+Tell your administrator which app, which key names, and why it shouldn't be a variable you set. The usual reasons: several apps need the same value, or you shouldn't be able to read it.

@@ -1,149 +1,96 @@
 ---
 title: toft.toml
-description: The optional manifest, and every table it can carry.
+description: The optional manifest at your repository root, and every table it can carry.
 ---
 
-`toft.toml` at the root of your repository is optional. Without one,
-Toft detects what it can and uses defaults. With one, you can say the
-things detection cannot work out for itself.
-
-Every key is optional.
-
-```toml
-[app]
-slug = "phase-test"
-
-[runtime]
-python = ">=3.12"
-node   = ">=22"
-r      = ">=4.4"
-
-[static]
-root     = "dist"
-entry    = "index.html"
-fallback = false
-
-[notebook]
-file   = "report.qmd"
-engine = "knitr"
-
-[jobs.nightly-report]
-command  = "python jobs/report.py"
-schedule = "0 2 * * *"
-timeout  = 900
-memory   = 1024
-retries  = 2
-enabled  = true
-
-[jobs.nightly-report.params.region]
-type     = "string"
-required = true
-help     = "Which region to report on"
-```
+`toft.toml` is optional. Without it, Toft detects your app and uses defaults.
+Add it to tell Toft what detection can't work out. Every key is optional.
 
 ## `[app]`
 
-Which app on which install `toft` deploys to. Read by the CLI, never by the
-platform.
+Which app the `toft` CLI deploys to, optionally per install. Only the CLI
+reads it; `toft link` writes it.
 
 ```toml
 [app]
-slug = "phase-test"
+slug = "sales-dashboard"
 
-# one checkout, two installs, and neither is wrong
-[app.installs."https://staging.toft.corp"]
-slug = "phase-test-stg"
+[app.installs."https://staging.toft.example.com"]
+slug = "sales-dashboard-stg"
 ```
-
-`toft link` writes this for you and validates the slug against the install first.
 
 ## `[runtime]`
 
-Language version pins: `python`, `node`, `go`, `r`. Comparators only, never a
-patch version. Go's real declaration is `go.mod` — a `go` key here is normally
-omitted. See [Language versions](../versions/).
+Version ranges for `python`, `node` and `r`. A `go` key is refused — Go reads
+`go.mod`. See [Language versions](../versions/).
 
 ## `[static]`
 
+Serve the repository, or a folder of it, as a static site. Overrides all other
+detection.
+
 | Key | Meaning |
 |---|---|
-| `root` | Document root, relative to the repository. |
-| `entry` | What `/apps/your-slug/` serves. Defaults to `index.html`. |
-| `fallback` | Serve `entry` for unmatched extensionless paths. Off by default. |
+| `root` | Folder to serve, relative to the repository. |
+| `entry` | Page served at `/apps/<slug>/`. Defaults to `index.html`. |
+| `fallback` | `true` to serve `entry` for unmatched routes (single-page apps). |
 
-Declaring this table **overrides** the rule that a `package.json` disqualifies a
-repository from static hosting, and it is read before every other branch of
-detection. See [Static sites](../static/).
+See [Static sites](../static/).
 
 ## `[notebook]`
 
 | Key | Meaning |
 |---|---|
-| `file` | Which document to render, when the root has more than one candidate. |
-| `engine` | `"knitr"` to force a `.qmd` to be treated as R. |
+| `file` | The document to render, when there are several or it's in a subfolder. |
+| `engine` | `"nbconvert"` or `"quarto"` for an `.ipynb`; `"knitr"` (R) or `"jupyter"` (Python) for a `.qmd`. |
 
-Only needed when the repository is ambiguous or the document's own header does
-not say. See [Notebooks](../notebooks/).
+See [Notebooks and documents](../notebooks/).
 
 ## `[batch]`
 
-Declares an app that is nothing but jobs: no web server, nothing to start.
+Declares an app that is only jobs: no web server. Never inferred, and can't be
+combined with `[static]`.
 
 ```toml
 [batch]
-language = "python"   # only when the repository has more than one language
+language = "python"   # only needed if the repository has several languages
 
 [jobs.extract]
 command  = "python extract.py"
 schedule = "0 2 * * *"
 ```
 
-See [Batch apps](../../automation/jobs/#batch-apps). It is never inferred, so
-a script that merely looks like a web app is still deployed as one. It cannot be
-combined with `[static]`.
+See [Jobs](../../automation/jobs/).
 
 ## `[jobs.<name>]`
 
-One table per job. See [Jobs](../../automation/jobs/) for what a job is.
+One table per [job](../../automation/jobs/).
 
 | Key | Meaning |
 |---|---|
 | `command` | What to run. Required. |
-| `schedule` | Cron expression, for a job that runs unattended. UTC unless `timezone` is set. |
-| `timezone` | IANA zone the schedule is read in, e.g. `Europe/London`. Do not also put `CRON_TZ=` in `schedule`. |
-| `expect_within` | `"26h"`, `"7d"` (1h to 31d): report the job overdue if it has no success in that window. See [Jobs](../../automation/jobs/#knowing-a-job-has-stopped-succeeding). |
-| `timeout` | Seconds before the run is killed. |
-| `memory` | Megabytes. |
-| `cpu` | CPU allowance. |
-| `retries` | Retries on failure. Opt-in, unattended-only, and never silent. |
-| `enabled` | `false` to define a job without arming it. |
-| `viewer_runnable` | `true` to let a viewer of the app start it. Off by default. |
+| `schedule` | Cron expression. UTC unless `timezone` is set. |
+| `timezone` | IANA zone for `schedule`, e.g. `Europe/London`. |
+| `expect_within` | Report the job overdue after this long without a success: `26h`, `7d` (1 hour to 31 days). |
+| `timeout` | Seconds before a run is stopped. |
+| `memory` | Memory limit in MiB. |
+| `cpu` | CPU limit in millicores (50–32000). |
+| `retries` | Extra attempts for a failed scheduled run (0–10). |
+| `enabled` | `false` to define the job without scheduling it. |
+| `viewer_runnable` | `true` to let viewers of the app start it. |
 
-`[jobs.<name>.params.<param>]` declares a parameter, with `type`, `required`,
-`default` and `help`.
+Declare parameters as `[jobs.<name>.params.<param>]` with `type` (`string`,
+`int`, `float` or `bool`), `required`, `default` and `help`.
 
-:::caution
-Parameters are **never interpolated into the command**. They are passed to your
-process as values; you read them the way you read any other input. A parameter
-cannot become part of a command line, which is what makes it safe to let
-somebody else supply one.
+:::note
+Parameters are passed to your process as values, never pasted into the
+command line, so it's safe to let other people supply them.
 :::
 
-## Reading and refusing
+## Errors and limits
 
-- A **malformed** `toft.toml` fails the deploy, with the line number.
-- A **table Toft does not know** is ignored rather than refused, so a newer
-  key in a repository deployed to an older install is not a hard failure.
-- `toft.toml` is **never served** by a static app, at any depth.
+A malformed `toft.toml` fails the deploy and names the problem. Unknown tables
+are ignored, so a newer manifest still deploys on an older install.
 
-## What is deliberately not in here
-
-**Environment variables.** Those are set on the app's Settings tab, not
-committed to the repository — which is the whole point of them.
-
-**Anything that grants a permission.** Nothing in this file gives your app a
-credential, a capability, or access to anything. A repository cannot widen its
-own privileges by declaring something.
-
-**Build resources.** Build memory, CPU and timeout are the operator's numbers,
-not yours. A repository cannot ask for a bigger builder.
+Environment variables belong on the app's **Settings** tab, not here. Nothing
+in this file grants permissions or changes build resources.
