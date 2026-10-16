@@ -19,11 +19,10 @@ const base = (process.env.DOCS_BASE ?? "/toft-docs/dev").replace(/\/+$/, "");
 export default defineConfig({
   base,
   trailingSlash: "always",
-  // Each section's front door is its first page, and the site's is the user
-  // guide's: a splash of cards duplicating the sidebar is a click between
-  // somebody and the thing they came for.
+  // Each guide's front door is its first page. The site's own is the home
+  // page (src/content/docs/index.mdx): one combined site needs somewhere that
+  // says it holds three guides.
   redirects: {
-    "/": `${base}/user/start/what-toft-is/`,
     "/user/": `${base}/user/start/what-toft-is/`,
     "/admin/": `${base}/admin/start/architecture/`,
     "/cli/": `${base}/cli/cli/installing/`,

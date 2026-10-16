@@ -433,3 +433,138 @@ site-search button[data-open-modal] {
   border-color: var(--lp-border);
   background: var(--lp-card);
 }
+
+/* ── The home page ───────────────────────────────────────────────────────────
+   The one page that is a front door rather than a reference: the splash
+   template's hero, a card per guide, and a strip of the pages people open
+   most. Restrained on purpose — the product has no gradients and no
+   illustration, so the page gets air and type, not decoration. */
+
+[data-has-hero] .hero {
+  padding-block: 3.5rem 2.5rem;
+  gap: 1.5rem;
+}
+
+[data-has-hero] .hero h1 {
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+  max-width: 18ch;
+  color: var(--lp-foreground);
+}
+
+[data-has-hero] .hero .tagline {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  max-width: 46ch;
+  color: var(--lp-muted-foreground);
+}
+
+[data-has-hero] .hero .sl-link-button {
+  border-radius: var(--lp-radius);
+  font-size: 0.9375rem;
+  padding: 0.6rem 1.1rem;
+}
+
+[data-has-hero] .hero .sl-link-button.primary {
+  background: var(--lp-primary);
+  border-color: var(--lp-primary);
+  color: var(--lp-primary-foreground);
+}
+
+/* Cards: the product's raised panel — white, a hairline, a small shadow that
+   lifts on hover. Starlight's cards are tinted by default. */
+.card {
+  background: var(--lp-card);
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) + 2px);
+  box-shadow: var(--sl-shadow-sm);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.card:hover {
+  box-shadow: var(--sl-shadow-lg);
+  border-color: oklch(0.86 0.02 264);
+}
+
+.card .title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.card .icon {
+  color: var(--lp-primary);
+  background: var(--lp-accent);
+  border-radius: calc(var(--lp-radius) - 2px);
+  padding: 0.35rem;
+}
+
+.card .body {
+  color: var(--lp-muted-foreground);
+  font-size: 0.9375rem;
+}
+
+a.toft-card-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-weight: 550;
+  font-size: 0.875rem;
+  color: var(--lp-primary);
+  text-decoration: none;
+}
+
+a.toft-card-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Link cards in the "Popular" strip: the same panel, one line of title and
+   one of description. */
+.sl-link-card {
+  background: var(--lp-card);
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) + 2px);
+  box-shadow: var(--sl-shadow-sm);
+}
+
+.sl-link-card:hover {
+  border-color: var(--lp-primary);
+  box-shadow: var(--sl-shadow-md);
+}
+
+.sl-link-card .title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.sl-link-card .description {
+  color: var(--lp-muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* The three guides sit in one row once there is room for three. */
+@media (min-width: 72rem) {
+  .toft-guides .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card .icon {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.4rem;
+  font-size: 1.2rem;
+}
+
+[data-has-hero] .hero .sl-link-button.secondary {
+  background: var(--lp-card);
+  border: 1px solid var(--lp-border);
+  color: var(--lp-foreground);
+}
+
+[data-has-hero] .hero .sl-link-button.secondary:hover {
+  border-color: var(--lp-primary);
+  color: var(--lp-primary);
+}
