@@ -1,71 +1,35 @@
 ---
 title: Limits and caps
-description: The numbers that are fixed, the ones your administrator sets, and the things that are simply absent.
+description: Fixed limits, the ones your administrator sets, and features that may be absent.
 ---
 
 ## Fixed
 
-| | |
+| Limit | Value |
 |---|---|
-| App data document | 256 KiB, one document per app |
-| Slug characters | lowercase letters, digits and hyphens |
-| Reserved slugs | anything starting with `_` |
-| Version pins | comparators only, never a patch version |
-| Role words | exactly six, and no seventh |
-| Integration attachments | one per (app, kind) |
+| App data | One JSON document per app, up to 256 KiB |
+| Slug | Lowercase letters, digits and hyphens |
+| Reserved slugs | Anything starting with `_` |
+| Language version pins | Comparators only (`>=3.12,<3.13`); no `^`, `~` or patch versions |
+| Personal API keys | 10 per person |
+| Integrations | One of each kind per app |
 
 ## Set by your administrator
 
-These vary per install. The app page, the build log and the refusal message all
-name the one that applies when you hit it.
+These vary by install. When you hit one, the app page, build log or error message names it.
 
-**Building**
+| Area | Limits |
+|---|---|
+| Building | Build timeout, concurrent builds, archive upload size, available language versions |
+| Running | Memory per app (overridable per app), CPU in isolated mode, idle time before sleeping |
+| Automation | Job memory, CPU, timeout and retries; concurrent job runs per app; scheduled tasks per app and their timeout |
+| History | Releases kept per app; how long logs and events are kept |
+| Access | Whether apps can be public, session length, whether personal API keys are offered, dependency policy and waiver length |
 
-- Build timeout, and how many builds may run at once
-- Upload size for an archive
-- Which language versions exist
+## Features that may be absent
 
-**Running**
+A feature your install has not configured is not shown at all — no disabled buttons. This applies to file storage, jobs, integrations, the artifact store, isolated execution, telemetry, the gallery, and mail. Check with your administrator before relying on one.
 
-- Memory ceiling per app, with a per-app override an administrator can grant
-- CPU reservation and ceiling, in isolated mode
-- How long an app may be idle before it sleeps
-
-**Automation**
-
-- Job memory, CPU, timeout and the ceiling on retries
-- How many of one app's job runs may be in flight
-- How many scheduled tasks one app may have
-- Scheduled task timeout, and how much of the response is kept
-
-**History**
-
-- How many releases one app keeps
-- Retention for run logs, task logs, failure events and the platform's own log
-
-**Access**
-
-- Whether apps may be public at all
-- How long a session lasts, idle and total
-- Whether personal API keys are offered
-- How strict the dependency policy is, and how long a waiver may run
-
-## Things that are absent rather than limited
-
-If your install has not configured a capability, it is **not there** — no
-disabled buttons, no tabs that explain themselves.
-
-- File storage
-- Jobs
-- Integrations
-- The artifact store
-- Isolated execution
-- Telemetry
-- The gallery
-- Mail, and everything that depends on it
-
-Ask your administrator before designing around any of them.
-
-The one exception is the opposite: a capability withheld by **license tier** is
-shown, and shown as locked. You are entitled to see what your install does not
-have.
+:::note
+A feature withheld by your **license** is the exception: it is shown, marked as locked.
+:::

@@ -1,70 +1,42 @@
 ---
 title: Browsing a store
-description: Looking at the files yourself, from the SPA or the CLI.
+description: List, upload, download and delete files in a store you hold a grant on, from Toft or the CLI.
 ---
 
-Where a storage resource is an **object store** and you hold a **grant** on a
-folder in it, you can browse it: list, upload, download, delete.
+If an administrator has granted you access to a store, or to a folder of one, you can work with its files directly, without an app. There is no self-service: ask your administrator for a grant.
 
-Two doors: the store browser in the SPA, and `toft store` from a terminal.
+## In Toft
 
-## In the SPA
-
-**Me → Storage** lists the stores you can reach. Opening one gives you a file
-browser scoped to the folders you were granted.
-
-A folder nobody granted you is not shown. Not greyed out — absent.
+**Your account → Storage** lists the stores you can reach. Open one to browse the folders you were granted, upload by dragging files in, and download or delete files. Folders you hold no grant on are not shown.
 
 ## From the terminal
 
 ```bash
-toft store ls                                     # what you can reach, at what level
-toft store ls reports                             # one level: folders, then objects
-toft store ls reports/2026-08                     # the level below
-toft store put reports 2026-08/summary.csv ./summary.csv
-toft store get reports 2026-08/summary.csv
-toft store rm  reports 2026-08/summary.csv
+toft store ls                                  # stores and folders you can reach, with your level
+toft store ls reports                          # one level: folders, then files
+toft store ls reports/2026-08                  # the level below
+toft store put reports ./summary.csv --as 2026-08/summary.csv
+toft store get reports 2026-08/summary.csv -o summary.csv
+toft store rm  reports 2026-08/summary.csv     # needs full
 ```
 
-**`toft store ls` shows folders, and takes one.** A bare `toft store ls` lists what
-you hold: a store you were granted outright by its name alone, and a store you
-were granted one folder of as `reports/2026-08/`. That is the same spelling
-`ls` takes as an argument, so the line you read off one command is the line you
-paste into the next.
+`toft store ls` prints each folder the way you type it back, so you can copy a line into the next command.
 
-Listing a level prints its folders first and then its objects, which is what
-makes an object filed under a generated name reachable with `toft` alone — you no
-longer have to know the name to find it.
+## Access levels
 
-## The transfer does not go through Toft
+| Level | You can |
+|---|---|
+| `read` | List and download. |
+| `write` | Also upload new files. Replacing an existing file is refused. |
+| `overwrite` | Also replace existing files. |
+| `full` | Also delete. |
 
-Uploads and downloads go **direct to the object store**, using a URL Toft
-signs for you. Two consequences:
+## Transfers go straight to the store
 
-- **A large file does not load the install.** It never passes through it.
-- **Two hosts can fail, and they fail differently.** The CLI's exit codes
-  distinguish "the install refused" from "the object store refused", because the
-  fixes are not the same.
+Toft signs a short-lived URL, and the file moves directly between you and the object store. Large files never pass through the install. A single upload can be up to 5 GiB.
 
-If a browser upload fails silently, it is almost always CORS on the bucket — see
-[App storage](../app-storage/).
+Because two systems are involved, errors say which one refused: Toft (no grant, wrong level) or the object store (for example, an expired URL). If an upload from the browser fails without explanation, the bucket probably lacks CORS: see [App storage](../app-storage/).
 
-## Levels
-
-The rung you hold decides what you can do, and on some backings a rung means
-something specific:
-
-- **read** — list and download.
-- **write** — add a new object. On some backings this is genuinely *create only*:
-  writing over something that already exists is refused by the store itself,
-  not by Toft.
-- **full** — including overwrite and delete, where the backing supports it.
-
-## What is recorded
-
-The **mint** of a signed URL is recorded in the install's audit log — that access
-was granted. Whether the file actually arrived is the object store's record, not
-Toft's.
-
-So "Toft shows I was given an upload URL" and "the file is there" are two
-different questions, and only the second is answered by looking in the store.
+:::note
+Toft's audit log records that an upload or download URL was issued. Whether the file actually arrived is recorded only by the object store.
+:::

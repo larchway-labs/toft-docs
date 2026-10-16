@@ -1,67 +1,56 @@
 ---
 title: Python
-description: Flask, FastAPI, Streamlit, marimo and plain Python — what triggers each.
+description: Flask, FastAPI, Streamlit, marimo and plain Python — how each is detected and started.
 ---
 
-| Framework | Detected by |
-|---|---|
-| **Flask** | `flask` in `requirements.txt` |
-| **FastAPI** | `fastapi` in `requirements.txt`, served with uvicorn |
-| **Streamlit** | `streamlit` in `requirements.txt`, mounted with `--server.baseUrlPath` |
-| **marimo** | a root `.py` that imports `marimo` **and** constructs `marimo.App` |
-| **Generic Python** | `requirements.txt` and none of the above |
+| Framework | Detected by | Started with |
+|---|---|---|
+| **Streamlit** | `streamlit` in your dependencies | `streamlit run`, mounted under your app's path |
+| **FastAPI** | `fastapi` in your dependencies | `uvicorn` with `--root-path` set |
+| **Flask** | `flask` in your dependencies | `flask run` |
+| **marimo** | a root `.py` that imports `marimo` and builds a `marimo.App` | `marimo run`, mounted under your app's path |
+| **Python** | anything else | `python <entry point>` |
 
-## Generic Python needs an entry point
+Dependencies are read from `requirements.txt`, else `pyproject.toml`, else
+`Pipfile`. `marimo` as a dependency alone is not the trigger — a Flask app that
+imports it stays Flask.
 
-One of `app.py`, `main.py`, `streamlit_app.py`, `server.py` or `wsgi.py`, at the
-root. A project with none of them is refused by name — there is nothing to
-start.
+## Entry point
 
-## marimo is triggered by code, not by the requirement
-
-`marimo` in `requirements.txt` alone is not the trigger: a Flask app that
-happens to import marimo stays a Flask app. What triggers it is a root `.py`
-that imports marimo and builds a `marimo.App`.
+Every Python app except marimo needs one of these at the root, picked in this
+order: `app.py`, `main.py`, `streamlit_app.py`, `server.py`, `wsgi.py`. With
+none, the deploy is refused.
 
 ## The contract
 
-Serve HTTP on the port in `PORT`. Honour `BASE_PATH` for anything you hand to a
-browser — see [Base paths](../base-paths/).
+Listen on `PORT`, bound to `HOST`. Toft passes both to Streamlit, FastAPI,
+Flask and marimo for you; a plain Python app reads them from the environment.
 
-Streamlit and marimo are both mounted under the prefix for you; you do not pass
-the flag yourself.
+Anything you send to the browser must respect the `/apps/<slug>` prefix. See
+[Base paths](../base-paths/).
 
 ## Dependencies
 
-`requirements.txt`, installed with [uv](https://docs.astral.sh/uv/) into a
-virtual environment Toft manages.
+Toft creates a virtual environment with [uv](https://docs.astral.sh/uv/) and
+installs `requirements.txt` (`uv pip install -r`), or, if there's none, your
+`pyproject.toml` project (`uv pip install .`). A `Pipfile` is used for
+detection only. The [Toft SDK](../../cli/sdk/) is installed for you.
 
-Pin what matters. An unpinned `requirements.txt` resolves differently over time,
-and the first time you notice is a deploy that stops working with no change on
-your side.
-
-`pyproject.toml` and `Pipfile` are recognised as "this is a Python project" for
-detection purposes, but the dependency list Toft installs is
-`requirements.txt`.
+Pin your versions. An unpinned `requirements.txt` resolves differently over
+time.
 
 ## Version
 
 ```toml
+# toft.toml
 [runtime]
-python = ">=3.12"
+python = ">=3.12,<3.14"
 ```
 
-Comparators only, never a patch version, refused rather than approximated. See
-[Language versions](../versions/).
+See [Language versions](../versions/).
 
-## Long-running work
+## Work that finishes
 
-A request handler that takes ten minutes is a request handler that will be cut
-off by something. If you have batch work, run it as a [job](../../automation/jobs/)
-and have the web app show the result.
-
-## A script that finishes is a crash
-
-A workload has to keep running. `python main.py` that computes something and
-exits looks exactly like a crash to the supervisor, because it is one. If you
-want something that runs and exits, that is a job.
+A web app must keep running — a script that computes something and exits looks
+like a crash. Run batch work as a [job](../../automation/jobs/), and have the
+web app show the result.

@@ -1,66 +1,57 @@
 ---
 title: Starting jobs from your app
-description: Kicking off background work from a request, and the rule about who it runs as.
+description: Start one of your app's own jobs from a request, as the app or for the person using it.
 ---
 
-Your app can start one of its own jobs — a request presses a button, the work
-happens in a container, the page comes back immediately.
+Your app can start one of its own [jobs](../jobs/) and return at once: a button starts the work, the job runs in its own process, and the request returns without waiting.
 
 ```python
-from toft import jobs
+import toft
 
-run = jobs.start("nightly-report", params={"region": "emea"})
+# As the app itself
+run = toft.jobs.start("nightly-report", params={"region": "emea"})
+
+# For the person looking at the page; the run is recorded as theirs
+me = toft.viewer(request.headers)
+run = me.jobs.start("nightly-report", params={"region": "emea"})
 ```
 
-## Two rules
+`start` returns as soon as the run is queued. Pass `payload=` for a larger body of input.
 
-**An app starts a different entrypoint of *itself*, never another app.** There is
-no mechanism for one app to run work in another.
+## Rules
 
-**Your app never asserts who a viewer is.** It relays a token Toft already
-signed. Your app cannot claim a run was started by somebody it was not — and
-"nobody in particular" is assertable, but only as a *narrowing*, and one resolver
-refuses it by name if you try to use it to widen anything.
+- **An app starts only its own jobs**, never another app's.
+- **Your app never claims who the viewer is.** `toft.viewer(headers)` relays a token Toft signed. Toft checks the person's own permissions before starting the run. If there is no signed-in person, `toft.viewer` raises rather than starting the run as nobody.
+- **A repeated start is not a second run.** A start matching a run already in flight, or one that finished in the last minute, returns that run with `deduplicated` set. This keeps a Streamlit rerun from starting the job twice.
+- **The queue is capped.** Past your install's limit for in-flight runs, `start` raises `toft.QueueFull`, so your code can back off.
 
-In practice: pass through what the SDK gives you, and do not construct it.
+## Following runs
 
-## What your app can do with its runs
+```python
+run = run.wait()                     # for scripts; never call it in a request
+toft.jobs.list("nightly-report")     # every run of this app
+me.jobs.mine("nightly-report")       # this viewer's runs only
+run.logs(); run.output(); run.cancel()
+```
 
-List them, read one, read its log, cancel it, read its output. Only **the runs it
-started** — another app's run is not found, not refused, which is the same rule
-the rest of the platform follows.
+An app sees only its own runs. `refresh()` and `wait()` follow retries to the final outcome.
 
 ## Inside the job
 
-A run has its own view of itself: its parameters, a progress it can report, an
-input, an output and a result.
+`toft.run` is the job's view of itself, and `None` outside a job:
 
 ```python
-from toft import run
+import toft
 
-region = run.params["region"]
-run.progress(0.5, "halfway")
-run.result({"rows": 1240})
+region = toft.run.params["region"]
+data = toft.run.read_input_json()    # the payload, or None
+toft.run.progress(50)                # 0–100, for people watching
+toft.run.set_result({"rows": 1240})
+toft.run.write_output("region,rows\nemea,1240\n")
 ```
 
-Progress is for a human watching. It is never load-bearing — the run's outcome is
-the outcome.
+`toft.run.scheduled_for` is the time the run is for: see [Jobs](../jobs/#the-time-a-run-is-for).
 
-`run.scheduled_for` is the time the run is for — see
-[Jobs](../jobs/#which-time-a-run-is-for).
+A job can send messages and files through the app's [integrations](../../data/integrations/), while the run is in progress. It cannot read app data, act as a viewer or start another job.
 
-## Sending from a job
-
-A job can send mail or notifications through the integrations attached to its
-app: `notify` works inside a job just as it does in the app. That is all a job
-can do with the app's own surface — it cannot read app data, act as a viewer or
-start another job. A send is accepted only while the run is in flight.
-
-## When to reach for this
-
-Good: a report somebody asked for, an export, a recalculation, anything that
-takes longer than a request should.
-
-Bad: a queue. Jobs are not a message bus, there is no fan-out, and a run started
-per request on a busy endpoint will hit your app's concurrency cap. If you need
-a queue, you need a queue.
+Jobs are not a message queue: there is no fan-out, and a run per request on a busy endpoint will hit the queue cap.

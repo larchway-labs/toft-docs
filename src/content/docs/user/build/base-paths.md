@@ -1,31 +1,30 @@
 ---
 title: Base paths
-description: The one rule that catches everybody once, and the three things that follow from it.
+description: Your app is served under /apps/<slug>. Here's what that means for links, redirects and cookies.
 ---
 
-Your app is served at **`/apps/your-slug`** on the apps address. It is not at
-the root of a host, and it is not on the same origin as the Toft pages you
-are reading this on.
+Your app is served at `/apps/<slug>` on the apps address, not at the root of a
+host. Most "it deployed but the page is broken" problems come from this.
 
-Almost every "it deployed and the page is broken" is this.
+## What your app is given
 
-## What your app is told
-
-| Variable | What it holds |
+| Variable | Holds |
 |---|---|
-| `PORT` | The port to listen on. Never choose your own. |
-| `BASE_PATH` | The prefix your app is mounted under, e.g. `/apps/reports`. |
+| `PORT` | The port to listen on. |
+| `HOST` | The address to bind to. |
+| `BASE_PATH` | The prefix, e.g. `/apps/reports`. |
 
-The proxy **strips** the prefix before forwarding, so your routes are written at
-the root as normal. What has to carry the prefix is anything a browser will
-resolve.
+For most frameworks the proxy strips the prefix before forwarding, so your
+routes stay at `/`. Next.js, Streamlit and marimo are configured with the
+prefix and receive it unchanged.
 
-## The three rules
+## Links carry the prefix
 
-**1. Links and form actions must carry the prefix.**
+Anything the browser resolves — links, form actions, script and stylesheet
+URLs — must land under the prefix.
 
 ```html
-<!-- wrong: asks the platform for /styles.css -->
+<!-- wrong: requests /styles.css, outside your app -->
 <link rel="stylesheet" href="/styles.css">
 
 <!-- right -->
@@ -33,54 +32,37 @@ resolve.
 <link rel="stylesheet" href="{{ base_path }}/styles.css">
 ```
 
-Relative URLs work everywhere and need no variable. Reach for `BASE_PATH` when
-you cannot be relative.
+Relative URLs work everywhere. Use `BASE_PATH` when you can't be relative.
 
-**2. Redirects must *not* carry the prefix.**
+## Redirects don't
+
+The proxy adds the prefix to an absolute-path `Location` header, so redirect as
+if your app were at the root:
 
 ```python
-# right
-return redirect("/dashboard")
-
-# wrong: becomes /apps/reports/apps/reports/dashboard
-return redirect("/apps/reports/dashboard")
+return redirect("/dashboard")               # right
+return redirect("/apps/reports/dashboard")  # wrong: prefixed twice
 ```
 
-The proxy re-adds the prefix to a `Location` header. Prefix it yourself and it
-gets added twice.
+Relative redirects (`new/`, `?page=2`) pass through untouched. Next.js,
+Streamlit and marimo build prefixed redirects themselves.
 
-Only an absolute path is prefixed. A relative `Location` — `new/`, `?page=2`,
-`.` — is passed through untouched, because the browser resolves it against the
-page it is already on. A cookie whose `Path` already sits under the prefix is
-left alone too, so an app that knows its prefix can set one.
+## By framework
 
-**3. Bind to `PORT`.** Anything else is a crash on start.
-
-## Framework by framework
-
-| | What to do |
+| Framework | What to do |
 |---|---|
-| **Next.js** | Nothing. The base path is set before the build. |
-| **Node/Express** | `app.use(process.env.BASE_PATH || '', router)`, or relative URLs. |
-| **Flask / FastAPI** | Relative URLs, or `url_for`/`root_path` with `BASE_PATH`. |
-| **Streamlit / marimo** | Nothing. Mounted under the prefix for you. |
-| **Shiny / plumber** | Nothing for routing; relative URLs for assets. |
-| **Static sites** | Set your generator's base option to `/apps/your-slug`. |
+| Next.js | Nothing. `basePath` is set before the build. |
+| Streamlit, marimo | Nothing. |
+| FastAPI | Nothing. `root_path` is set, so `url_for` includes the prefix. |
+| Flask | Relative URLs, or wrap with `ProxyFix(app.wsgi_app, x_prefix=1)` so `url_for` reads the `X-Forwarded-Prefix` header. |
+| Node, Go, plain Python | Relative URLs, or prefix with `BASE_PATH`. |
+| Shiny, plumber | Nothing for routing; keep asset URLs relative. |
+| Static sites | Set your generator's base option. See [Static sites](../static/). |
 
-## Cookies
+## Cookies and WebSockets
 
-Any cookie your app sets is yours and survives the proxy. Every cookie the
-**platform** sets is named `toft_*` — so if you see one of those, it is not
-yours, and you should not read it or expect it to mean anything to your code.
+Cookies your app sets are scoped to its own path. The platform's sign-in
+cookies (`toft_*`) are removed before requests reach your app.
 
-## WebSockets
-
-Upgrades pass through. A reactive Shiny output recalculates; a socket app
-echoes. Point the client at the same prefixed path your page was served from.
-
-## Why not just give every app a hostname
-
-Because the boundary is the point. Apps are on a different origin from the
-platform so that code inside an app cannot read the platform API as the person
-looking at it. The prefix is what that boundary costs, and it costs you three
-rules once.
+WebSockets pass through. Connect to the same prefixed path the page was served
+from.

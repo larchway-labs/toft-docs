@@ -1,42 +1,40 @@
 ---
 title: Deploying on every push
-description: Rebuilding when the branch moves, and the two ways that happens.
+description: Turn on auto-deploy and Toft rebuilds your app when its branch gets a new commit.
 ---
 
-An app that names a git repository can rebuild itself when its branch moves.
-Turn it on from the app's **Settings** tab.
+Turn on **Settings → Source & deploys → Auto-deploy on push**. New commits on
+the tracked branch deploy within about a minute.
 
-## Two mechanisms, and you rarely choose
+Only apps built from a git repository can auto-deploy. Apps from the gallery
+cannot while they are linked to it.
 
-**A webhook**, when your git host is connected by an administrator and can reach
-this install. The push arrives, the build starts. This is the fast path.
+## How it notices
 
-**Polling**, when a hook cannot reach in — a Toft that is not exposed to
-your git host, for instance. The install asks the branch for new commits on an
-interval your administrator sets. Slower, and otherwise identical.
-
-Which one applies is a property of how your install is set up. You do not
-configure it per app.
+Toft checks each auto-deploying app's branch on an interval your administrator
+sets. If your administrator has connected your git host with a webhook, a push
+triggers that check immediately. Nothing to configure per app.
 
 ## What it deploys
 
-The head of the branch the app names, with the app's subdirectory if it has
-one. Exactly what pressing **Deploy** would have done.
+The head of the tracked branch (and the app's folder, if set) — the same as
+selecting **Redeploy**. It goes through the same source rules and
+[dependency policy](../../run/dependencies/) as any deploy.
 
-## What it does not do
+:::caution[Monorepos]
+A push to any folder of the repository rebuilds every auto-deploying app on
+that branch, not only the app whose folder changed.
+:::
 
-- **It does not skip the checks.** An auto-deploy goes through the same three
-  phases, the same [dependency policy](../../run/dependencies/), and the same
-  source rules as one you started by hand.
-- **It does not touch a locked app.** A [locked](../../run/locked/) app refuses
-  a deploy from every direction, including this one.
-- **It does not take your app down when it fails.** A failed auto-deploy leaves
-  the serving release exactly where it was, and shows up on the app's
-  [events](../../run/events/) so you find out.
+## When a deploy fails
 
-## When it is the wrong tool
+- The serving release stays where it was. The failure appears in the app's
+  [events](../../run/events/).
+- Toft does **not** retry the same commit. Push a fix, or select **Redeploy**.
+- A [locked](../../run/locked/) app refuses auto-deploys like any other deploy.
 
-If a push should run tests before it becomes a deploy, put Toft at the end
-of your pipeline instead: let CI decide, then have it run `toft deploy` or
-`toft redeploy` with a [deploy key](../../cli/api-keys/). Auto-deploy has no
-opinion about whether your branch is good.
+## When to use CI instead
+
+Auto-deploy does not run tests. If a push should pass checks first, have your
+CI run `toft deploy` or `toft redeploy` at the end, with a
+[deploy key](../../cli/api-keys/).

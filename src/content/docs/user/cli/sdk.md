@@ -1,90 +1,42 @@
 ---
 title: The app SDK
-description: The library your app calls back with, and where to get it.
+description: The library your app uses to talk to Toft — who is calling, its data, jobs and messages.
 ---
 
-Your app can talk back to Toft — read who is calling, store its document,
-start a job, send a message, read its mounts. That is the **app SDK**, in
-Python, Node, Go and R.
+The app SDK lets your app see who is calling, keep its data, start jobs, send messages and find its storage. It exists for Python, Node, Go and R, and the build installs it for you.
 
-The full reference is the **CLI and SDK guide**. This is the orientation.
+The source is also published, Apache-2.0, at [larchway-labs/toft-sdk](https://github.com/larchway-labs/toft-sdk).
 
-## Get it from your own install
+## Use it locally
+
+For your editor and local tests, copy your install's own SDK into the project:
 
 ```bash
-toft sdk vendor python
+toft sdk vendor            # language detected from the project
 ```
 
-Writes the SDK into `.toft/sdk-python/` in your project. Go also gets a
-`go.work` unless you already have one.
+| Language | Written to | Then |
+|---|---|---|
+| Python | `.toft/sdk-python/` | `uv pip install -e .toft/sdk-python` |
+| Node | `.toft/sdk-node/` | add `"@larchway/toft": "file:.toft/sdk-node"` to `package.json` |
+| Go | `.toft/sdk-go/` and `go.work` | nothing more |
 
-The install serves the SDK it speaks, so vendoring gets you a version matched to
-the platform you are deploying to. A language your install does not carry is a
-stated refusal, not a broken download.
+Re-run it after your install is upgraded. For Go, `.toft/` and `go.work` deploy with your code and replace the platform's copy — ignore both in `.gitignore`, or neither.
 
-**The SDK is identified by its bytes.** `toft sdk vendor` prints the build id of
-the copy it just wrote, and the platform reports the same id for its own — so
-you can tell whether the copy in your tree is the copy your install would have
-given you. Both build logs print it too. That is a checksum rather than a
-declared version, because a declared version is a thing somebody forgets to
-change.
-
-If you deploy to an isolated install whose runner image carries a different copy
-from the platform's, the build log **says so and the deploy still succeeds** —
-it names both, and it is your administrator's cue to rebuild the image.
-
-## What is in it
+## A taste
 
 ```python
-from toft import (
-    app,        # who am I: id, slug, mode, base path, capabilities
-    caller,     # what may this request's caller do
-    viewer,     # who is looking, where that is switched on
-    data,       # the app's JSON document
-    storage, mounts, store,
-    notify, deliver,
-    jobs, run,
-    task,
-    scratch_dir, session_scratch_dir,
-)
+import toft
+
+toft.app.base_path                    # where the app is served
+toft.app.can("email")                 # is this capability attached? (no network call)
+toft.who(request.headers)             # who is looking, where enabled
+toft.data.set({"period": "2026-03"})  # the app's JSON document
+toft.jobs.start("reconcile", params={"month": "2026-03"})
+toft.notify.slack("Ingest finished")
+toft.scratch_dir("uploads")           # temporary; gone after a restart
 ```
 
-Node, Go and R mirror the same surface, with each language's idioms.
+Node, Go and R offer the same features. Errors are typed: catch `VersionConflict` and `QueueFull` by name.
 
-## Two things it does for you
-
-**`can()` is a local answer.** Your app is told its capabilities at start, so
-checking one is not a round trip.
-
-**Role verification is done properly.** `verify_role` checks the signature rather
-than reading the header, and treats absent, unverifiable and expired as one
-answer: refuse.
-
-**It knows where it is mounted.** `app.base_path` — and its peers in the other
-three languages — is where your app is served from, which is what you build
-links out of. See [Base paths](../../build/base-paths/).
-
-**A write hands back what it wrote.** `data.set(...)` returns the document, not
-an empty handle, so you do not have to read it back to find out what was saved.
-
-## Errors are typed
-
-`ToftError` with a code and a retryable flag, plus the specific ones worth
-catching by name — `VersionConflict` on an app-data precondition, `QueueFull`
-when your app is at its job concurrency cap.
-
-## Scratch space
-
-Every workload gets scratch space, and a per-session scratch directory for work
-that belongs to one visitor. It is scratch: assume nothing survives a restart.
-
-## The contract is versioned
-
-The SDK speaks a versioned contract with the platform, and a mismatch is refused
-rather than tolerated. Vendor from the install you deploy to and this never
-comes up.
-
-## In R
-
-`library(toft)` is installed before your own packages, so if you declare a
-version of it yourself, yours wins.
+Full reference: [What the SDK is](../../../cli/sdk/what-it-is/) and [Vendoring it](../../../cli/sdk/vendoring/) in the CLI & SDK guide.

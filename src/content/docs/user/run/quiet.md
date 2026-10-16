@@ -1,47 +1,29 @@
 ---
 title: Quiet apps
-description: The fact your app page reports, and what it is not.
+description: How long since anybody used your app, where Toft shows it, and what it does not mean.
 ---
 
-Toft tracks how long it has been since anybody showed evidence of wanting
-your app. That fact appears on the app's own page.
+Toft tracks how long it has been since anybody showed evidence of wanting your app. When the app has had no requests in 30 days, the **Usage** card in the **Activity** section on **Overview** says how long it has been quiet:
 
-## Quiet is measured from evidence, not from traffic alone
+- **No visitor in 214 days**: the last visit was that long ago.
+- **Never opened since it was deployed 90 days ago**: deployed, never visited.
+- **Never opened, and no successful deploy**: created and never used.
 
-Visits, deploys, edits, configuration changes — the last of any of them. An app
-nobody has visited but which you redeployed last week is not quiet.
+## What counts
 
-Two things deliberately do not count: a [reachability
-probe](../../share/visibility/) and a security scan that identifies itself.
-Neither is somebody wanting your app.
+A visit, a successful deploy, or the app's creation, whichever is latest. A failed deploy doesn't count. Neither do [reachability probes](../../share/visibility/) or security scans that identify themselves.
 
-## Quiet is never a verdict
+## Quiet is not a verdict
 
-Nothing happens because an app went quiet. There is no sweep. Nothing is
-stopped, locked or deleted.
-
-- The **fact** is yours, on your app.
-- The **list** across the install is your administrator's.
-- **Retirement is a [lock](../locked/)** — an action a person takes, after a
-  conversation.
+Nothing happens to an app because it is quiet. Nothing is stopped, locked or deleted automatically. Your administrator can see a list of quiet apps across the install, and retiring one is a [lock](../locked/) a person applies.
 
 ## Quiet is not sleeping
 
-| | Measured in | Reversed by |
-|---|---|---|
-| **[Sleeping](../status/)** | minutes | the next request |
-| **Quiet** | months | somebody wanting it |
+[Sleeping](../status/) is measured in minutes and ends at the next request. Quiet is measured in days or months. An app can be awake and quiet, or asleep and busy.
 
-An app can be awake and quiet — a machine-to-machine API nobody "visits" — or
-asleep and busy. They are answers to different questions.
+## If you're asked about a quiet app
 
-## If somebody asks you about a quiet app
+The usual answers:
 
-The useful answers are usually one of three:
-
-- **It is finished.** Say so, and let it be locked.
-- **It is seasonal.** A quarterly report is quiet 361 days a year.
-- **It is load-bearing and boring.** Nobody opens it in a browser; something
-  else calls it.
-
-The last two are why this never became automatic.
+- **It's finished.** Say so, and let it be retired.
+- **It's seasonal.** A quarterly report is quiet most of the year.

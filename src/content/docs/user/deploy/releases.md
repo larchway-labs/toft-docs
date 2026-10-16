@@ -1,70 +1,55 @@
 ---
 title: Releases and rollback
-description: What a successful build leaves behind, how to go back, and how long history is kept.
+description: Every successful deploy is a release. Roll back in seconds, download any release, and control how many are kept.
 ---
 
-Every successful deploy leaves a **release** — the built output, kept on the
-install. One of them is *serving*; the rest are what you roll back to.
+Every successful deploy leaves a **release** — the built app, stored by Toft.
+One is serving; the others are what you roll back to. The **Deployments** tab
+lists them, newest first.
 
-The **Deployments** tab lists them, newest first, with which one is current.
+## Roll back
 
-## Rolling back
-
-Pick a release and **Make current**. The workload is restarted onto it; nothing
-is rebuilt, because the release is already built.
+On **Deployments**, select **Make current** on a release. Nothing is rebuilt:
+the release starts, passes a health check, and traffic moves to it.
 
 ```bash
-toft rollback              # the newest successful release that is not serving
+toft rollback              # the previous successful release
 toft rollback <deployID>   # a specific one
 ```
 
-`toft rollback` names the release it is about to make current **before** it acts,
-and asks unless you pass `--yes`. In a pipeline, where it cannot ask, it refuses
-rather than hanging.
+`toft rollback` names the release before acting and asks for confirmation.
+In CI, pass `--yes` — without it, a non-interactive run refuses rather than
+hanging.
 
-## What rollback does not change
+## What rollback does not undo
 
-Rolling back changes the **code**. It does not roll back:
+Rollback changes the code only. It does not revert:
 
-- Environment variables — those are current, not versioned.
-- Data your app wrote, anywhere.
-- The [app data document](../../data/app-data/).
-- Anything in [storage](../../data/app-storage/).
+- environment variables,
+- database changes or anything else your app wrote,
+- [app data](../../data/app-data/) or [storage](../../data/app-storage/).
 
-If your last deploy migrated a database, rolling back the code does not
-unmigrate it. That is yours to think about.
+## Restart is not redeploy
 
-## A restart is not a deploy
+A restart starts the same release again — no rebuild, no new dependency check.
+An app that has served for a month is not blocked from restarting by an
+advisory published overnight.
 
-Restarting an app puts the same release back up. It does not rebuild, does not
-re-resolve your language version, and does not re-run the dependency checks —
-the verdict that applies is the one made about *that release*, not today's.
+Each start restores the release from Toft's stored copy. Editing files in a
+running app's directory does not survive a restart.
 
-This is why an app that has been serving for a month does not fail to come back
-because an advisory landed overnight.
+## How many are kept
 
-## Retention
+On the **Settings** tab, **Delete old versions automatically** keeps the
+newest releases up to **Versions to keep** (the serving one included), within
+your install's limit. Turned off, nothing is deleted, and deploys are refused
+once the app reaches the limit.
 
-Your install caps how many releases one app keeps. The Deployments tab tells
-you the number that applies to you; when a new release pushes the count over it,
-the oldest goes.
+To clear space yourself, delete one build, or select **Delete old builds** to
+remove everything but the serving release. A pending rollback's target is
+never deleted.
 
-You can also clear them yourself: delete one deployment, or every one that is
-not current.
+## Download a release
 
-A rollback that is still queued protects the release it is returning to.
-Retention and a bulk delete both leave that one alone until the rollback has
-landed, so "roll back, then tidy up" cannot delete the thing you were rolling
-back to.
-
-## Downloading a release
-
-The source archive of any release can be downloaded from its entry on the
-Deployments tab. That is the fastest honest answer to "what exactly is running
-right now" — better than reading the branch, which has moved since.
-
-## What is on disk is not trusted
-
-A start replaces the release tree from the stored artifact rather than trusting
-what is on disk. Editing files inside a running app's directory does not survive
-a restart, and it is not a way to patch production.
+**Download** on a release gets its source as a ZIP — the exact answer to "what
+is running right now".

@@ -1,81 +1,65 @@
 ---
 title: Node and Next.js
-description: What is detected, what is run, and the two things a Node app has to get right.
+description: How Node and Next.js apps are detected, built and started.
 ---
 
-| Framework | Detected by | Started as |
+| Framework | Detected by | Started with |
 |---|---|---|
-| **Next.js** | `next.config.*`, or `next` in `package.json` | the framework's own server |
-| **Node (generic)** | any `package.json` with a `start` script | `npm run start` |
+| **Next.js** | `next.config.js`/`.mjs`/`.ts`, or `next` in `package.json` | `next start` |
+| **Node** | `package.json` with a `start` script | `npm run start` |
 
-A `build` script runs first if you have one.
+If `package.json` has a `build` script, it runs during the deploy.
 
 ## The contract
 
-**Listen on the port in `PORT`.** Never a port of your own choosing, and never a
-hard-coded one.
+Listen on `PORT`, bound to `HOST`. Toft sets both.
 
 ```js
-const port = process.env.PORT || 3000;
-app.listen(port);
+app.listen(process.env.PORT, process.env.HOST);
 ```
 
-**Honour `BASE_PATH`.** Your app is mounted under `/apps/your-slug`, and the
-proxy strips that prefix before forwarding — so your routes are at the root, but
-every URL you hand to a browser has to carry it. See [Base
-paths](../base-paths/).
+Your app is served under `/apps/<slug>`. For a plain Node app the proxy strips
+that prefix, so routes stay at `/`, but URLs you send to the browser must carry
+it. `BASE_PATH` holds it. See [Base paths](../base-paths/).
 
-## Next.js
-
-Next needs to know its base path at **build** time, so it is set for you before
-the build runs. You do not have to add `basePath` to `next.config.js` yourself,
-and if you do, make sure it matches your slug.
-
-Everything else is ordinary Next: `next build`, then the framework's own server.
+**Next.js needs nothing.** Toft sets `basePath` in your Next config before the
+build, merged over whatever your config exports.
 
 ## Dependencies
 
-`npm ci` when there is a lockfile, `npm install` otherwise. Commit your
-lockfile — it is the difference between a reproducible build and a build that
-resolves differently in three weeks.
+| Repository has | Toft runs |
+|---|---|
+| `package-lock.json` | `npm ci` |
+| no `package-lock.json` | `npm install` |
 
-**Toft reads `package-lock.json`.** A repository locked with pnpm
-(`pnpm-lock.yaml`) or Yarn (`yarn.lock`) is not refused, but that file is passed
-over: the dependency scan resolves versions from `package.json` instead, so they
-can differ from the ones your lockfile pins. The build log names the file it
+Only `package-lock.json` is honored. With a `pnpm-lock.yaml` or `yarn.lock`,
+versions resolve from `package.json`, and the build log names the lockfile it
 passed over.
 
-**Lifecycle scripts are disabled** unless your administrator has switched them
-on install-wide. A `postinstall` that fetches a binary or patches a package will
-not run, and that is not something you can turn on per app. If your build
-depends on one, do that work in your `build` script instead.
+:::caution
+Dependency lifecycle scripts (`postinstall` and similar) don't run unless your
+administrator has enabled them for the whole install. Move that work into your
+`build` script.
+:::
 
 ## A front end with no server
 
-A Vite, Create React App or Astro repository with no `start` script is not a
-Node app — there is nothing to run. Two options:
-
-- Add a server and a `start` script.
-- Commit the built output and declare it a [static site](../static/). This is
-  usually the right answer, and it is cheaper to run.
-
-Toft never runs `npm run build` for a static app, so `dist/` has to be
-committed and out of your `.gitignore`.
+A Vite, Create React App or Astro project with no `start` script has nothing to
+run. Commit the build output and serve it as a [static site](../static/), or
+add a server and a `start` script.
 
 ## Version
 
 ```toml
+# toft.toml
 [runtime]
 node = ">=22"
 ```
 
-Comparators only, never a patch version. See [Language versions](../versions/).
+Node is matched on the major version. See [Language versions](../versions/).
 
-## What does not work
+## What doesn't work
 
-- A dev server. `next dev`, `vite`, `nodemon` — start scripts that assume a
-  developer is watching.
-- Writing into your own release directory expecting it to persist. A start
-  replaces the tree.
-- Binding to a specific host of your choosing. Bind to the address Toft
-  gives you.
+- Dev servers as `start`: `next dev`, `vite`, `nodemon`.
+- Writing into your release directory and expecting it to persist. A restart
+  replaces the tree; use [app storage](../../data/app-storage/).

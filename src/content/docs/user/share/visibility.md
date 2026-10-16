@@ -1,65 +1,32 @@
 ---
 title: Who can see your app
-description: Private, signed-in and public, and why a setting sometimes will not stick.
+description: The three visibilities on the Access tab, and what can keep an app from being public.
 ---
 
-Every app has one of three visibilities, set on the **Access** tab.
+Every app has one visibility, set under **Access → Who can view this app**. New apps are **Restricted**.
 
 | Visibility | Who can open it |
 |---|---|
-| **Private** | You, and anyone you or your group have shared it with. |
-| **Authenticated** | Anyone who can sign in to this install. |
-| **Public** | Anyone with the URL, signed in or not. |
+| **Restricted** | You, and the people and groups you [share it with](../people/). |
+| **Anyone signed in** | Anyone who can sign in to this install. |
+| **Public** | Anyone with the link, no sign-in. |
 
-New apps are private.
+Toft enforces visibility before the request reaches your app. Your app never sees a request from someone who may not open it.
 
-Visibility is enforced at the gateway, before your app is reached. A private app
-does not get the request at all.
+## When Public is not available
 
-## Public may not be available
+An administrator can turn off public access for every app.
 
-Your administrator can decline to publish anything from this install. When they
-have, choosing **public** gives you **authenticated** instead — not private, and
-not a silent failure. Your app is still as widely shared as this install allows.
+The **Public** option is then greyed out, and an app that is already public is served to signed-in people only, with the notice **This install doesn't publish apps**. It becomes public again when public access returns.
 
-If anonymous access is switched back on later, apps that were public go back to
-being public. Nothing was rewritten, so nothing is lost by the switch.
+## When a public app is not reachable from outside
 
-The same shape applies to licensing: publishing is gated on the **change**, so
-an app that is already public keeps serving whatever happens to the license.
-There is no state in which your public app quietly goes dark.
+If your install checks reachability from outside and two checks in a row fail, the app is served to signed-in people only, and the Access tab shows **This app isn't public at the moment**. The cause is nearly always DNS, a firewall, a proxy or TLS; show it to your administrator. To publish again, choose another visibility and then **Public**.
 
-## Reachability
+## Embedding
 
-If your install is reachable from outside, Toft checks that a public app
-actually answers from out there before treating it as published.
-
-- A verdict opens the gate only on an explicit success. Silence is not a
-  verdict, and "unknown" is not a failure.
-- A failing verdict **latches**, and only a change of visibility clears it.
-- A sleeping app is never woken just to be probed, and a probe never counts as
-  usage.
-
-This is a check on **addresses**, not on your code. A failure is almost always
-DNS, a firewall, a proxy or TLS — worth showing your administrator rather than
-debugging in your app.
-
-## Sharing without publishing
-
-Most of the time the answer is not "make it public" but "share it with the
-people who need it". See [Sharing with people and groups](../people/).
-
-## Framing
-
-Who may put your app in an `<iframe>` is the install's answer, with a per-app
-override on the Access tab. The default is the install itself, and an empty list
-means **nobody** — not "anyone".
-
-If you are embedding a dashboard in an intranet page, that is the setting to
-ask about.
+**Access → Embedding** lists the other sites that may show your app in an `<iframe>`. An empty list means no other site can embed it. Add an origin as scheme and host, for example `https://intranet.example.com`; a leading wildcard is allowed.
 
 ## What visibility does not do
 
-It controls who reaches your app. It does not authorize anything *inside* it. If
-your app has an admin screen, your app has to protect it — see [What your app
-learns about a viewer](../viewer/).
+Visibility controls who reaches your app, not what they can do inside it. If your app has an admin screen, protect it yourself: see [What your app learns about a viewer](../viewer/).

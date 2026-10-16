@@ -1,68 +1,39 @@
 ---
 title: App data
-description: The one small JSON document every app gets.
+description: One small JSON document every app can read and write, kept across restarts, redeploys and rollbacks.
 ---
 
-Every app has one JSON document it can read and write. That is the entire
-feature, and the limits are the point of it.
+Every app has one JSON document for small state that belongs to the app: saved settings, a last-run timestamp, a flag your app set itself. It needs nothing switched on.
 
 | | |
 |---|---|
-| **Size** | 256 KiB |
-| **Shape** | One document. No keys, no collections, no listing, no queries. |
-| **Contents** | Yours. Toft stores it as text and never reads it. |
+| **Size** | Up to 256 KiB. |
+| **Shape** | One JSON object. No keys, listing or queries. |
+| **Lifetime** | Survives restarts, redeploys and rollbacks. |
 
 ```python
-from toft import data
+import toft
 
-doc = data.get()
-doc["last_run"] = "2026-08-31T02:00:00Z"
-data.set(doc)
+settings = toft.data.get() or {"period": "monthly"}
+toft.data.set({**settings, "period": "weekly"})
 ```
 
-## What it is for
+`get()` returns `None` when nothing is stored, which is different from a stored `{}`. `clear()` removes the document and returns the app to storing nothing.
 
-Small state that belongs to the app rather than to a person: a saved filter, a
-last-run timestamp, a feature flag your app set itself, a bit of configuration
-somebody edited in the UI.
+## Two writers
+
+`set()` is last-write-wins. If a job and the web process both write, use `update()`: it reads, applies your change and writes back conditionally, retrying if someone else wrote in between.
+
+```python
+toft.data.update(lambda s: s.update(runs=s.get("runs", 0) + 1))
+```
+
+For explicit control, `read()` returns the document with its `version`, and `set(doc, if_version=v)` raises `toft.VersionConflict` if the stored version has changed. `if_version=0` means "only if nothing is stored".
 
 ## What it is not for
 
-A database. There are no queries, so anything you want to *search* does not
-belong here. Anything per-user does not belong here either — it is one document
-for the whole app.
+App data is not a database. Anything you need to search, or anything per user, belongs in a real database.
 
-If you need a real database, your administrator provides one and you get its
-connection string as an environment variable.
+## In the UI
 
-## Three states, and they stay distinct
-
-- **Never written** — the app has never stored anything.
-- **Cleared** — there was something and it was removed.
-- **`{}`** — an empty object, which the app deliberately wrote.
-
-These are three different answers, not one. Code that treats "never written" and
-"empty" as the same thing will do the wrong thing the first time somebody clears
-it.
-
-## Versions
-
-Every read gives you a version. You can use it as a **precondition** on a write,
-so two concurrent writers do not silently overwrite each other:
-
-```python
-doc, version = data.get_with_version()
-data.set(doc, if_version=version)   # VersionConflict if somebody else wrote
-```
-
-The version is always there. Using it is opt-in — write without one and the last
-write wins.
-
-## Your owner's view
-
-Whoever can edit the app can see the document's **metadata** — that it exists,
-its size, its version — and can reset it. They do not read its contents from the
-platform.
-
-That reset exists for the moment your app has written something it cannot
-recover from. It is not a browser for your data.
+**Settings → Saved data** shows whether the app has saved anything, its size and when it changed. It never shows the contents. If your app saved something its own startup code cannot read, people who can edit the app can **Clear** it; a redeploy will not fix that.

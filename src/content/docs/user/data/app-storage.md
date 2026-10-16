@@ -1,113 +1,59 @@
 ---
 title: App storage
-description: Files, folders and the two different things that have to be true.
+description: Durable volumes and object stores an administrator attaches to your app, and how your code finds them.
 ---
 
-App storage is for files: uploads, reports, exports, anything that is a blob
-rather than a row.
+App storage is for files: uploads, reports, exports. An administrator creates storage resources and attaches them to apps; you cannot attach one yourself.
 
 :::note
-This is an optional capability. If your administrator has not configured
-storage, there is no storage on your app — not a disabled tab. Ask before
-designing around it.
+Storage is optional. If your install has none configured, your app has none. Ask your administrator before designing around it.
 :::
 
-## Two kinds of resource
+## Volumes and stores
 
-| | What it is |
-|---|---|
-| **Volume** | A durable filesystem your app reads and writes as ordinary paths. |
-| **Store** | An object store, addressed by key, with a browser in the SPA. |
+| Kind | What it is | Access levels |
+|---|---|---|
+| **Volume** | A durable filesystem. | `read`, `write` |
+| **Store** | An object store (a bucket), also mounted as a folder in your app. People with a grant can [browse it](../browsing-a-store/). | `read`, `write` (new files only), `overwrite`, `full` (also delete) |
 
-Which ones exist, and what they are backed by, is your administrator's decision.
+The level is how the resource is mounted, not a permission your code asks for. A read-only mount cannot be written to, whatever your code does. Some backings cannot express every level; those levels are not offered when attaching.
 
-## Two things that both have to be true
+## Find storage from your code
 
-- **A mapping** attaches a resource to your app, at a level. That is an
-  administrator's action.
-- **A grant** gives a *person* access to a folder. That is about people.
-
-**Neither implies the other.** Your app having a mapping does not let you browse
-the files, and you being granted a folder does not let your app read it.
-
-That surprises people once. It is the same distinction as "the service account
-can read the bucket" versus "I can read the bucket".
-
-## Reading it from your app
+Look a resource up by the name your administrator gave it, never by its path, so the administrator can move it without breaking your app.
 
 ```python
-from toft import mounts, store
+import toft
 
-for m in mounts():
-    print(m.name, m.path, m.level)   # a volume, as a filesystem path
+reports = toft.storage("reports")
+(reports.path / "2026-08.csv").write_bytes(data)
 
-store("reports").put("2026-08/summary.csv", data)
+toft.store("exports").put("summary.csv", "2026-08/summary.csv")  # copy a local file in
+
+for m in toft.mounts():
+    print(m.name, m.kind, m.path, m.access, m.folder)
 ```
 
-An app's mounts are given to it at start. Nothing is fetched or configured by
-your code.
+A miss raises an error that lists what is attached. The Node, Go and R SDKs have the same calls: see [the app SDK](../../cli/sdk/).
 
-## Levels are mounts, not permissions
+## One resource, two mounts
 
-An access level is **which mount your app got**, not a permission it asks for.
-An app mounted read-only cannot write, and there is no flag to change that at
-runtime. The URL is never more generous than the mount.
-
-On some backings a level cannot be expressed as a mount at all — and it is
-**refused at attach rather than approximated**. If a level you expected is not
-offered, that is why.
-
-## Folders
-
-A grant narrows only by **folder**, and a folder is what gets mounted.
-
-There is no administrator bypass: a folder nobody granted you is not a row you
-can see, and being an administrator does not change that.
-
-## One name can be two mounts
-
-A mapping's identity is `(resource, app, folder)`, so one resource can be
-attached to your app **twice** — the root read-only and a folder at `write`, at
-two paths in one workload. That is the shape this exists for: a corpus you read
-and a drop you write.
-
-Both arrive under the same name, and the folder is what tells them apart:
+A resource can be attached twice at different folders and levels, such as the root read-only and a `drop` folder writable. Both share a name, so name the folder:
 
 ```python
-toft.storage("warehouse").path                    # the only mount of that name
-toft.storage("drop", folder="backup").path        # say which
+toft.storage("warehouse", folder="")      # the root
+toft.storage("warehouse", folder="drop")  # the writable folder
 ```
 
-**A name matching two mounts with no folder named raises**, listing what is
-mounted and at what level, rather than picking one for you. Returning the first
-would answer by the alphabetical order of paths somebody else chose.
+## Mappings and grants are separate
 
-`folder=""` names the root explicitly; leaving it out means *do not care*, which
-is the ordinary case and is only ever ambiguous when there really is more than
-one.
+- A **mapping** attaches a resource to your app.
+- A **grant** gives a person access to a store, or one folder of it.
 
-Every SDK has it: `toft.storage(name, folder=…)` in Python,
-`toft.storage(name, { folder })` in Node, `toft.StorageIn(name, folder)` in Go —
-Go having no keyword arguments — and `storage(name, folder)` in R. `store` and
-`StoreIn` are the same thing for object stores.
+Neither implies the other.
 
-## Naming
+## Good to know
 
-A resource's **slug is its identity** and cannot be renamed — only its label can.
-A path is a name plus a trailing slash, and goes through the same validation
-everywhere, so `../` gets you nothing.
-
-## Two things that surprise people
-
-**A browser upload needs CORS on the bucket.** Without it the upload fails in the
-browser, and Toft never sees it — so it is not reported as a failed upload.
-That one is worth knowing before you spend an afternoon on it.
-
-**Deleting an app does not delete the data.** It detaches storage; the objects
-survive.
-
-## In shared mode
-
-If your install runs apps as processes and has no storage roots configured,
-storage is **refused rather than faked**. The operator mounts the filesystem;
-Toft mounts nothing itself.
+- **Browser uploads need CORS on the bucket.** Files go straight from the browser to the object store, so without CORS the upload fails in the browser and Toft never sees it.
+- **Removing storage never deletes files.** Detaching a resource or deleting an app leaves the data in place.
+- **Shared mode needs operator-declared roots.** On an install that runs apps as processes, durable storage works only from roots the operator declared (`SHARED_STORAGE_ROOTS`); otherwise attaching it is refused.

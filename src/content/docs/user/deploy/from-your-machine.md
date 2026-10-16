@@ -1,83 +1,77 @@
 ---
 title: From your machine
-description: Pushing the working tree with toft deploy, and what actually gets sent.
+description: Deploy your working tree with toft deploy — uncommitted changes included, no git push needed.
 ---
 
-```bash
-toft deploy
-```
-
-Run from inside your project. It sends what is on your disk **right now** —
-uncommitted changes included, nothing pushed to a git host, no commit required.
-
-This is the fast loop while you are still working something out. The full
-client reference is in the **CLI and SDK guide**; what follows is what matters
-when you are deploying.
-
-## Getting `toft`
+`toft deploy` sends the folder you are in, exactly as it is on disk —
+uncommitted edits included, no commit or push required. It is the fast loop
+while you are iterating.
 
 ```bash
-toft login https://toft.your-company.com
+toft login https://toft.your-company.com   # once
+toft create                                 # first time: create an app from this folder
+toft deploy                                 # every time after
 ```
 
-Installing it and signing in are on [Installing toft](../../cli/installing/).
+Install `toft` first: [Installing toft](../../cli/installing/). The full
+command reference is in the CLI & SDK guide.
 
 ## Which app it deploys to
 
+`toft link <slug>` records the app in `toft.toml`, which you commit:
+
 ```toml
-# toft.toml, at the root of your project
 [app]
-slug = "phase-test"
+slug = "sales-dashboard"
 ```
 
-`toft link` writes that for you and checks the slug against the install first, so
-a typo fails at link time rather than at deploy time. `--app <slug>` overrides
-it for one invocation.
+`toft create --link` does the same when it creates the app. `--app <slug>`
+overrides it for one command.
 
 ## What gets sent
 
-**`.gitignore` decides.** Every `.gitignore` in the tree, with `!` negations
-honoured, plus `.git/info/exclude`. `.toftignore` adds to that; it never
-replaces it.
+- **`.gitignore` decides** — every `.gitignore` in the tree, plus
+  `.git/info/exclude`. A `.toftignore` adds more patterns; it never replaces
+  them. `toft` reads the files itself, so a folder that is not a git
+  repository works too.
+- **Always dropped:** `.git/`, `.hg/`, `.svn/`, `node_modules/`, `venv/`,
+  `.venv/`, `__pycache__/`, `*.pyc`, `.DS_Store`.
+- **Dropped when the root has a `package.json`:** `dist/`, `build/`, `out/`,
+  `.next/`, `.nuxt/`, `.svelte-kit/` — the build recreates them. A static site
+  whose `[static] root` points into one of these still ships it.
 
-`toft` does **not** shell out to git, so this works in a plain folder that was
-never a repository.
+The bundle can be at most 100 MB.
 
-Always dropped: `.git/`, `.hg/`, `.svn/`, `node_modules/`, `venv/`, `.venv/`,
-`__pycache__/`, `*.pyc`, `.DS_Store`.
-
-Dropped **only when the tree root has a `package.json`**: `dist/`, `build/`,
-`out/`, `.next/`, `.nuxt/`, `.svelte-kit/`. That is the right bet for a Node
-project and the wrong one for a static site — so a `[static] root` pointing
-inside one of those wins, and your `dist/` ships.
-
-:::note
-`toft deploy` does not convert your app. Deploying from your machine to an app
-created from a git repository does not detach it from that repository or change
-how it updates.
+:::note[Git-backed apps]
+`toft deploy` to an app created from a repository sends your tree once. It does
+not detach the app: the next deploy from the repository replaces this code.
 :::
 
-## Watching it
+## Watching
 
-`toft deploy` streams the build log and exits with the deploy's outcome. If you
-lose the terminal, `toft deploy --watch <deployID>` rejoins the same build.
+`toft deploy` streams progress and exits with the deploy's outcome. `--logs`
+interleaves the build log. If you lose the terminal, rejoin:
 
-Exit codes are a contract, and the two that matter in CI are different failures:
-**1** means the platform built your code and the build failed; **3** means your
-credential was refused.
+```bash
+toft deploy --watch <deployID>
+```
 
 ## In a pipeline
 
 ```bash
 export TOFT_URL=https://toft.your-company.com
-export TOFT_TOKEN_FILE=/run/secrets/toft
+export TOFT_TOKEN_FILE=/run/secrets/toft    # or TOFT_TOKEN
 toft deploy --app reports
 ```
 
-There is no `--token` flag, on purpose: a secret on a command line lands in
-your shell history and in the process table. A credential and an address are
-one statement — `TOFT_TOKEN` is used only alongside `TOFT_URL`, and
-every other combination is refused naming both halves.
+There is no `--token` flag, so secrets stay out of shell history and the
+process list. Use a [deploy key](../../cli/api-keys/) (`toftd_…`) rather than
+your personal key, so the pipeline survives your leaving.
 
-Use a [deploy key](../../cli/api-keys/) rather than your personal one, so the
-pipeline does not stop working when you leave.
+| Exit code | Meaning |
+|---|---|
+| `0` | Deployed. |
+| `1` | The deploy ran and failed — read the build log. |
+| `2` | Usage or configuration: no app linked, a bad flag. |
+| `3` | Not authenticated, or the credential was refused. |
+| `4` | The install did not answer. |
