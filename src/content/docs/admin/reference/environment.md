@@ -117,7 +117,7 @@ runs as root under PM2.
 | `APP_USER_PER_APP` | on as root | One OS account per app. Requires root. |
 | `APP_USER_AUTOCREATE` | on as root | Create missing accounts at deploy. |
 | `APP_USER_GROUP` | `toft-apps` | Shared primary group. The egress rule acts on it. |
-| `APP_USER_PREFIX` | `lp-app-` | Account name prefix. |
+| `APP_USER_PREFIX` | `toft-app-` | Account name prefix. |
 | `APP_RUN_AS` | — | Run every app as this one account instead. |
 | `BLOCK_AWS_METADATA` | off | Stops apps reaching instance and task IAM credentials. Set it on AWS. |
 | `SHARED_STORAGE_ROOTS` | — | Storage for shared-mode apps: `name=/path[:ro]`, comma-separated. You mount; Toft mounts nothing. |

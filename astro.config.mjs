@@ -284,6 +284,7 @@ export default defineConfig({
               { label: "Signing in", slug: "cli/cli/signing-in" },
               { label: "Deploying", slug: "cli/cli/deploying" },
               { label: "Command reference", slug: "cli/cli/commands" },
+              { label: "Skills for coding agents", slug: "cli/cli/agents" },
               { label: "Exit codes", slug: "cli/cli/exit-codes" },
               { label: "CI and automation", slug: "cli/cli/ci" },
             ],
