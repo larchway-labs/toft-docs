@@ -283,7 +283,7 @@ export default defineConfig({
               { label: "Installing toft", slug: "cli/cli/installing" },
               { label: "Signing in", slug: "cli/cli/signing-in" },
               { label: "Deploying", slug: "cli/cli/deploying" },
-              { label: "The eighteen commands", slug: "cli/cli/commands" },
+              { label: "Command reference", slug: "cli/cli/commands" },
               { label: "Exit codes", slug: "cli/cli/exit-codes" },
               { label: "CI and automation", slug: "cli/cli/ci" },
             ],

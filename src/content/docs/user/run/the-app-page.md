@@ -20,7 +20,7 @@ Everything about one app lives on its page. You see only the tabs your role and 
 
 ## Overview
 
-Shows the app's address, status, last deploy, and an **Activity** section with recent usage and failures. A [batch app](../../automation/jobs/#batch-apps) has no address and no Open, Start or Stop.
+Shows the app's address, status, last deploy, and an **Activity** section with recent usage and failures. A [batch app](../../automation/jobs/#where-a-job-runs) has no address and no Open, Start or Stop.
 
 Notices that need you sit above the tabs: an unapplied variable change, a refused deploy, a blocked source, a lock. Notices about an app that is down come first.
 

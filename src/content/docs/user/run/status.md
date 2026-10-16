@@ -9,7 +9,7 @@ description: What each app status means, how sleeping and waking work, and why a
 | **Running** | Up and serving. |
 | **Sleeping** | Idle, so Toft stopped the process. The next request wakes it. |
 | **Stopped** | Stopped by a person or a lock. Stays down until started. |
-| **Ready** | A [batch app](../../automation/jobs/#batch-apps) with a release. Runs jobs, serves nothing. |
+| **Ready** | A [batch app](../../automation/jobs/#where-a-job-runs) with a release. Runs jobs, serves nothing. |
 | **Crashed** | Exited, never came up, or kept running out of memory. |
 | **Failed** | The last deploy didn't produce a working release. |
 
