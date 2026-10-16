@@ -1,23 +1,88 @@
 ---
 title: Signing in
-description: The device flow, where the credential lives, and the rule that pairs it with an address.
+description: Sign toft in to an install, the four kinds of key, and how credentials are stored.
 ---
 
 ```bash
 toft login https://toft.your-company.com
 ```
 
-A browser opens, you approve the device, and `toft` stores a personal key.
+A browser opens, you approve the device, and the install mints a **personal API
+key** for this machine. It appears under **Account → API keys**, named after the
+machine, and you revoke it there.
 
-## Where it is kept
+| Flag | Effect |
+|---|---|
+| `--status` | Who this machine is signed in as, and where. With `--json`, every stored session. |
+| `--no-browser` | Print the approval URL instead of opening it. |
+| `--token-stdin` | Read a key from stdin instead of opening a browser. Takes a personal key or a deploy key. |
+| `--forget <install>` | Drop one stored credential. |
+| `--forget-all` | Drop every stored credential. |
 
-`credentials.toml` under your config directory — `~/.config/toft/` on Linux
-and macOS, `%AppData%\toft\` on Windows — mode `0600` inside a `0700`
-directory.
+`toft login` with no URL signs in again to your default install, which is what
+you run when a key expires. Forgetting a credential does **not** revoke the key;
+that happens on the install.
 
-It holds **nothing but credentials**. Settings live in `config.toml` beside it,
-so the file people are meant to edit and the file with a secret in it never
-become one file.
+:::caution
+There is no `--token` flag. A secret on the command line ends up in shell
+history and in `ps`. Use `--token-stdin` or the environment variables below.
+:::
+
+## API keys
+
+Toft has four kinds of credential. The prefix tells you which one you hold.
+
+| Prefix | Kind | Where it comes from | What it is for |
+|---|---|---|---|
+| `toftu_` | Personal API key | `toft login`, or **Account → API keys** | Acting as you, from `toft` or a script. |
+| `toftd_` | Deploy key | **Admin → Deploy keys** | CI. Belongs to nobody, so it survives people leaving. |
+| `toft_` | App key | The app's **Sharing** tab | A program calling one app through the apps gateway. |
+| `tofta_` | App token | Injected as `TOFT_APP_TOKEN` | The app's own credential for calling the platform. You never handle it. |
+
+`toft` accepts the first two.
+
+### Scope
+
+A personal key is **full** or **read**, chosen when it is minted and never
+changed. A read key can make every `GET` you are allowed and is refused
+everything else, with exit 3 and code `key_read_scope`. Replace it with a full
+key; it cannot be widened.
+
+`toft login` always mints a full key. A read key reaches `toft` only through
+`--token-stdin` or the environment.
+
+A scope bounds Toft's own API. It does not limit what a deployed app does with
+a request it receives.
+
+A deploy key does less than a personal key. It cannot manage credentials or
+grants, and it cannot use `toft task` or `toft store`.
+
+## Credentials in the environment
+
+For CI, skip `toft login` and set:
+
+| Variable | Value |
+|---|---|
+| `TOFT_URL` | The install's address. **Required** with either variable below. |
+| `TOFT_TOKEN` | The key itself. |
+| `TOFT_TOKEN_FILE` | A path to read the key from, for a mounted secret. |
+
+A token from the environment is used only when the install also came from
+`TOFT_URL`. Any other pairing, such as `TOFT_TOKEN` with `--install` or with
+the stored default, is refused with exit 2. Setting both `TOFT_TOKEN` and
+`TOFT_TOKEN_FILE` is also refused.
+
+See [CI and automation](../ci/).
+
+## Where credentials are stored
+
+| OS | Directory |
+|---|---|
+| Linux, macOS | `~/.config/toft/` (or `$XDG_CONFIG_HOME/toft/`) |
+| Windows | `%AppData%\toft\` |
+
+`credentials.toml` holds keys and nothing else, at mode `0600`. Settings you may
+edit live beside it in `config.toml`.
 
 ```toml
 default = "https://toft.corp"
@@ -29,74 +94,19 @@ user  = "ada@corp.com"
 expires_at = 2026-11-19T09:30:00Z
 ```
 
-## The credential is never a flag
-
-There is no `--token`. A secret on a command line lands in shell history and in
-the process table, where anything on the machine can read it.
-
-| How | For |
-|---|---|
-| `toft login` | Normal use. |
-| `TOFT_TOKEN` | CI. **Must** be paired with `TOFT_URL`. |
-| `TOFT_TOKEN_FILE` | A mounted secret — the path is not sensitive, the variable is. |
-| `--token-stdin` | Piped in, for a CI machine whose key a human minted. |
-
-:::caution
-**A credential and an address are one statement.** An environment token is used
-when, and only when, the install was resolved from `TOFT_URL` too. Every
-other combination is exit 2, naming both halves — including the stored default.
-
-`--install staging` on a machine holding a production token is exactly the
-accident that rule exists to catch: `--install` names an install, not a
-credential, so it does not complete the pair.
-
-Setting both `TOFT_TOKEN` and `TOFT_TOKEN_FILE` is a **refusal, not a
-precedence rule**.
-:::
-
-## A key has a scope
-
-A personal key is **`read` or `full`**, chosen when it is created and never
-edited. Full does everything you can do; read reaches every `GET` you are
-allowed and is refused every other method.
-
-**`toft login` always creates a full-scope key** — there is no `--scope`. So a
-read-scoped credential in a pipeline got there deliberately: somebody minted one
-in the browser and handed it over with `--token-stdin`.
-
-When one is refused a write you get the install's own sentence plus a line
-saying what happened, because otherwise a pipeline log reads as a permission
-failure rather than as the credential doing exactly what it was created to do. A
-read-scoped key is **replaced, not widened**.
-
-Two things a scope is not:
-
-- **Not safe to leak.** A read-scoped key still reads everything you can read.
-- **Not a fence around your apps.** A scope bounds Toft's own API. It says
-  nothing about what a deployed app does with a request — a read-scoped key can
-  `POST` through the apps gateway to an app that accepts one.
+Never read the token out of this file in a script. Use [`toft api`](../commands/#toft-api)
+to make authenticated calls instead.
 
 ## Expiry
 
-`expires_at` is what the install said when it minted the key. **Absent means
-unknown, never "never"** — a `--token-stdin` login stores none.
+When a key is within 14 days of `expires_at`, every command prints one dimmed
+line on stderr, never on stdout. A key stored with `--token-stdin` has no known
+expiry.
 
-Within fourteen days you get one dimmed line on stderr, once per invocation and
-**never on stdout**, so it cannot corrupt a pipe.
+`toft` never decides on its own that a key has expired. The install answers
+`401 key_expired`, `toft` exits 3, and the fix is `toft login`.
 
-**Nothing client-side decides a credential has expired.** The install answers
-`401`, and that is exit 3.
+## Plain http
 
-## Forgetting
-
-`toft login --status` says who and where. `--forget [install]` and `--forget-all`
-drop stored credentials.
-
-**They do not revoke the keys.** That is the keys page on the install, and the
-command says so.
-
-## http://
-
-`toft login` refuses `http://` outside loopback before it makes any request. Every
-other command says one dimmed line instead, because a stored `http://` install
-is somebody's dev setup rather than a mistake.
+`toft login` refuses an `http://` address unless it is loopback. Other commands
+print a dimmed warning for a stored `http://` install and carry on.

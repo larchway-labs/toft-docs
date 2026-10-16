@@ -1,84 +1,102 @@
 ---
 title: Who is asking
-description: caller, who and viewer — three questions that are not the same question.
+description: caller, who and viewer — what a request may do, who sent it, and acting on their behalf.
 ---
 
-Three entry points, and choosing between them is most of getting this right.
+Three calls answer three different questions.
 
-| Call | The question | Round trip | Anonymous |
+| Call | Question | Round trip | Anonymous visitor |
 |---|---|---|---|
-| `caller(headers)` | **What may they do?** | No | `anonymous` |
-| `who(headers)` | **Who are they?** | Yes | `null` |
-| `viewer(headers)` | **Act as them** | Yes | throws |
+| `caller(headers)` | What may they do? | No | Role `anonymous` |
+| `who(headers)` | Who are they? | Yes | `None` / `null` |
+| `viewer(headers)` | Act as them | On use | Raises |
 
-## `caller` — what they may do
+## `caller`: what they may do
 
+```python
+c = toft.caller(request.headers)
+if not c.at_least(toft.ROLE_EDITOR):
+    abort(403)
+```
 ```js
 const c = toft.caller(req.headers);
 if (!c.atLeast(toft.ROLE_EDITOR)) return res.status(403).end();
 ```
 ```go
 c := toft.CallerFor(r.Header)
-```
-```python
-toft.caller(req.headers)
+if !c.AtLeast(toft.RoleEditor) { … }
 ```
 ```r
-caller_role(); caller_can("editor")
+caller_role(req$HEADERS)                 # "editor", "viewer", ... or "unknown"
+caller_can(req$HEADERS, "editor")        # TRUE / FALSE
 ```
 
-**No round trip.** The role arrives signed on the request and is verified
-locally against a key in your environment.
+The role arrives signed on every request and is verified locally against
+`TOFT_ROLE_KEY`. It never fails: a missing, invalid or expired role reads as
+`unknown`, and every `at_least` check on it is false. Use this in request
+handlers. See [The six roles](../../reference/roles/).
 
-**It never fails.** Off-platform, or on a request that did not come through the
-gateway, the role is `unknown` and every `atLeast` is false. That is the safe
-direction: absent, unverifiable and expired are one word, and that word refuses.
+## `who`: who they are
 
-This is the one to reach for in a request handler. See
-[The six roles](../../reference/roles/).
-
-## `who` — who they are
-
+```python
+me = toft.who(request.headers)           # Identity, or None
+if me and (me.role == "owner" or me.is_admin):
+    render_admin_tab()
+if me and "finance" in me.group_names:
+    render_approvals()
+```
 ```js
-const who = await toft.who(req.headers);
-if (who?.role === "owner" || who?.isAdmin) renderAdminTab();
+const me = await toft.who(req.headers);
+if (me?.role === "owner" || me?.isAdmin) renderAdminTab();
+```
+```go
+me, err := toft.Who(ctx, r.Header)       // *Identity, or nil
+```
+```r
+me <- viewer(req$HEADERS)                # a list, or NULL
 ```
 
-Returns an identity, or **`null` for an anonymous visitor** — because that is an
-answer, not a failure.
+An identity has `id`, `name`, `email`, `role`, `is_admin` and `groups`. It returns nothing
+for an anonymous visitor, because that is an answer, not an error.
 
-It fails for exactly one thing: **an app an administrator has not enabled viewer
-identity on.** That is a configuration gap to close, not a runtime state to
-branch on. `204` and `403` never collapse into each other.
+It fails for one reason: viewer identity is not switched on for this app. That
+is an administrator's setting, not a state to branch on.
 
-Cached for 60 seconds keyed on the blob; pass `refresh` to bypass.
+- `role` is `owner`, `editor` or `viewer` on this app in Toft. A rule about your
+  own domain, such as who approves invoices, belongs on groups.
+- `is_admin` is separate. Administrators effectively own every app, so gating on
+  `role == "owner"` alone would include all of them.
+- `email` is empty on a public app.
 
-## `viewer` — act as them
+Answers are cached for 60 seconds. Pass `refresh=True` (Node `{ refresh: true }`,
+Go `WhoNow`) to bypass.
 
+## `viewer`: act as them
+
+```python
+me = toft.viewer(request.headers)
+me.jobs.start("reconcile", params={"month": month})
+```
 ```js
 const me = toft.viewer(req.headers);
 await me.jobs.start("reconcile", {});
 ```
+```go
+me, err := toft.ViewerFor(r.Header)
+me.Jobs.Start(ctx, "reconcile", opts)
+```
 
-**Throws when there is nobody to act for.** That is deliberate: a silent
-downgrade would move a run out of a person's name and into nobody's, and you
-would only find out when you needed the audit trail.
+Work started through `viewer()` is recorded in that person's name. It raises
+when no one is signed in, rather than silently acting as the app. In R, pass the
+request's `X-Toft-Act-For` header value as `job_start(name, act_for = …)`.
 
 ## Your app enforces its own rules
 
-The platform tells your app what the caller may do. **Your app enforces nothing
-on the platform's behalf, and the platform enforces nothing inside your app.**
+The platform tells your app what the caller may do; it does not enforce anything
+inside your app. Protect your own admin screens.
 
-If you have an admin screen, protect it yourself.
-
-## Never assume
-
-- **Never trust an unverified header.** Anything that can reach your app can
-  send one. `caller()` verifies; reading the raw header does not.
-- **A role is not an identity.** Two people with the same role are
-  indistinguishable, and nothing in the role tells you a human is there at all.
-- **A Toft administrator with no grant reads as `viewer`.** The header
-  carries no admin bit. If you need to know, ask `who`.
-- **Nobody-in-particular is assertable**, and it is a narrowing that one
-  resolver refuses by name — an app cannot claim a run was started by somebody
-  it was not.
+- **Never trust a raw header.** Anything that can reach your app can send one.
+  `caller()` verifies the signature.
+- **A role is not an identity.** It doesn't say who, or whether a human is there.
+- **A Toft administrator with no grant on your app reads as `viewer`.** Use
+  `who` to see `is_admin`.

@@ -1,73 +1,75 @@
 ---
 title: Environment variables
-description: What Toft puts in your app's environment, and what it never does.
+description: The variables Toft sets for your app and its jobs, and what never reaches an app.
 ---
 
-## What every app gets
+## Every app
 
-| | |
+| Variable | |
 |---|---|
-| `PORT` | The port to bind. **Always use it**; never a port of your own. |
-| `BASE_PATH` | Your mount point, `/apps/your-slug`. Carry it in any absolute URL you hand the browser. |
+| `PORT` | The port to listen on. Never pick your own. |
+| `HOST` | The address to bind. `app.listen(port)` alone binds `0.0.0.0`, which bypasses the platform. |
+| `BASE_PATH` | Where the app is mounted, e.g. `/apps/reports`. |
+| `TMPDIR` | Points at the app's scratch directory. |
 
-Bind `127.0.0.1` in shared mode. The proxy strips the prefix before forwarding,
-so your server is mounted at the root — but the *browser* still needs the
-prefix.
+### Base paths
 
-A `Location` you send that is an absolute path is given the prefix on the way
-out; a relative one — `new/`, `?page=2`, `.` — is passed through untouched, and
-a cookie `Path` already under the prefix is left alone.
+The proxy strips `BASE_PATH` before your handler sees the request and adds it
+back on the way out.
 
-## What the SDK reads
+- **Links and form actions carry it.** `href="/apps/reports/new"`, or build them
+  from `toft.app.base_path`. A root-absolute `/styles.css` asks the platform, not
+  your app, and 404s.
+- **Redirects must not.** Send `Location: /done`; the proxy prefixes it.
+  Relative redirects (`new/`, `?page=2`) pass through untouched.
 
-| | |
+## Read by the SDK
+
+You rarely read these yourself.
+
+| Variable | |
 |---|---|
-| `TOFT_API_URL` | Where to call the platform back. |
-| `TOFT_APP_ID`, `TOFT_APP_SLUG` | This app's identity. |
-| `TOFT_APP_TOKEN` | The app's own credential. Not set inside a job. |
-| `TOFT_ROLE_KEY` | Verifies the signed role, locally. |
-| `TOFT_SCRATCH_DIR` | Where `scratch_dir` lives. |
-| `TOFT_STORAGE` | Resolves `storage("name")`. |
+| `TOFT_API_URL` | Where to call the platform. |
+| `TOFT_APP_ID`, `TOFT_APP_SLUG` | This app. |
+| `TOFT_APP_TOKEN` | The app's own credential (`tofta_`). Not set inside a job. |
+| `TOFT_ROLE_KEY` | Verifies the signed role header. |
+| `TOFT_SCRATCH_DIR` | The scratch directory. |
+| `TOFT_STORAGE` | The storage mapped to this app. |
 
 ## Inside a job
 
-| | |
+| Variable | |
 |---|---|
-| `TOFT_RUN_ID`, `TOFT_JOB_NAME` | This run, and the job it is a run of. |
-| `TOFT_JOB_TOKEN` | The run's credential — **exchanged, never extended**. It is also what the SDK sends notifications with, and it opens nothing else. |
-| `TOFT_PARAMS` | The parameters, as JSON values. Each one is also `TOFT_PARAM_<NAME>`, so a shell job need not parse JSON. |
-| `TOFT_SCHEDULED_FOR` | The instant this run is for, RFC 3339 in the schedule's zone. **Absent** when nobody gave one — never set to now. |
-| `TOFT_TRIGGER`, `TOFT_TRIGGER_ROLE` | What started it, and as whom. |
-| `TOFT_INPUT_URI`, `TOFT_OUTPUT_URI` | Where the run reads and writes. |
+| `TOFT_RUN_ID`, `TOFT_JOB_NAME` | This run, and its job. |
+| `TOFT_JOB_TOKEN` | The run's credential. Also used to send notifications; it opens nothing else. |
+| `TOFT_PARAMS` | Parameters as JSON. Each is also `TOFT_PARAM_<NAME>`, for shell jobs. |
+| `TOFT_SCHEDULED_FOR` | The instant the run is for, RFC 3339 in the schedule's zone. Absent when none was given. |
+| `TOFT_TRIGGER`, `TOFT_TRIGGER_ROLE` | What started the run, and with which role. |
+| `TOFT_INPUT_URI`, `TOFT_OUTPUT_URI` | Where the run reads its payload and writes its output. Input is absent when no payload was given. |
 
-## Your own
+## Your own variables
 
-Set on the app's Settings tab, encrypted at rest, handed to the process at
-**start**.
+Set them on the app's **Settings** tab. They are encrypted at rest and applied
+at the next start: a restart is enough, no redeploy needed.
 
-**A change takes effect on the next start.** Editing a variable does not restart
-a running app.
+:::caution
+Your app does not inherit the platform's environment. It gets the variables
+above, a few basics such as `PATH` and `HOME`, and the ones you set. A variable that works on your laptop
+because it was in your shell will not be there.
+:::
 
-## The rule that surprises people
+Never set `NODE_ENV=production` as an app variable. It reaches the build, where
+npm skips dev dependencies and the build fails. The platform sets it for the
+running process.
 
-**Your app never inherits the platform's environment.** Not
-`os.Environ()`, not a passthrough, not a subset.
+## Never given to an app
 
-Your app gets the variables Toft chose to give it plus the ones you set,
-and nothing else. A variable that works on your laptop because it was already in
-your shell will not be there.
-
-## What never reaches an app
-
-- **No encryption key.** An app cannot decrypt anything, including its own
-  variables' ciphertext.
-- **No collector credential.** `OTEL_EXPORTER_OTLP_HEADERS` is never logged,
-  never returned by an API, and never inherited by a child.
-- **No git credential.** A connected git host is held by the platform.
+- The platform's encryption key.
+- The telemetry collector's credentials.
+- Git host credentials.
 
 ## Rendered documents
 
-A notebook or R Markdown document **executes at build time with your app's
-environment**, and what it prints goes into a published page. If you print a
-connection string, the connection string is on the page. The build names which
-variables were available, so this is not a surprise.
+A notebook, R Markdown or Quarto document runs at build time with your app's
+environment, and its output is published. If a chunk prints a connection string,
+the page shows it.

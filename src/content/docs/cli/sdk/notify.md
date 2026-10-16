@@ -1,88 +1,81 @@
 ---
 title: Notifications
-description: Sending as the app, and what a send actually promises.
+description: Send Slack messages, email and files as the app, through integrations an administrator attached.
 ---
 
-```go
-toft.Notify.Slack(ctx, "Ingest finished: 1,204 rows")
-toft.Notify.SlackFile(ctx, f, toft.SlackFileOptions{Title: "Weekly reconciliation"})
-toft.Notify.Email(ctx, toft.EmailMessage{To: to, Subject: subject, Text: body})
+```python
+toft.notify.slack("Ingest finished: 1,204 rows")
+toft.notify.slack_file("/tmp/recon.xlsx", title="Weekly reconciliation")
+toft.notify.email(to=["finance@example.com"], subject="Weekly report", text=body)
+toft.notify.send("teams", "Nightly load complete")
 ```
 ```js
 await toft.notify.slack("Ingest finished: 1,204 rows");
+await toft.notify.slackFile(file, { title: "Weekly reconciliation" });
 await toft.notify.email({ to, subject, text });
+await toft.notify.send("teams", "Nightly load complete");
 ```
-```python
-toft.notify.slack("Ingest finished: 1,204 rows")
+```go
+toft.Notify.Slack(ctx, "Ingest finished: 1,204 rows")
+toft.Notify.SlackFile(ctx, file, toft.SlackFileOptions{Title: "Weekly reconciliation"})
+toft.Notify.Email(ctx, toft.EmailMessage{To: to, Subject: subject, Text: body})
 ```
 ```r
-notify("Ingest finished: 1,204 rows")
+notify("slack", text = "Ingest finished: 1,204 rows")
 ```
 
-## As this app, not as you
+Your app supplies the message. The platform supplies the identity: the bot
+token, the channel, the From address. Your app never holds or chooses them, and
+sending a `channel`, `folder` or `url` field is refused.
 
-The message is yours; the identity is the platform's. Your app does not hold the
-bot token, does not name the channel, and does not choose the From address.
+## The calls
 
-**An app never speaks in the platform's voice.** A message from your app is
-attributed to your app.
+| Call (Python / Node) | Does |
+|---|---|
+| `send(kind, text, …)` | A message through any attached integration: `slack`, `teams`, `pagerduty`, … Options: `title`, `severity`, `dedup_key`. |
+| `resolve(kind, dedup_key)` | Close an incident this app raised. |
+| `deliver(kind, file, name=…)` | Put a file through an integration, such as SharePoint. A file is added, never replaced. |
+| `slack(text)`, `slack_file(file)` | Slack shortcuts. |
+| `email(to, subject, text, …)` | Email to any address. Also `html`, `cc`, `bcc`, `attachments`. |
+| `status(send)` | Read back one send's record. |
 
-## What a send promises
-
-**It returns once the platform has accepted and recorded it.** Delivery happens
-after, and the call does not wait for it.
-
-So the returned `Send` names a **record**, and that record — not the message —
-is what a workflow may rely on:
-
-```js
-const send = await toft.notify.slack("done");
-const status = await toft.notify.status(send.id);
-```
-
-**No status is ever a lie.** If it says it sent, it sent.
+Go has `Slack`, `SlackFile`, `Email` and `Status`. R has `notify(kind, ...)`,
+whose named arguments become the message body.
 
 ## Ask first
 
-```js
-if (!(await toft.app.can("slack"))) {
-  return renderSetupHint();
-}
+```python
+if not toft.app.can("slack"):
+    show_setup_hint()
 ```
 
-An app has none of a kind until an administrator attaches one. Checking at
-startup turns a 2am mystery into a sentence on a settings screen.
+An app has no integration of a kind until an administrator attaches one.
 
-## Four gates
+## What a send promises
 
-Every send passes the same four gates, with distinct codes, **re-checked before
-the transport**. A capability that was there when you checked and is gone by the
-time you send is refused rather than sent anyway.
+A send returns once the platform has **accepted and recorded** it. Delivery
+happens afterwards. The returned `Send` names the record:
 
-## Failure
+```js
+const send = await toft.notify.slack("done");
+const later = await toft.notify.status(send);   // .delivered, .blocked, .done
+```
 
-**A chosen destination that stops working fails. It never falls back.** Routing
-resolves in one place, and a broken destination is an error you can see rather
-than a message that quietly went somewhere else.
+Every send passes the same checks, re-checked just before delivery. An
+integration detached in between is refused, not sent. A destination that stops
+working fails; it never falls back to somewhere else.
+
+`blocked` means an administrator turned the capability off after the send was
+accepted. Retrying won't help until it is re-attached.
 
 ## From a job
 
-The same calls work inside a [job](../jobs/), in all four languages. A job holds
-no app token, so the SDK sends with the run's own credential, which the platform
-accepts for sending through the app's integrations **and nothing else** — the
-same gates, the same record, the same integrations an administrator attached to
-the app. That is how a batch app with no web server mails its nightly report.
+The same calls work inside a [job](../jobs/), in all four languages, using the
+run's own credential. Send before your command exits: a finished run's
+credential is refused.
 
-Send before the job's command exits: once the run has finished, its credential
-is refused.
+## Limits
 
-## Nothing here reads
-
-Integrations are outbound only. You cannot use one to read a channel, list
-files, or fetch a message. There is no inbound half.
-
-## Residue outlives you
-
-Three kinds leave residue on the far side — a message, a file — and its record
-outlives both the ledger's retention and the app itself. **Detaching reaches
-nothing already written.** Detach is not deletion.
+- **Outbound only.** No integration can read a channel or list files.
+- **Records outlive the app.** A message or file already delivered stays where
+  it landed. Detaching an integration deletes nothing.

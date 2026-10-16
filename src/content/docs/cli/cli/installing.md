@@ -1,55 +1,101 @@
 ---
 title: Installing toft
-description: Getting the binary, and what it is for.
+description: Install the toft command-line client on Linux, macOS or Windows, and keep it current.
 ---
 
-`toft` is Toft's command-line client: a single Go binary with no runtime and
-nothing to install alongside it.
+`toft` is Toft's command-line client: one binary, no runtime, no daemon. It
+pushes the directory on your disk to an install, watches the build, and reads
+the logs afterwards.
 
 :::note
-This guide is the two developer surfaces: `toft`, and the app SDK your code calls
-back with. Building an app is the **user guide**; running the install is the
-**admin guide**. Both are separate apps, installable from the gallery.
+This guide covers `toft` and the app SDK. Building and sharing apps in the
+browser is the **user guide**; running an install is the **admin guide**. Your
+install's **Documentation** page links to all three for its version.
 :::
 
-## Install
+## Linux and macOS
 
-Download the binary for your platform from the public download repository and
-put it on your `PATH`.
+```bash
+curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh
+```
 
-That repository holds **binaries and no source**. `toft` is built from the
-platform repository as a second Go module, and published outward — so the
-download repository is a delivery artifact rather than a mirror of the code.
+The script downloads the binary for your machine, checks it against the
+release's `SHA256SUMS`, and puts it in `/usr/local/bin` if you can write there,
+otherwise in `~/.local/bin`. It never uses `sudo`.
 
-The matrix is Linux, macOS and Windows on amd64 and arm64 —
-`lp_{linux,darwin}_{amd64,arm64}`, `toft_windows_amd64.exe` — with a
-`SHA256SUMS` beside them. The installer script covers the first two.
+| Option | Effect |
+|---|---|
+| `--version X.Y.Z` | Install that release. `latest` follows the newest one. |
+| `--dir DIR` | Install into `DIR`. |
+| `-q`, `--quiet` | Print only the installed path. |
+
+Pass options through the pipe with `sh -s --`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh -s -- --version 0.7.0
+```
+
+## Windows
+
+Download `toft_windows_amd64.exe`, rename it `toft.exe`, and put it on your
+`PATH`:
+
+```powershell
+curl.exe -fsSLo toft.exe https://github.com/larchway-labs/toft-cli/releases/latest/download/toft_windows_amd64.exe
+```
+
+:::caution[Unsigned binaries]
+The binaries are not code-signed. On Windows, Smart App Control may refuse
+`toft.exe`. On macOS, a binary installed by the script runs; one downloaded
+through a browser has to be cleared by Gatekeeper first.
+:::
+
+## Platforms
+
+| OS | Architectures | Release asset |
+|---|---|---|
+| Linux | amd64, arm64 | `toft_linux_amd64`, `toft_linux_arm64` |
+| macOS | Intel, Apple Silicon | `toft_darwin_amd64`, `toft_darwin_arm64` |
+| Windows | amd64 | `toft_windows_amd64.exe` |
+
+Releases live at
+[larchway-labs/toft-cli](https://github.com/larchway-labs/toft-cli/releases),
+which holds binaries and checksums, not source. To verify a manual download:
+
+```bash
+grep toft_linux_amd64 SHA256SUMS | sha256sum -c
+```
+
+## Check the version
 
 ```bash
 toft --version
-toft 0.6.4 (build 4f2a1c9e)
+# toft 0.7.0 (build 4f2a1c9e…)
 ```
 
-**The build id is there so two builds of one tag are tellable apart.** A tag is
-never re-pointed, so this is not about drift in the release — it is about
-telling a binary you built from a binary you downloaded, and about a fix that
-was published after a tag went out.
+The build id tells two binaries with the same version number apart. A local
+`go build` prints no build id.
 
-## What it is for
+An older `toft` works against a newer install. It prints one dimmed line saying
+so and carries on.
 
-Two jobs, and the first is the reason it exists:
+## Upgrade and uninstall
 
-- **`toft deploy` pushes what is on your disk right now** — uncommitted changes
-  included, without pushing to a git host first. That is the fast loop while you
-  are still working something out.
-- Everything else you can do on the app's page, from a terminal: logs, status,
-  restarts, jobs, tasks, files, rollbacks.
+Re-run the install script to upgrade. Your sign-in in `~/.config/toft` is kept.
+On Windows, replace `toft.exe` with the new download.
 
-## What it does not do
+To uninstall:
 
-**`toft deploy` does not convert your app.** Pushing from your machine to an app
-that was created from a git repository does not detach it from that repository
-or change how it updates. The two doors lead to the same app.
+```bash
+rm "$(command -v toft)"
+rm -rf ~/.config/toft
+```
 
-**It never shells out to git.** A plain folder that is not a repository bundles
-and deploys exactly like a checkout does.
+Deleting the config directory does not revoke your keys. Revoke them under
+**Account → API keys** on the install.
+
+## Next
+
+- [Sign in](../signing-in/) to an install.
+- [Deploy](../deploying/) a directory.
+- Call the platform from your code with the [SDK](../../sdk/what-it-is/).

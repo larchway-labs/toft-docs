@@ -1,146 +1,144 @@
 ---
 title: Deploying
-description: What gets sent, how the app is chosen, and the ignore rules.
+description: Create an app, push your working tree to it, and read why a deploy failed.
 ---
 
+`toft deploy` bundles the directory as it is, uncommitted edits included, and
+deploys it. It needs no git remote, no commit, and no repository.
+
+## First deploy
+
 ```bash
-toft deploy
+cd ~/code/my-app
+toft create --link     # claim a slug, deploy this tree, write toft.toml
+toft deploy            # every deploy after that
 ```
 
+`toft create` names the slug it is about to claim and asks first; `--yes`
+answers. If the slug is taken, the install picks a free one and `toft` says
+which. All flags are in the [command reference](../commands/#toft-create).
+
+## From a repository, or one folder of it
+
+```bash
+toft create --repo https://github.com/acme/tools --branch main --subdir services/billing
+```
+
+With `--subdir`, only that folder becomes the release: no `.git`, nothing outside
+it. The slug defaults to the folder's name (`billing`), and `toft status` shows
+the folder. A folder path containing `..`, `.git`, or a symlink is refused.
+
+To rebuild from the repository later:
+
+```bash
+toft redeploy
+```
+
+`toft redeploy` uploads nothing. It prints the repository and branch first, and
+is refused on an app created from an upload.
+
+:::note
+`toft deploy` to a repository-backed app deploys your local tree, but does not
+detach the app. The next deploy from the repository replaces your code, and
+`toft status` says so while it is true.
+:::
+
 ## Choosing the app
+
+`toft` finds the app in this order: `--app`, `TOFT_APP`, `.toft.toml`, then
+`toft.toml`.
+
+```bash
+toft link my-app              # write [app] slug into toft.toml
+toft link my-app --local      # write .toft.toml instead, and offer to gitignore it
+toft link my-app-stg --install https://staging.toft.corp
+```
 
 ```toml
 # toft.toml
 [app]
-slug = "phase-test"
+slug = "my-app"
 
-# a checkout that targets two installs says so, and neither is wrong
 [app.installs."https://staging.toft.corp"]
-slug = "phase-test-stg"
+slug = "my-app-stg"
 ```
 
-`toft link <slug>` writes that table for you, and **resolves the slug against the
-install first**, so a typo fails at link time rather than at deploy time.
-`--local` writes `.toft.toml` and adds it to `.gitignore` instead.
-
-Or pass `--app <slug>`.
+`toft link` checks the slug against the install first, so a typo fails here
+rather than at deploy time. `toft deploy` never creates an app.
 
 ## What goes in the bundle
 
-**`.gitignore` decides** — every one in the tree, `!` negations honoured, plus
-`.git/info/exclude`. `.toftignore` is **additional, never a replacement**.
+Every `.gitignore` in the tree decides, with `!` negations, plus
+`.git/info/exclude`. A `.toftignore` adds to them. `toft` never runs git.
 
-Git is never shelled out to, because a plain folder that is not a repository has
-to bundle too.
+| Always dropped | Dropped only when the root has a `package.json` |
+|---|---|
+| `.git/`, `.hg/`, `.svn/`, `node_modules/`, `venv/`, `.venv/`, `__pycache__/`, `*.pyc`, `.DS_Store` | `dist/`, `build/`, `out/`, `.next/`, `.nuxt/`, `.svelte-kit/` |
 
-**Always dropped:** `.git/`, `.hg/`, `.svn/`, `node_modules/`, `venv/`,
-`.venv/`, `__pycache__/`, `*.pyc`, `.DS_Store`.
+A `[static] root` that points into one of those folders keeps it.
 
-**Dropped only when the tree root has a `package.json`:** `dist/`, `build/`,
-`out/`, `.next/`, `.nuxt/`, `.svelte-kit/`. That is the right bet for a Node
-project and the wrong one for a static site — so the always-list **yields to a
-`[static] root` pointing inside an excluded path**, and your `dist/` ships.
+Files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`,
+`id_ed25519*`) are uploaded with a warning, not refused.
 
-A bundled `.env*`, `*.pem`, `id_rsa*` or `*.key` gets one dimmed line and is
-**not** refused. Read those lines.
+Do not install dependencies before deploying; the install resolves them. For R,
+ignore `renv/library/` and ship `renv.lock`.
 
-## Following it
+## Watching a deploy
 
 ```bash
-toft deploy --logs          # stream the build
-toft deploy --no-watch      # fire and return
-toft deploy --watch <id>    # rejoin one you left
-toft deploy --json          # for a script
+toft deploy --logs          # stream the build log
+toft deploy --no-watch      # start and return the deployment id
+toft deploy --watch <id>    # rejoin a deploy started earlier
+toft deploy --json          # NDJSON progress frames, then one result object
 ```
 
-**`--watch` on a build that has already failed still tells you why**, not just
-that it is over — which is what makes it safe to run from a script a few seconds
-behind the deploy.
+`--watch` on a deploy that already failed still prints why.
 
-## When it fails, in full
+## When a deploy fails
 
-A failed deploy carries a **reason key**, the **whole message**, and the detail
-the reason names — a tail of the build log, or the dependency findings. All
-three are in the `--json` result object, so a program has something to act on
-rather than a paragraph to match against.
+The result carries a `reason`, the full message, and the detail that reason
+needs: a tail of the build log, or the dependency findings.
 
-| Reason | Where the answer is |
+| `reason` | Where to look |
 |---|---|
-| `source_unavailable` · `source_blocked` | The URL, the credential, or your administrator's source policy |
-| `dependency_blocked` | `toft deps` — the packages, the advisories, the fixed versions |
-| `unsupported_framework` · `manifest_invalid` · `runtime_version` | The declaration, or `toft.toml` |
-| `build_failed` | The **build** log |
-| `publish_failed` | The artifact store |
-| `start_failed` · `not_ready` | The **app** log, for the second one |
-| `internal_error` | Retry, then tell somebody |
+| `build_failed` | The build log: `toft logs --deploy <id>`. |
+| `start_failed`, `not_ready` | It built but did not answer. Read the app log: `toft logs`. |
+| `dependency_blocked` | `toft deps`: the packages, advisories, and fixed versions. |
+| `manifest_invalid` | `toft.toml`. The message names the field. |
+| `unsupported_framework` | Nothing in the tree the install knows how to serve. |
+| `runtime_version` | The language version you declared is not available. |
+| `source_unavailable`, `source_blocked` | The repository URL, the credential, or the install's source policy. |
+| `publish_failed` | The install's artifact store. Tell an administrator. |
+| `internal_error` | Retry, then tell an administrator. |
 
-**A deploy also says what it ignored.** Warnings are printed and carried in the
-`--json` result — a `[tasks]` table in `toft.toml` produces one, because
-tasks are not declared in the manifest.
+A successful deploy can carry `warnings`, such as a `[tasks]` table in
+`toft.toml`, which nothing reads. They print, and appear in the `--json`
+result.
 
-**A locked app is exit 2**, and the refusal names whether an administrator or the
-dependency sweep locked it.
-
-**A pnpm or Yarn lockfile is passed over, not refused.** The install reads
-`package-lock.json` only. An app locking with `pnpm-lock.yaml` or `yarn.lock`
-deploys, resolves its versions fresh, and the build log names the lockfile it
-did not read — so the versions installed can differ from the ones you pinned.
+A locked app is refused with exit 2 before anything is built. Retrying will not
+help until an administrator lifts the lock.
 
 ## A program with no web server
 
 ```toml
 # toft.toml
 [batch]
-language = "python"   # only when the tree has more than one language's project file
+language = "python"   # only if the tree has more than one language's project file
 
 [jobs.nightly-extract]
 command  = "python extract.py"
 schedule = "0 3 * * *"
 ```
 
-An empty `[batch]` table makes the app a **batch app**: the deploy installs its
-dependencies — Node, Python, Go or R — starts nothing, and the app's work is its
-jobs. It is never guessed from the tree, because a batch program and a web app
-look the same from outside.
+A `[batch]` table makes a **batch app**: the deploy installs dependencies for
+Node, Python, Go or R, starts nothing, and the app's work is its
+[jobs](../../sdk/jobs/). It settles as `ready`, and `restart`, `start` and `stop`
+are refused with `no_service`. `[batch]` together with `[static]` is refused.
 
-The deploy ends by saying *batch app — runs jobs, serves no pages* where it
-would print the address, and the app settles as `ready` rather than `running`.
-There is nothing to open, restart or stop; see [Jobs](../../sdk/jobs/).
-`[batch]` beside `[static]` is refused.
+## Publishing from RStudio
 
-## Creating rather than updating
-
-```bash
-toft create .                       # create an app and deploy this tree into it
-toft create --repo <url> --branch x # the same command from the other door
-```
-
-`toft create` **names the slug before claiming it** and confirms unless `--yes`,
-because it enters the estate's namespace. If the server uniquified the slug, it
-says so prominently.
-
-## Redeploying from the repository
-
-```bash
-toft redeploy
-```
-
-Builds again from the repository the app names, and **uploads nothing**. It
-prints the repository and branch first — on an app that has been `toft deploy`ed
-to, that is the surprise it exists to make visible.
-
-An app created from an upload is refused here, naming `toft deploy`.
-
-## Publishing from RStudio instead
-
-R developers can keep the **Publish** button. In RStudio, add an account of the
-*Posit Connect* kind and give it the install's address. The sign-in goes
-through the same approval page as `toft login`, and what it creates is an
-ordinary personal key named *RStudio (rsconnect)*, listed with your other keys
-and revoked the same way. `rsconnect::deployApp()` then creates the app,
-uploads and deploys it, and shows the build log.
-
-What Connect has and Toft does not — content settings, access lists,
-vanity URLs, schedules — is not imitated. A name already taken is refused rather
-than given a suffix, because rsconnect finds its content again by name. For
+R developers can use RStudio's **Publish** button instead. Add an account of the
+*Posit Connect* kind with the install's address. Sign-in goes through the same
+approval page as `toft login` and creates a personal key named
+*RStudio (rsconnect)*. A name already taken is refused rather than renamed. For
 anything scripted, use `toft`.

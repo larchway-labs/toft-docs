@@ -1,92 +1,71 @@
 ---
 title: The app itself
-description: Identity, and asking what an administrator attached.
+description: Read the app's id, slug, mode and mount path, and ask what an administrator attached.
 ---
 
 ## Who am I
 
-```go
-self, err := toft.App.Self(ctx)     // id, slug, mode
+```python
+toft.app.id, toft.app.slug, toft.app.name, toft.app.mode, toft.app.base_path
 ```
 ```js
-await toft.app.slug();
-```
-```python
-toft.app.slug()
-```
-```r
-app_info()
-```
-
-Useful for building a link back to yourself, and for logging that names the app
-rather than the process.
-
-## Where am I mounted
-
-```python
-toft.app.base_path()
-```
-```js
-toft.app.basePath();
+await toft.app.slug();   // also id(), name(), mode(), basePath()
 ```
 ```go
-toft.App.BasePath()
+self, err := toft.App.Self(ctx)   // self.ID, .Slug, .Name, .Mode, .BasePath
 ```
 ```r
+info <- app_info()                # info$slug, info$base_path, ...
 app_base_path()
 ```
 
-Your app is served under `/apps/<slug>`, and this is that prefix — what every
-link and form action has to carry. It falls back to `BASE_PATH` in the
-environment, so it answers the same thing whichever way you got there. See the
-[base paths](../../reference/environment/) rule for which half of a response
-carries it and which must not.
+:::caution[Node: these are async]
+In Node, `toft.app.slug()` returns a Promise. Forget the `await` and a template
+renders `[object Promise]`. In Python they are plain properties.
+:::
 
-## Which mode am I in
+The answer is fetched once and cached for the life of the process. Call
+`toft.app.refresh()` (Go: `toft.App.Refresh()`) to re-read it.
 
-`self.mode` is **this workload's** mode, from the deployment that started it —
-not the app's configured setting, and correct on the first request rather than
-after a restart. An app that behaves differently in shared and isolated mode can
-read it and be right immediately.
+### Base path
+
+Your app is served under `/apps/<slug>`, and `base_path` is that prefix. Build
+every link and form action from it. Redirects (`Location`) must not include it;
+the proxy adds it. It falls back to the `BASE_PATH` variable, so it is never empty
+on a mounted app. See [Environment variables](../../reference/environment/).
+
+### Mode
+
+`mode` is `shared` or `isolated` for **this** running workload, taken from the
+deployment that started it. It is correct on the first request.
 
 ## What did an administrator attach
 
-```go
-ok, err := toft.App.Can(ctx, "email")
+```python
+if toft.app.can("email"): ...
 ```
 ```js
 if (await toft.app.can("email")) { … }
 ```
-```python
-if toft.app.can("email"): ...
-```
-```r
-caller_can("email")
+```go
+ok, err := toft.App.Can(ctx, "email")
 ```
 
-**Ask at startup, not at send time.** `can()` is cheap and cached. An app that
-checks when it boots can render "email is not enabled for this app" on a
-settings screen — which somebody can act on — instead of failing at 2am in a log
-nobody is reading.
+`can()` takes an integration name (`email`, `slack`) or a full capability
+(`email.send`). `toft.app.capabilities` lists everything attached.
 
-## An app has none of a kind until it is attached
+Check at startup. An app that does can tell someone "email is not enabled for
+this app" on a settings screen instead of failing later in a log.
 
-**Absent, not off.** A kind an administrator has not attached is not a disabled
-capability; it is not there. `can()` answering false means "nobody attached
-one", and the fix is a conversation with your administrator, not a retry.
+A kind nobody attached is absent, not switched off. The fix is to ask an
+administrator, not to retry.
+
+R has no `can()`. `app_info()` includes the capabilities the install granted.
 
 ## What the app is not told
 
-- **Which channel, folder or address** an integration points at. Scope is welded
-  to the connection and belongs to the administrator.
-- **Whether a viewer is an administrator**, from the role alone. The header
-  carries no admin bit. An app that needs to know is asking about a *person* —
-  that is [`who`](../viewer/).
-- **Anybody's group membership.** Groups are the install's, not the app's.
-
-## Failing off-platform
-
-Run your app on your laptop and every platform call fails, **naming the
-environment variable that is missing**. That is deliberate: there is no dry-run
-mode, because an SDK that printed to a console instead of paging a channel would
-be a trap that only springs in production.
+- Which channel, folder or address an integration points at. That belongs to
+  the administrator.
+- Whether a viewer is a Toft administrator, from the role alone. Use
+  [`who`](../viewer/).
+- Other people's group memberships.
