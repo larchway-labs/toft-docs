@@ -15,9 +15,12 @@ If an administrator has granted you access to a store, or to a folder of one, yo
 toft store ls                                  # stores and folders you can reach, with your level
 toft store ls reports                          # one level: folders, then files
 toft store ls reports/2026-08                  # the level below
-toft store put reports ./summary.csv --as 2026-08/summary.csv
-toft store get reports 2026-08/summary.csv -o summary.csv
-toft store rm  reports 2026-08/summary.csv     # needs full
+toft store put --as 2026-08/summary.csv reports ./summary.csv
+toft store get -o summary.csv reports 2026-08/summary.csv
+toft store rm  reports/2026-08/summary.csv     # needs full
+toft store cp -r ./out toft://reports/2026-09/  # a whole folder up
+toft store cp -r toft://reports/2026-08/ ./aug  # and down
+toft store mv toft://reports/draft.csv toft://reports/final.csv
 ```
 
 `toft store ls` prints each folder the way you type it back, so you can copy a line into the next command.

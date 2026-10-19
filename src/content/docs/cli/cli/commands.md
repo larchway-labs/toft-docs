@@ -207,10 +207,28 @@ Files in a store an administrator granted you, from outside the platform.
 | Subcommand | |
 |---|---|
 | `ls` | What you can reach, and at what level. |
-| `ls <store>[/<folder>]` | One level: folders, then objects. |
-| `put <store> <file>` | Upload. `--as <name>` stores it under another name. |
-| `get <store> <name>` | Download. `-o`, `--out <file>` names the local file. |
-| `rm <store> <name>` | Delete. Needs full access. |
+| `ls [-r] <store>[/<folder>]` | One level: folders, then objects. `-r` lists everything beneath. |
+| `cp [-r] <from> <to>` | Copy a file, or with `-r` a folder's contents, up, down or between stores. The store side is `toft://<store>/<path>`. |
+| `mv [-r] <from> <to>` | Move or rename: copy, then delete each source once its copy has landed. |
+| `mkdir <store>/<folder>` | Create an empty folder. |
+| `rm [-r] <store>/<name>` | Delete an object, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
+| `put <store> <file>` | Upload one file. `--as <name>` stores it under another name. |
+| `get <store> <name>` | Download one file. `-o`, `--out <file>` names the local file. |
+
+```bash
+toft store cp -r ./out toft://reports/2026/march/     # upload a folder's contents
+toft store cp -r toft://reports/2026/ ./reports        # download a folder
+toft store mv toft://reports/draft.csv toft://reports/final.csv
+toft store rm -r --yes reports/2025/
+```
+
+Flags for the tree commands: `-j <n>` transfers at once (default 4), `--force`
+to let a download replace local files (otherwise it refuses before transferring
+anything), and `--yes` to answer the confirmation `rm` and a local-to-store `mv`
+ask for. A folder exists while something is in it; `mkdir` writes an empty
+marker so an empty folder stays. A move that fails partway leaves both copies of
+what it had not finished, never neither. A copy between two store paths passes
+through your machine.
 
 | Access level | Allows |
 |---|---|
