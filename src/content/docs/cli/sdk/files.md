@@ -78,6 +78,39 @@ install. Each mount carries its `access` level: Python `read_only`, Node
 
 A `.sqlite` or `.duckdb` file on a mapped volume is opened directly at its path.
 
+### A store, mounted or not
+
+A store is also reached through Toft's signed URLs, whether or not it is
+mounted. On an install with no cluster, that is the only way: the store has no
+path, `.path` raises, and `put` tells you to use `upload`.
+
+```python
+s = toft.store("uploads")
+s.upload("report.csv")                        # new objects only, at write
+data = s.download("report.csv")
+link = s.url("report.csv", attachment=True)   # for a browser, valid 15 minutes
+s.remove("report.csv")                        # needs full
+page = s.list("2026/")                        # .objects, .prefixes, .next_cursor
+```
+```js
+const s = toft.store("uploads");
+await s.upload(file);
+const link = await s.url("report.csv", { attachment: true });
+```
+```go
+s, err := toft.Store("uploads")               // s.Mounted() is false with no cluster
+_, err = s.Upload(ctx, localPath, "")
+link, err := s.URL(ctx, "report.csv", true)
+```
+```r
+s <- store("uploads")
+store_upload(s, "report.csv")
+store_url(s, "report.csv", attachment = TRUE)
+```
+
+The bytes go straight between your app and the object store. Anyone holding a
+link from `url` can read that object until it expires, so don't log one.
+
 :::caution[R: write with store_put]
 `file.copy()` onto a store mount creates an empty object and returns `FALSE`.
 Use `store_put()`.

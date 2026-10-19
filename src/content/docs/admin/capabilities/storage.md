@@ -61,6 +61,16 @@ SHARED_STORAGE_ROOTS=reports=/srv/toft/reports,archive=/srv/toft/archive:ro
 A resource under a `:ro` root can only be mapped read-only. The **Storage**
 check fails when a root's mount is gone or has turned read-only.
 
+With no cluster there is nothing to mount a bucket with, but you can still offer
+**object stores**. Set `STORE_UPLOADS=1` and grant the platform's credential
+access to the bucket, and *Object store* appears as a kind. People browse it
+with a grant, as anywhere else. Apps you map it to reach it through the SDK's
+`upload`, `download`, `url`, `remove` and `list` calls, at the mapping's level.
+The mapping's path is used only if the app later runs isolated.
+
+A store needs no root, and a volume still does. One volume per app, under a
+writable root, is a folder no other app can open.
+
 ## Things to know
 
 | | |
