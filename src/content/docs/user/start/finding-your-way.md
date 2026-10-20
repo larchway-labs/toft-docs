@@ -45,7 +45,7 @@ Under **Your account** (in the user menu):
 |---|---|
 | **Overview** | Who you are and your role. |
 | **Access** | Everything you can reach on this install. |
-| **Storage** | [Stores](../../data/browsing-a-store/) you hold a grant on. |
+| **Storage** | [Storage](../../data/browsing-a-store/) you hold a grant on. |
 | **Credentials** | Your [API keys](../../cli/api-keys/). |
 | **Security** | Sign-in history, and signing out everywhere. |
 
