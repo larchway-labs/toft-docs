@@ -104,3 +104,4 @@ upload goes into a mapped folder, never beside one. Under a `:ro` root a grant i
 | Browser uploads | Need **CORS on the bucket**. Without it the browser fails the upload and Toft never sees it |
 | Audit | Records the signed URL being issued; on a shared root, also the file arriving |
 | Deleting an app | Detaches its storage; **the data is kept** |
+| Deleting a resource | Refused while any app uses it — unmap them first. Under a shared storage root it **deletes the folder and every file in it**, after you type its slug; on a cluster the data is kept |
