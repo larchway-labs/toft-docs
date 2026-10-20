@@ -48,14 +48,15 @@ option it just says what it is. Whoever deployed Toft decides what's on offer.
 
 | Option on the form | Kind | Offered when | People can browse it |
 |---|---|---|---|
-| **EFS** | Volume | A cluster with `KUBE_STORAGE_CLASS` | No |
-| **Azure Files** | Volume | A cluster with `KUBE_STORAGE_CLASS` | No |
-| **Amazon S3 Files** | Volume | A cluster with `KUBE_S3FILES_STORAGE_CLASS`, or a host with `SHARED_STORAGE_ROOTS` | Yes |
+| **EFS** | Volume | A cluster whose `KUBE_STORAGE_CLASS` is an EFS class | No |
+| **Azure Files** | Volume | A cluster whose `KUBE_STORAGE_CLASS` is an Azure Files class | No |
+| **Amazon S3 Files** | Volume | A cluster with `KUBE_S3FILES_STORAGE_CLASS`, or a host with `SHARED_STORAGE_ROOTS` and `STORE_UPLOADS` for S3 | Yes |
 | **Host mount** | Volume | A host with `SHARED_STORAGE_ROOTS` | Yes, with Toft carrying the files |
 | **S3** | Object store | A cluster with `KUBE_STORE_CSI_DRIVER`, or any install with `STORE_UPLOADS` | Yes |
 | **Azure Blob** | Object store | A cluster with `STORE_ACCOUNT`, or any install with `STORE_UPLOADS` and `STORE_BACKEND=azblob` | Yes |
 
-- **EFS and Azure Files share one setting**, so a cluster offers both. Pick the
+- **EFS and Azure Files share one setting.** Toft reads the storage class to see
+  which one it is and offers that. If it can't tell, it offers both; pick the
   one your cloud provides.
 - **On Azure Files, use NFS 4.1** if an app keeps SQLite or DuckDB there. SMB
   can corrupt them, and Toft can't see which protocol a share uses.
