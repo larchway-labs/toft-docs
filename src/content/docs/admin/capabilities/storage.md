@@ -27,7 +27,8 @@ let an app read it, and attaching a resource to an app does not let you browse i
 - A level the driver cannot mount is **refused at attach**, never approximated. A
   `blob` store mounts only `read` and `full`; `write` and `overwrite` remain
   available over signed URLs (`toft store put`).
-- A resource gets browser and signed-URL routes only when it names a bucket.
+- A resource gets browser and signed-URL routes when it names a bucket or lives
+  under a shared storage root.
 - An `azurefiles` volume needs NFS 4.1 for an embedded database; the form says so,
   because the platform cannot check through the mount.
 
@@ -68,8 +69,32 @@ with a grant, as anywhere else. Apps you map it to reach it through the SDK's
 `upload`, `download`, `url`, `remove` and `list` calls, at the mapping's level.
 The mapping's path is used only if the app later runs isolated.
 
-A store needs no root, and a volume still does. One volume per app, under a
-writable root, is a folder no other app can open.
+A store needs no root, and a volume still does. Two apps mapped to one ordinary
+volume share it.
+
+### Partitioned volumes
+
+Create a volume as **Partitioned** to give out one share by folder. Each app is
+mapped to a folder, never the whole volume. Apps on the same folder share it and
+can edit each other's files, and no other app can open it. A folder can't sit
+inside another mapped folder, so `teams` is refused while `teams/sales` is mapped.
+Partitioned is fixed when the volume is created, and needs every app to run under
+its own account (`APP_USER_PER_APP`).
+
+### Limits
+
+An install holds at most **25** storage resources, and an app at most **5**
+mappings. A partitioned volume's folders don't count against the 25, so one
+partitioned share is the way to give many apps their own folder.
+
+### People reaching a shared root
+
+Grant someone a volume under a root and they reach it with `toft store` and the
+Files page, with Toft carrying the bytes. What they upload belongs to the apps on
+that folder, so those apps can edit and delete it. On a partitioned volume an
+upload goes into a mapped folder, never beside one. Under a `:ro` root a grant is
+`read` at most. It needs every app on its own account and the host's
+`fs.protected_hardlinks` set to 1; the **Storage** check says which is missing.
 
 ## Things to know
 
@@ -77,5 +102,5 @@ writable root, is a folder no other app can open.
 |---|---|
 | Names | A resource's slug is permanent; only its label can change |
 | Browser uploads | Need **CORS on the bucket**. Without it the browser fails the upload and Toft never sees it |
-| Audit | Records the signed URL being issued, not the file arriving |
+| Audit | Records the signed URL being issued; on a shared root, also the file arriving |
 | Deleting an app | Detaches its storage; **the data is kept** |

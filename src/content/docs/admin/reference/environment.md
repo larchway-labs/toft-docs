@@ -121,6 +121,7 @@ runs as root under PM2.
 | `APP_RUN_AS` | — | Run every app as this one account instead. |
 | `BLOCK_AWS_METADATA` | off | Stops apps reaching instance and task IAM credentials. Set it on AWS. |
 | `SHARED_STORAGE_ROOTS` | — | Storage for shared-mode apps: `name=/path[:ro]`, comma-separated. You mount; Toft mounts nothing. |
+| `SHARED_STORAGE_GID_RANGE` | `62000-62999` | Group numbers for storage, as `low-high`. The numbers are kept in the database, so they survive a container replacement. Change it only if the host uses that range. |
 
 ## Artifact store
 
