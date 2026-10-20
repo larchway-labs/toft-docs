@@ -1,107 +1,191 @@
 ---
 title: App storage
-description: Storage resources, backings, grants and mappings — how files reach apps and people, and what is refused.
+description: What a storage resource is, the two kinds, where the bytes can live, and how apps and people reach one.
 ---
 
-App storage gives apps files to read and write. Manage it in **Admin → Storage**.
+App storage gives apps durable files: a database file, uploads, datasets,
+reports. You manage it in **Admin → Storage**.
 
-## Four parts
+## How it fits together
 
-| Part | What it is | Belongs to |
+You create a **resource**: a directory on a file system, or a prefix in a
+bucket, that already exists. Toft never creates the file system or the bucket.
+Then you decide who reaches it:
+
+| Who | How you give it | What they get |
 |---|---|---|
-| **Resource** | A named store on this install | The install |
-| **Backing** | Where the bytes live | The resource |
-| **Grant** | Access to a folder for a person | A person |
-| **Mapping** | A resource attached to an app, at a level and folder | An app |
+| **An app** | **Attach** it, in the resource's *Apps* section | A path inside the app. No credential |
+| **A person** | **Grant** it, in the resource's *People* section | The storage browser and `toft store` |
+| **Someone you trust to attach it** | Make them a **delegate** | They attach it to apps they can edit, up to a level you set |
 
-A grant and a mapping never imply each other: granting yourself a folder does not
-let an app read it, and attaching a resource to an app does not let you browse it.
+Each attachment and each grant has a **level** and can be limited to a
+**folder**. That is the whole model. Everything below is a detail of one of
+those parts.
 
-## Kinds, backings and levels
+An app's attachment and a person's grant are separate. Granting yourself a
+folder doesn't let an app read it, and attaching a resource to an app doesn't
+let you browse it.
 
-| Kind | Backings | Levels |
+## Choose a kind
+
+The kind is what app code experiences, and it is the one choice that changes
+how an app has to be written.
+
+| | **Volume** | **Object store** |
 |---|---|---|
-| **volume** — durable filesystem | `efs`, `s3files`, `azurefiles`, `host` | `read`, `write` |
-| **store** — object store | `mountpoint` (S3), `blob` (Azure) | `read`, `write`, `overwrite`, `full` |
+| What it is | A real file system | A prefix in a bucket |
+| Files can be | Appended to, renamed, locked | Read and written whole only |
+| Use it for | SQLite and DuckDB, caches, working files | Datasets, model weights, exports, reports |
+| People can browse it | Depends on where it lives (below) | Yes |
 
-- A level the driver cannot mount is **refused at attach**, never approximated. A
-  `blob` store mounts only `read` and `full`; `write` and `overwrite` remain
-  available over signed URLs (`toft store put`).
-- A resource gets browser and signed-URL routes when it names a bucket or lives
-  under a shared storage root.
-- An `azurefiles` volume needs NFS 4.1 for an embedded database; the form says so,
-  because the platform cannot check through the mount.
+If you're not sure, ask whether an app will keep a database file in it. If yes,
+it's a volume.
 
-## Grants
+## Where the bytes live
 
-- A grant narrows only by folder. Two grants on the same key combine to the wider level.
-- **No admin bypass.** An administrator sees only folders granted to them; grant
-  yourself access if you need to look (it is audited).
-- Someone with no grant on the root sees the folders they were granted, not an empty store.
+The form offers only what this install is set up for, and when there is one
+option it just says what it is. Whoever deployed Toft decides what's on offer.
 
-## Mappings
+| Option on the form | Kind | Offered when | People can browse it |
+|---|---|---|---|
+| **EFS** | Volume | A cluster with `KUBE_STORAGE_CLASS` | No |
+| **Azure Files** | Volume | A cluster with `KUBE_STORAGE_CLASS` | No |
+| **Amazon S3 Files** | Volume | A cluster with `KUBE_S3FILES_STORAGE_CLASS`, or a host with `SHARED_STORAGE_ROOTS` | Yes |
+| **Host mount** | Volume | A host with `SHARED_STORAGE_ROOTS` | Yes, with Toft carrying the files |
+| **S3** | Object store | A cluster with `KUBE_STORE_CSI_DRIVER`, or any install with `STORE_UPLOADS` | Yes |
+| **Azure Blob** | Object store | A cluster with `STORE_ACCOUNT`, or any install with `STORE_UPLOADS` and `STORE_BACKEND=azblob` | Yes |
 
-A mapping is unique by **(resource, app, folder)**, so one app can mount two
-folders of one resource at different paths and levels. The SDKs then take the
-folder — `toft.storage(name, folder=…)` in Python, and peers in the other
-languages; asking by name alone when two mounts match is refused, naming both.
+- **EFS and Azure Files share one setting**, so a cluster offers both. Pick the
+  one your cloud provides.
+- **On Azure Files, use NFS 4.1** if an app keeps SQLite or DuckDB there. SMB
+  can corrupt them, and Toft can't see which protocol a share uses.
+- **Amazon S3 Files asks for the bucket behind the file system**, which is what
+  lets people browse it. Toft can't check it, and a wrong bucket lists the wrong
+  files.
+- **A bucket always comes with a prefix.** Apps and people see only what is under
+  it. A bucket root is refused.
+- **People reaching a bucket** also need `STORE_UPLOADS` and CORS on the bucket
+  (see [Things to know](#things-to-know)). People reaching a host mount need
+  every app on its own account (`APP_USER_PER_APP`) and the host's
+  `fs.protected_hardlinks` set to 1. The **Storage** check says which is missing.
 
-**Storage managers** may attach resources. A mapping records who wrote it, and
-revoking a manager unmounts their mappings — the one permission change that
-restarts a workload.
+## Levels
 
-## Shared mode
+A level is how a resource is mounted, not a permission app code asks for. A
+read-only mount can't be written to, whatever the code does.
 
-Toft mounts nothing itself in shared mode. You mount the filesystem and declare
-it:
+**What an app can be given:**
+
+| Kind | Levels |
+|---|---|
+| Volume | **Read only** · **Read & write** |
+| Object store | **Read only** · **Can add** · **Can replace** · **Can delete** |
+| Object store on Azure Blob | **Read only** · **Can delete** |
+
+**What a person can be given**, on any resource people can browse, volumes
+included:
+
+| Level | They can | In the API and CLI |
+|---|---|---|
+| **Read only** | List and download | `read` |
+| **Can add** | Also upload new files. Replacing one is refused | `write` |
+| **Can replace** | Also replace existing files | `overwrite` |
+| **Can delete** | Also delete | `full` |
+
+- Each level includes the ones above it.
+- **Can add** is the safe default for a dataset an app or a person contributes
+  to: nothing already there can be changed.
+- **Azure Blob can't be mounted at Can add or Can replace.** Its driver mounts
+  read-only or read-write, nothing between, so those two are refused when you
+  attach. Both still work for people.
+- A resource under a read-only host mount (`:ro`) is **Read only** for everyone.
+
+## Folders
+
+An attachment or a grant can name a folder, and then that folder is all it
+reaches. The app or person can't see the folders beside it.
+
+- **One app can attach one resource twice**, at two folders and two levels: for
+  example the root **Read only** and a `drop` folder **Can add**. App code then
+  names the folder to pick one.
+- **Two grants to one person add up.** A grant on `reports` and a grant on
+  `reports/2026` give the wider of the two inside `reports/2026`. To narrow
+  somebody, edit their wider grant.
+- Someone with no grant on the root sees only the folders they hold, never an
+  empty store.
+
+### Partitioned resources
+
+Create a resource as **Partitioned** to give out one share by folder. Each app
+is attached to a folder, never the whole resource. Apps on the same folder share
+it and can edit each other's files, and no other app can open it. A folder can't
+sit inside another attached folder, so `teams` is refused while `teams/sales` is
+attached.
+
+Partitioned is fixed when the resource is created. Under a host mount it needs
+every app to run on its own account (`APP_USER_PER_APP`), and the form doesn't
+offer it otherwise.
+
+## Delegates
+
+By default only administrators attach storage. Make someone a **delegate** of a
+resource, with a top level, and they can attach it to any app they can edit, at
+that level or below. Delegating an object store also lets them browse it at
+that level.
+
+Each attachment records who made it. Removing a delegate removes the
+attachments they made, and **restarts the apps that had them**. It is the one
+permission change in Toft that restarts a running app.
+
+## When changes take effect
+
+- **Attaching or detaching takes effect when the app next deploys or
+  restarts**, never under a running app.
+- **Grants take effect at once.**
+- **Renaming a resource** changes its label only. The slug is permanent, because
+  running apps mount by it.
+
+## Without a cluster
+
+On an install that runs apps as processes on one host, Toft mounts nothing. You
+mount the file system yourself and declare it:
 
 ```bash
 SHARED_STORAGE_ROOTS=reports=/srv/toft/reports,archive=/srv/toft/archive:ro
 ```
 
-A resource under a `:ro` root can only be mapped read-only. The **Storage**
-check fails when a root's mount is gone or has turned read-only.
+Each root is a place volumes can be created. A resource is a directory under
+it, and only apps attached to that resource can open it. If you declare one
+root, the form uses it without asking. The **Storage** check fails when a
+root's mount is gone or has turned read-only.
 
-With no cluster there is nothing to mount a bucket with, but you can still offer
-**object stores**. Set `STORE_UPLOADS=1` and grant the platform's credential
-access to the bucket, and *Object store* appears as a kind. People browse it
-with a grant, as anywhere else. Apps you map it to reach it through the SDK's
-`upload`, `download`, `url`, `remove` and `list` calls, at the mapping's level.
-The mapping's path is used only if the app later runs isolated.
+**Object stores work without a cluster too**, but they are never mounted. Set
+`STORE_UPLOADS=1` and give Toft's credential access to the bucket, and
+*Object store* appears as a kind. Attached apps reach it through the SDK's
+`upload`, `download`, `url`, `remove` and `list` calls, at the attachment's
+level. The path you give an attachment is used only if the app later runs on a
+cluster.
 
-A store needs no root, and a volume still does. Two apps mapped to one ordinary
-volume share it.
+**People reaching a volume under a root** use `toft store` and the storage
+browser, with Toft carrying the files. What they upload belongs to the apps on
+that folder, so those apps can edit and delete it. On a partitioned resource an
+upload goes into an attached folder, never beside one.
 
-### Partitioned volumes
+An app with a volume attached **fails to deploy** on a host that declares no
+roots, rather than writing into a folder the next deploy throws away.
 
-Create a volume as **Partitioned** to give out one share by folder. Each app is
-mapped to a folder, never the whole volume. Apps on the same folder share it and
-can edit each other's files, and no other app can open it. A folder can't sit
-inside another mapped folder, so `teams` is refused while `teams/sales` is mapped.
-Partitioned is fixed when the volume is created, and needs every app to run under
-its own account (`APP_USER_PER_APP`).
-
-### Limits
+## Limits
 
 An install holds at most **25** storage resources, and an app at most **5**
-mappings. A partitioned volume's folders don't count against the 25, so one
-partitioned share is the way to give many apps their own folder.
-
-### People reaching a shared root
-
-Grant someone a volume under a root and they reach it with `toft store` and the
-Files page, with Toft carrying the bytes. What they upload belongs to the apps on
-that folder, so those apps can edit and delete it. On a partitioned volume an
-upload goes into a mapped folder, never beside one. Under a `:ro` root a grant is
-`read` at most. It needs every app on its own account and the host's
-`fs.protected_hardlinks` set to 1; the **Storage** check says which is missing.
+attachments. Folders of a partitioned resource don't count against the 25, so
+one partitioned share is the way to give many apps their own folder.
 
 ## Things to know
 
 | | |
 |---|---|
-| Names | A resource's slug is permanent; only its label can change |
 | Browser uploads | Need **CORS on the bucket**. Without it the browser fails the upload and Toft never sees it |
-| Audit | Records the signed URL being issued; on a shared root, also the file arriving |
-| Deleting an app | Detaches its storage; **the data is kept** |
-| Deleting a resource | Refused while any app uses it — unmap them first. Under a shared storage root it **deletes the folder and every file in it**, after you type its slug; on a cluster the data is kept |
+| Audit | Records each upload or download link Toft issues. On a host mount, also the file arriving |
+| Administrators | **Have no automatic access** to a resource's files. Grant yourself if you need to look; it is audited |
+| Deleting an app | Detaches its storage. **The data is kept** |
+| Deleting a resource | Refused while any app uses it. On a cluster the data is kept. Under a host mount it **deletes the directory and every file in it**, after you type its slug |

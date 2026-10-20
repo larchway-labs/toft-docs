@@ -127,7 +127,7 @@ export default defineConfig({
             items: [
               { label: "App data", slug: "user/data/app-data" },
               { label: "App storage", slug: "user/data/app-storage" },
-              { label: "Browsing a store", slug: "user/data/browsing-a-store" },
+              { label: "Browsing storage", slug: "user/data/browsing-a-store" },
               { label: "Sending messages and files", slug: "user/data/integrations" },
             ],
           },

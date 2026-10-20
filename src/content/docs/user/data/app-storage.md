@@ -1,26 +1,47 @@
 ---
 title: App storage
-description: Durable volumes and object stores an administrator attaches to your app, and how your code finds them.
+description: Durable volumes and object stores an administrator attaches to your app, which one to ask for, and how your code finds them.
 ---
 
-App storage is for files: uploads, reports, exports. An administrator creates storage resources and attaches them to apps; you cannot attach one yourself.
+App storage is for files your app keeps: a database file, uploads, reports,
+exports. An administrator creates storage and attaches it to apps. You can't
+attach it yourself unless an administrator made you a delegate of that storage.
 
 :::note
 Storage is optional. If your install has none configured, your app has none. Ask your administrator before designing around it.
 :::
 
-## Volumes and stores
+Files your app only needs while it works go in [scratch space](../../cli/sdk/files/)
+instead. Scratch is there for every app, and it is wiped on every restart.
 
-| Kind | What it is | Access levels |
+## Which kind to ask for
+
+| | **Volume** | **Object store** |
 |---|---|---|
-| **Volume** | A durable filesystem. | `read`, `write` |
-| **Store** | An object store (a bucket), also mounted as a folder in your app. People with a grant can [browse it](../browsing-a-store/). | `read`, `write` (new files only), `overwrite`, `full` (also delete) |
+| What it is | A real file system | A folder in a bucket |
+| Files can be | Appended to, renamed, locked | Read and written whole only |
+| Use it for | SQLite and DuckDB, caches, working files | Datasets, model weights, exports, reports |
 
-The level is how the resource is mounted, not a permission your code asks for. A read-only mount cannot be written to, whatever your code does. Some backings cannot express every level; those levels are not offered when attaching.
+If your app keeps a database file, ask for a volume. An object store has no
+append, no rename and no locking, so a database on one breaks.
+
+## Access levels
+
+The level is how the storage is mounted into your app, not a permission your
+code asks for. A read-only mount can't be written to, whatever your code does.
+
+| Kind | Levels |
+|---|---|
+| Volume | **Read only** · **Read & write** |
+| Object store | **Read only** · **Can add** (new files only) · **Can replace** (also overwrite) · **Can delete** (also delete) |
+
+Some object stores can't be mounted at every level. Those levels aren't offered
+when attaching.
 
 ## Find storage from your code
 
-Look a resource up by the name your administrator gave it, never by its path, so the administrator can move it without breaking your app.
+Look storage up by the name your administrator gave it, never by its path, so
+the administrator can move it without breaking your app.
 
 ```python
 import toft
@@ -34,26 +55,39 @@ for m in toft.mounts():
     print(m.name, m.kind, m.path, m.access, m.folder)
 ```
 
-A miss raises an error that lists what is attached. The Node, Go and R SDKs have the same calls: see [the app SDK](../../cli/sdk/).
+A miss raises an error that lists what is attached. The Node, Go and R SDKs have
+the same calls: see [Files and scratch space](../../cli/sdk/files/).
 
-## One resource, two mounts
+On an install with no cluster an object store is not mounted, so it has no path.
+Your app reaches it with the SDK's `upload`, `download`, `url`, `remove` and
+`list` calls instead, which also work everywhere else.
 
-A resource can be attached twice at different folders and levels, such as the root read-only and a `drop` folder writable. Both share a name, so name the folder:
+## One storage, two mounts
+
+The same storage can be attached twice at different folders and levels, such as
+the root read-only and a `drop` folder writable. Both share a name, so name the
+folder:
 
 ```python
 toft.storage("warehouse", folder="")      # the root
 toft.storage("warehouse", folder="drop")  # the writable folder
 ```
 
-## Mappings and grants are separate
+## Your app's access and yours are separate
 
-- A **mapping** attaches a resource to your app.
-- A **grant** gives a person access to a store, or one folder of it.
+- **Attaching** gives your app a path.
+- **A grant** gives a person access in the [storage browser and
+  `toft store`](../browsing-a-store/).
 
-Neither implies the other.
+Neither implies the other. Your app having `reports` doesn't let you browse it,
+and your grant gives your app nothing.
 
 ## Good to know
 
-- **Browser uploads need CORS on the bucket.** Files go straight from the browser to the object store, so without CORS the upload fails in the browser and Toft never sees it.
-- **Removing storage never deletes files.** Detaching a resource or deleting an app leaves the data in place.
-- **Shared mode needs operator-declared roots.** On an install that runs apps as processes, durable storage works only from roots the operator declared (`SHARED_STORAGE_ROOTS`); otherwise attaching it is refused.
+- **Changes reach your app on its next deploy or restart.** Storage never appears
+  or disappears under a running app.
+- **Removing storage never deletes files.** Detaching storage or deleting an app
+  leaves the data in place.
+- **On an install without a cluster, a volume needs a host directory set up by
+  whoever runs Toft.** Without one, deploying an app with a volume attached is
+  refused.
