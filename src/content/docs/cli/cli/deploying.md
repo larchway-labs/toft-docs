@@ -107,8 +107,11 @@ deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
 refused, naming the same `reason` the deploy would fail with.
 
 A check cannot tell you whether the dependency policy will accept your packages,
-or whether the build and start will succeed. It says so in its answer. It needs
-an app to check against, so run it after `toft create` or `toft link`.
+or whether the build and start will succeed. It says so in its answer.
+
+You don't need an app yet. In a directory that is not linked, `toft check`
+checks the tree as a new app, so you can run it before `toft create` and claim a
+slug only once the answer is clean.
 
 ## Checking that it works
 
@@ -176,7 +179,7 @@ naming the next step. See [Errors as JSON](../exit-codes/#errors-as-json).
 ## After it is deployed
 
 ```bash
-toft env set --restart LOG_LEVEL=debug     # change a variable and apply it
+toft env set LOG_LEVEL=debug --restart     # change a variable and apply it
 toft visibility authenticated              # let anyone signed in open it
 toft deployments list                      # the history, * marks what is serving
 toft deployments prune --yes               # keep only the serving deployment

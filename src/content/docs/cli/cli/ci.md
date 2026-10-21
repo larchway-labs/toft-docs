@@ -37,7 +37,7 @@ is not a terminal. It then never prompts: anything that needs a confirmation
 set -euo pipefail
 
 toft whoami --app my-app                 # exits 3 if the key cannot be used
-toft check --app my-app                  # exits 1 if the deploy would be refused
+toft check --app my-app                  # exits 1 if the deploy would be refused (works before the app exists)
 toft deploy --logs --app my-app          # exits 1 if the build fails
 toft job run migrate --app my-app        # exits 1 if the migration fails
 toft restart --wait --app my-app         # exits 1 if the app does not come up
