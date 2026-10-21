@@ -172,8 +172,8 @@ needs: a tail of the build log, or the dependency findings.
 A successful deploy can carry `warnings`, such as a `[tasks]` table in
 `toft.toml`, which nothing reads, or a `.env` file the bundle carried. They
 print as sentences, and appear in the `--json` result as `warnings`, with
-`warning_details` giving each one a `code` (`manifest_unread`,
-`requires_python_excluded`) and, for a `toft.toml` key, its `table`.
+`warning_details` giving each one a `code` (`manifest_unread`) and, for a
+`toft.toml` key, its `table`.
 
 A locked app is refused with exit 2 before anything is built. Retrying will not
 help until an administrator lifts the lock.

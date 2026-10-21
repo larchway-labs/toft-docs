@@ -65,7 +65,7 @@ toft job run nightly-report --for 2026-10-06T03:00:00+01:00
 
 ```bash
 toft job run nightly-report     # waits; exit code is the run's outcome
-toft job runs                   # recent runs
+toft job runs [name]            # recent runs, of one job if named
 toft job logs --follow <runID>
 toft job cancel <runID>
 ```

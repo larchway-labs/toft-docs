@@ -64,7 +64,8 @@ the same calls: see [Files and scratch space](../../cli/sdk/files/).
 
 On an install with no cluster an object store is not mounted, so it has no path.
 Your app reaches it with the SDK's `upload`, `download`, `url`, `remove` and
-`list` calls instead, which also work everywhere else.
+`list` calls instead, which also work everywhere else, and from the app's jobs
+as well as from the app itself.
 
 ## One storage, attached twice
 

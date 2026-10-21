@@ -37,9 +37,14 @@ To stay on an older version, give an upper bound or an exact version
 
 ## Python's `requires-python`
 
-Toft does not pick a Python version from `requires-python` in `pyproject.toml`.
-With no `[runtime] python` pin, if `requires-python` excludes the version Toft
-chose, the deploy and `toft check` warn you and name a pin that satisfies it.
+With no `[runtime] python` pin, Toft uses the install's default Python unless
+`requires-python` in `pyproject.toml` rules it out. In that case it builds with
+the newest installed version that `requires-python` allows, and the build log and
+`toft check` say so. If no installed version is allowed, the deploy is refused
+and the error lists the versions the install has.
+
+A lower bound such as `>=3.8` never changes the version, because the default
+already satisfies it. To choose a version yourself, pin it with `[runtime] python`.
 
 ## Go
 
