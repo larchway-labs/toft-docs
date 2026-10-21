@@ -74,7 +74,7 @@ mounts()
 Storage is resolved **by name**. The administrator decides what `"reports"`
 points at, so the same code works in either execution mode and on another
 install. Each one carries its `access` level: Python `read_only`, Node
-`writable`, Go `ReadOnly()`.
+`readOnly` (and `writable`), Go `ReadOnly()`.
 
 A `.sqlite` or `.duckdb` file on an attached volume is opened directly at its path.
 
@@ -90,7 +90,7 @@ s.upload("report.csv")                        # new files only, at write
 data = s.download("report.csv")
 link = s.url("report.csv", attachment=True)   # for a browser, valid 15 minutes
 s.remove("report.csv")                        # needs full
-page = s.list("2026/")                        # .objects, .prefixes, .next_cursor
+page = s.list("2026/")                        # iterate it; .prefixes, .next_cursor
 ```
 ```js
 const s = toft.store("uploads");

@@ -21,6 +21,27 @@ The same fields are on every refusal, whether it came from your app's own calls
 or, inside a [job](../jobs/), from the run's calls such as `run.progress()` and
 `set_result()`.
 
+## Refusals the SDK makes itself
+
+Some refusals never reach the platform, because the SDK can see the answer
+first: a storage name nothing maps, a store that is reached over signed URLs
+rather than a path, a level too low to write. They carry the same fields, with
+`retryable` always false — a mapping or a name is wrong, and trying again
+changes neither.
+
+| `code` | When |
+|---|---|
+| `not_mapped` | No storage resource by that name is mapped to the app. |
+| `ambiguous_mount` | One name is mapped twice (two folders) and no folder was named. |
+| `not_mounted` | `.path` or `put` on a store that is not mounted here; use `upload`, `download`, `list`, `url`. |
+| `insufficient_access` | A write through a mapping that does not allow it. |
+| `already_exists` | An upload of a name that exists, at `write`. |
+| `not_a_store` | A store-only call on a volume. |
+| `invalid_name` | An empty name, an absolute one, or one with `.` or `..`. |
+| `viewer_required` | `jobs.mine()` on the app acting as itself. |
+
+In R these are `toft_error` conditions like the platform's, with `e$status` `NA`.
+
 ## Should I retry?
 
 Use `retryable`. It is the platform's decision, not a guess from the status: a

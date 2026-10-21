@@ -18,6 +18,10 @@ Listen on `PORT`, bound to `HOST`. Toft sets both.
 app.listen(process.env.PORT, process.env.HOST);
 ```
 
+Pass `HOST`. `app.listen(port)` alone binds every interface, where on an
+install that runs apps on its own host the app can be reached without going
+through Toft's sign-in. The build warns about it on every Node deploy.
+
 Your app is served under `/apps/<slug>`. For a plain Node app the proxy strips
 that prefix, so routes stay at `/`, but URLs you send to the browser must carry
 it. `BASE_PATH` holds it. See [Base paths](../base-paths/).
@@ -56,7 +60,8 @@ add a server and a `start` script.
 node = ">=22"
 ```
 
-Node is matched on the major version. See [Language versions](../versions/).
+Node is matched on the major version. See [Language versions](../versions/). `engines.node` and `.nvmrc` are
+not read; a tree that pins only there gets a `node_version_unread` warning.
 
 ## What doesn't work
 

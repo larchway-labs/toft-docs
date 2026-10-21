@@ -59,6 +59,12 @@ me <- viewer(req$HEADERS)                # a list, or NULL
 An identity has `id`, `name`, `email`, `role`, `is_admin` and `groups`. It returns nothing
 for an anonymous visitor, because that is an answer, not an error.
 
+It also returns nothing for a request made with an **API key** — `toft fetch`,
+`curl` with a key. Toft lets the key in as its owner but tells the app no
+person is behind it, and `viewer(headers)` refuses for the same reason. To test
+this code from a terminal, `toft fetch --session` sends the request as a
+signed-in browser (see [The administrator's session](../../cli/signing-in/#the-administrators-session)).
+
 It fails for one reason: viewer identity is not switched on for this app. That
 is an administrator's setting, not a state to branch on.
 

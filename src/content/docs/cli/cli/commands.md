@@ -24,6 +24,7 @@ Every command accepts these.
 | `-q`, `--quiet` | No narration. The answer still goes to stdout. |
 | `--yes` | Answer confirmations. Required when nothing can be asked. |
 | `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
+| `--session` | Act through the administrator session `toft login --password-stdin` stored, instead of the key. Never falls back to the key. See [The administrator's session](../signing-in/#the-administrators-session). |
 
 ## All commands
 
@@ -65,6 +66,8 @@ Every command accepts these.
 | `--forget <install>` | Drop one stored credential. Does not revoke the key. |
 | `--forget-all` | Drop every stored credential. |
 | `--token-stdin` | Read a personal or deploy key from stdin. |
+| `--password-stdin` | Sign in as the built-in administrator with a password from stdin; stores a session beside the key, used only with `--session`. |
+| `--user <name>` | With `--password-stdin`. Default `admin`. |
 | `--no-browser` | Print the approval URL instead of opening it. |
 
 ## `toft link`
@@ -84,6 +87,20 @@ slug exists. A slug together with a different `--app` is refused (exit 2).
 The argument is a directory, not a name. `toft create my-app` with no `my-app/`
 folder here exits 2 (`no_such_directory`) before anything happens, and suggests
 `--app my-app`, which is how you set the slug.
+
+**A slug you name is never renamed.** If the slug from `--app` or `toft.toml` is
+taken, `create` exits 2 with `name_taken` and suggests `toft link <slug>` then
+`toft deploy` if the app is yours. Only a slug taken from a folder or directory
+name is made unique (`my-app-2`), and that is said.
+
+With `--repo`, the repository and branch are checked before anything is created:
+one that does not exist, or is private with no credential set, is refused with
+`source_unavailable` and no app is left behind. A missing `--subdir` folder is
+still found by the first build.
+
+`--json` waits for the first build like `deploy --json`: progress lines, then one
+result object with the deploy's exit code. With `--no-watch` it prints the app
+document and returns.
 
 | Flag | |
 |---|---|
@@ -131,6 +148,10 @@ release can still be warming up. Any other answer, a 404 included, is final.
 
 With `--json`, the result object gains a `verify` field: `path`, `status`, `ok`,
 and the `body` when it failed. `--verify` cannot be combined with `--no-watch`.
+
+A failed check does not undo the deploy: the new release is serving. The message
+names `toft rollback --yes --app <slug>`, and under `--json` the `verify` object
+carries it as `next`.
 
 ## `toft check`
 
@@ -222,8 +243,9 @@ and prints the status line, then the body. The path is from the app's root:
 
 It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check that
 a deploy works. A path with a `.` or `..` segment (or `%2e`) is refused before
-anything is sent, exit 2 `invalid_path`: a fetch stays inside the app. The same
-goes for `--verify`. `--json` returns one document: `url`, `status`, a few useful
+anything is sent, exit 2 `invalid_path`: a fetch stays inside the app. So is an
+absolute URL (`https://…` or `//host/…`): `fetch` takes a path of the app, never
+an address. The same goes for `--verify`. `--json` returns one document: `url`, `status`, a few useful
 `headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
 
 When the platform answers in the app's place, for an app that is stopped,
@@ -242,6 +264,11 @@ Your key is sent only to the install's address for apps, and the install removes
 it before the request reaches your app. You never need the key in your shell, or
 to work out the app's URL yourself.
 
+Over a key, the app is told your role but not **who** you are: code that asks the
+SDK who is looking answers nobody. `toft fetch --session` (after
+[`--password-stdin`](../signing-in/#the-administrators-session)) sends the
+request as a signed-in browser, so that code sees a name.
+
 ## `toft apps`
 
 The apps you can see. `--mine` lists only the ones you own.
@@ -252,7 +279,7 @@ The apps you can see. `--mine` lists only the ones you own.
 |---|---|
 | `-f`, `--follow` | Keep printing new lines, each one once, as it arrives. |
 | `--lines <n>` | Lines of history to start with, in total across your app and the platform. Default 100. With `--deploy`, the last `n` lines of the build log, which is otherwise printed whole. Below 1 exits 2 (`invalid_lines`). |
-| `--source <app\|platform>` | Only one voice. |
+| `--source <app\|platform>` | Only one voice. Applied before `--lines`, so `--lines 20 --source platform` is the last 20 platform lines. |
 | `--since <t>` | RFC 3339, or a duration such as `2h`. |
 | `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. The id can be a [unique prefix](#deployment-ids); one that names nothing exits 2. |
 
@@ -264,6 +291,11 @@ is piped or redirected, or with `--no-color`, `NO_COLOR` or `TERM=dumb`.
 
 What the platform noticed going wrong, newest first: crashes, failed builds,
 refused deploys. Run it after a restart that did not take.
+
+Every time the app's process exits and is restarted, there is a **Restarted**
+event (`app_restarted`) with the exit code when it is known, and the same line
+in `toft logs --source platform`. A deploy or rollback you started that did not
+finish is recorded too, without notifying anyone.
 
 Flags: `--since <t>`, `--severity <s>`, `--kind <k>`, `--limit <n>`.
 
@@ -411,11 +443,11 @@ it. Without a terminal, `--yes` is required.
 
 | Flag | |
 |---|---|
-| `--param k=v` | A parameter. Repeatable. Values are strings, never parsed. |
+| `--param k=v` | A parameter. Repeatable. Values are strings, never parsed. A parameter with no name (`=x`) is refused, exit 2. |
 | `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`. No offset means UTC. |
 | `--no-wait` | Start and return the run id. |
 | `--logs` | Stream the run's log while waiting. |
-| `--timeout <d>` | How long to wait. Default: no limit. |
+| `--timeout <d>` | How long to wait. Default: no limit. Running out exits 1 and the run carries on; the message names the command that follows it. |
 | `--follow` | With `logs`: keep reading. |
 | `--limit <n>` | With `runs`: how many. |
 
@@ -466,7 +498,7 @@ Files in a store an administrator granted you, from outside the platform.
 | `mkdir <store>/<folder>` | Create an empty folder. |
 | `rm [-r] <store>/<name>` | Delete a file, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
 | `put <store> <file>` | Upload one file. `--as <name>` stores it under another name. |
-| `get <store>/<name>` | Download one file. `get <store> <name>` also works. `-o`, `--out <file>` names the local file; `--force` replaces one that exists. |
+| `get <store>/<name>` | Download one file. `get <store> <name>` also works. `-o`, `--out <file>` names the local file (`-o -` writes the file to stdout); `--force` replaces one that exists. |
 
 ```bash
 toft store cp -r ./out toft://reports/2026/march/     # upload a folder's contents
@@ -475,7 +507,7 @@ toft store mv toft://reports/draft.csv toft://reports/final.csv
 toft store rm -r --yes reports/2025/
 ```
 
-Flags for the tree commands: `-j <n>` transfers at once (default 4), `--force`
+Flags for the tree commands: `-j <n>` transfers at once (default 4; below 1 exits 2 `invalid_jobs`), `--force`
 to let a download replace local files (otherwise it refuses before transferring
 anything), and `--yes` to answer the confirmation `rm` and a local-to-store `mv`
 ask for. A folder exists while something is in it; `mkdir` writes an empty
