@@ -176,7 +176,7 @@ naming the next step. See [Errors as JSON](../exit-codes/#errors-as-json).
 ## After it is deployed
 
 ```bash
-toft env set LOG_LEVEL=debug --restart     # change a variable and apply it
+toft env set --restart LOG_LEVEL=debug     # change a variable and apply it
 toft visibility authenticated              # let anyone signed in open it
 toft deployments list                      # the history, * marks what is serving
 toft deployments prune --yes               # keep only the serving deployment

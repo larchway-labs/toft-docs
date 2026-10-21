@@ -260,12 +260,13 @@ The app's environment variables.
 
 ```bash
 toft env set DATABASE_URL=postgres://db/app LOG_LEVEL=info
-toft env set API_TOKEN=s3cr3t --sensitive --restart
-toft env unset LOG_LEVEL --restart
+toft env set --sensitive --restart API_TOKEN=s3cr3t
+toft env unset --restart LOG_LEVEL
 toft env list
 ```
 
-A value is taken as typed, split on the first `=`. The app reads its environment
+Flags go before the variables: `toft env set --restart KEY=VALUE`, not after
+them. A value is taken as typed, split on the first `=`. The app reads its environment
 when it starts, so a change applies at the next restart; `--restart` does that
 for you, and no redeploy is needed. Without it, `--json` says
 `"restart_needed": true`.
