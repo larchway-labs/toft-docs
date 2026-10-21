@@ -32,6 +32,11 @@ expect_within = "26h"               # alert if no success for this long
 
 On a cluster install each run gets its own pod; otherwise it is a separate process on the install's machine. Your app does not need to be running, and a run uses the deployment it was queued against.
 
+A queued run starts as soon as the install picks it up, and runs queued
+together start side by side, up to the app's in-flight limit. A run is stopped
+when its `timeout` is reached and recorded as **timed out**; what it printed up
+to then stays in its log.
+
 - **Static apps** cannot have jobs; declaring one fails the deploy. Rendered documents can.
 - A **locked** app runs no jobs: schedules stop, queued runs are cancelled and running ones stopped. See [locked apps](../../run/locked/).
 - A **batch app**, declared with `[batch]` in `toft.toml`, has jobs and no web server. Its status is **Ready** once deployed, and Restart, Stop and scheduled tasks are refused with `no_service`.

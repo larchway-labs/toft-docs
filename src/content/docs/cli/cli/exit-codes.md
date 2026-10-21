@@ -23,12 +23,15 @@ These exit 2 because nothing was attempted:
   store you cannot reach (`not_found`). A deployment id that is too short
   (`invalid_id`) or matches several (`ambiguous_id`) lands here too.
 - **A name that is already taken** (`name_taken`): `toft task create` with the
-  name of an existing task, or `toft create` with a slug someone has claimed.
+  name of an existing task, or `toft create` with a slug you named (`--app`,
+  `toft.toml`) that someone has claimed.
 - **Nothing older to roll back to** (`nothing_older`): `toft rollback` with no
   argument when the serving deployment is the oldest successful one.
-- **A `.` or `..` segment in a `toft fetch` path** (`invalid_path`), with
-  `--verify` too. Nothing is sent.
-- **`toft logs --lines` below 1** (`invalid_lines`).
+- **A `.` or `..` segment in a `toft fetch` path, or an absolute URL**
+  (`invalid_path`), with `--verify` too. Nothing is sent.
+- **`toft logs --lines` below 1** (`invalid_lines`), and **`-j` below 1** on the
+  store tree commands (`invalid_jobs`).
+- **A `toft job run --param` with no name** (`=x`).
 - **A word no command reads**, or a switch written `--enabled false` instead of
   `--enabled=false`.
 - **A `toft.toml` that does not parse** (`manifest_invalid`).

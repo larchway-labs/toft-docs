@@ -35,6 +35,14 @@ Toft picks the **highest** installed version that satisfies the range.
 To stay on an older version, give an upper bound or an exact version
 (`python = "3.13"`). A bare `>=` floor always takes the newest.
 
+## Node's `engines` and `.nvmrc`
+
+Toft does not read `engines.node` in `package.json`, `.nvmrc` or
+`.node-version`. A tree that states its Node version only there builds on the
+install's default, and `toft check` and the deploy say so with a
+`node_version_unread` warning naming the version it got. Pin it in `toft.toml`
+instead: `[runtime] node = "22"`.
+
 ## Python's `requires-python`
 
 With no `[runtime] python` pin, Toft uses the install's default Python unless

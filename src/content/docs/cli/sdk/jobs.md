@@ -106,8 +106,10 @@ In Go, call `toft.CurrentRun()`; it returns `nil` outside a job. In R,
 `scheduled_for()` is the one in-job call. Each variable is also in the
 environment; see [Environment variables](../../reference/environment/#inside-a-job).
 
-- **Read the payload early.** Its link expires. A run started with parameters
-  alone has no payload at all.
+- **Read the payload early.** Its link, and the one output is written to, last
+  the job's `timeout` plus ten minutes. A run started with parameters alone has
+  no payload at all. Signed links a job prints are stored in its log with their
+  signature and credential masked.
 - **The exit code decides the outcome.** A job that records a result and then
   exits non-zero has failed.
 - **A job can send notifications** through the app's integrations, and reach the
