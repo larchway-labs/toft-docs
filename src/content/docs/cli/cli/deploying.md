@@ -89,7 +89,8 @@ Every `.gitignore` in the tree decides, with `!` negations, plus
 A `[static] root` that points into one of those folders keeps it.
 
 Files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`,
-`id_ed25519*`) are uploaded with a warning, not refused.
+`id_ed25519*`) are uploaded with a warning, not refused. `toft check` names
+them too.
 
 Do not install dependencies before deploying; the install resolves them. For R,
 ignore `renv/library/` and ship `renv.lock`.
@@ -104,7 +105,8 @@ toft check             # or: toft deploy --dry-run
 before building anything: the framework it detects, the language version it
 would use, the jobs in `toft.toml`, and any problem that would refuse the
 deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
-refused, naming the same `reason` the deploy would fail with.
+refused, naming the same `reason` the deploy would fail with. It also warns when
+`toft.toml` declares jobs and this install does not run them.
 
 A check cannot tell you whether the dependency policy will accept your packages,
 or whether the build and start will succeed. It says so in its answer.
@@ -140,7 +142,7 @@ working; your own request carries your credential.
 ## Watching a deploy
 
 ```bash
-toft deploy --logs          # stream the build log
+toft deploy --logs          # stream the build log; each step's lines come before its ✓
 toft deploy --no-watch      # start and return the deployment id
 toft deploy --watch <id>    # rejoin a deploy started earlier
 toft deploy --json          # NDJSON progress frames, then one result object
