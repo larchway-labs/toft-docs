@@ -41,8 +41,10 @@ needs a person to own it.
 ## How RStudio signs in
 
 Both ways end in an ordinary personal key, listed in **Admin → API keys** with
-owner, scope and last use. Revoking it signs RStudio out on its next request; it
-expires on the 90-day personal-key default.
+owner, scope and last use. Revoking it signs RStudio out on its next request. It
+does not expire, unless you set **Longest a personal key may last** on
+**Admin → API keys**: that limit applies to every new personal key, including
+these, and never shortens a key that already exists.
 
 | Way | How |
 |---|---|
