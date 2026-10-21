@@ -156,7 +156,8 @@ and a `CALLBACK_URL` a workload can resolve.
 
 | Variable | What it does |
 |---|---|
-| `KUBE_STORAGE_CLASS`, `KUBE_S3FILES_STORAGE_CLASS` | Storage classes for volumes. |
+| `KUBE_STORAGE_CLASS`, `KUBE_S3FILES_STORAGE_CLASS` | Storage classes for volumes: the default drive for each backing. |
+| `KUBE_STORAGE_CLASSES` | Further drives, as `name[=backing]`, comma-separated. `=s3files` is required for an S3 Files class. |
 | `KUBE_STORE_CSI_DRIVER`, `KUBE_STORE_REGION` | Object-store mounts. |
 | `STORE_BACKEND` | `s3` (default) or `azblob`. Never derived from `ARTIFACT_STORE`. |
 | `STORE_ENDPOINT`, `STORE_REGION`, `STORE_S3_PATH_STYLE` | S3-compatible signer. Region falls back to `KUBE_STORE_REGION`, then `AWS_REGION`. |

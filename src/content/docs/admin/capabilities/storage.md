@@ -89,6 +89,29 @@ option it just says what it is. Whoever deployed Toft decides what's on offer.
   every app on its own account (`APP_USER_PER_APP`) and the host's
   `fs.protected_hardlinks` set to 1. The **Storage** check says which is missing.
 
+## Drives
+
+A **drive** is a place volumes can live: a directory declared in
+`SHARED_STORAGE_ROOTS` on a host install, or a storage class on a cluster. Whoever
+runs Toft declares the drives; **Admin → Storage → Drives** lists them with how
+many resources each holds.
+
+- **Give a drive a label.** *Edit label…* sets what everyone sees, like
+  "Order management" for a root declared as `efs`, plus an optional description.
+  Nothing restarts, and apps and the CLI aren't affected: they use resource
+  names, never drive names. Clear the label to show the drive's own name again.
+- **More than one drive?** The create form asks which one a new volume goes on.
+  On a cluster, list extra classes in `KUBE_STORAGE_CLASSES` as
+  `name[=backing]`, for example `ord-efs,ord-s3=s3files`. S3 Files classes must
+  say `=s3files`, because they use the same driver as EFS.
+- **If a drive's declared name changes**, the resources on it are stranded: the
+  page shows a notice and the drive as *No longer declared*, and their apps won't
+  start. Use *Re-point…* to move them to the drive that now holds their files. It
+  first checks every resource: on a host, that its directory exists on the new
+  drive; on a cluster, that its volumes are on the new class's EFS file system.
+  If any check fails, nothing moves. It never copies data. Azure Files drives
+  can't be re-pointed.
+
 ## Levels
 
 A level is how a resource is mounted, not a permission app code asks for. A
@@ -164,6 +187,7 @@ permission change in Toft that restarts a running app.
 - **Grants take effect at once.**
 - **A name never changes.** To fix a wrong one, create a new resource, move the
   attachments and delete the old one. **Edit description…** is the only edit.
+- **A drive label changes at once**, and only on these pages.
 
 ## Without a cluster
 
