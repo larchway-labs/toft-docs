@@ -306,7 +306,8 @@ which. `--json` returns `app`, `visibility` and `changed`.
 
 A deleted deployment can no longer be rolled back to. The serving deployment, a
 build still running and the deployment a rollback is returning to are never
-deleted; the install skips them. `prune` and `delete` print how many were
+deleted: `prune` skips them, and `delete <id>` on one of them is refused with
+the reason. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
 
 ## `toft delete`
