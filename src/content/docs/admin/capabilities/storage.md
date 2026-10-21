@@ -213,7 +213,9 @@ cluster.
 **People reaching a volume under a root** use `toft store` and the storage
 browser, with Toft carrying the files. What they upload belongs to the apps on
 that folder, so those apps can edit and delete it. On a partitioned resource an
-upload goes into an attached folder, never beside one.
+upload goes into an attached folder, never beside one — and the same is true of a
+partitioned store on a bucket. Until you attach a folder, a partitioned resource
+takes no uploads at all, and `toft store ls` tells people so.
 
 An app with a volume attached **fails to deploy** on a host that declares no
 roots, rather than writing into a folder the next deploy throws away.

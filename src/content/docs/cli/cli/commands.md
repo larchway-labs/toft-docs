@@ -435,7 +435,7 @@ Files in a store an administrator granted you, from outside the platform.
 | `mkdir <store>/<folder>` | Create an empty folder. |
 | `rm [-r] <store>/<name>` | Delete a file, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
 | `put <store> <file>` | Upload one file. `--as <name>` stores it under another name. |
-| `get <store> <name>` | Download one file. `-o`, `--out <file>` names the local file. |
+| `get <store>/<name>` | Download one file. `get <store> <name>` also works. `-o`, `--out <file>` names the local file; `--force` replaces one that exists. |
 
 ```bash
 toft store cp -r ./out toft://reports/2026/march/     # upload a folder's contents
@@ -452,6 +452,15 @@ marker so an empty folder stays. A move that fails partway leaves both copies of
 what it had not finished, never neither. A copy between two store paths passes
 through your machine.
 
+Every path `toft store` prints is written `toft://<store>/<path>`, and every
+subcommand takes that form back, so you can copy any line into the next command.
+Flags can go before or after the arguments. `ls --json` returns
+`{"folders": [...], "objects": [...]}`, with `-r` too.
+
+A **partitioned** store takes uploads only inside the folders that apps are
+attached to. `toft store ls` lists those folders under the store, or says none
+is attached yet; an upload anywhere else is refused (exit 3).
+
 | Access level | Allows |
 |---|---|
 | `read` | Download and list. |
@@ -459,9 +468,12 @@ through your machine.
 | `overwrite` | Also replace existing files. |
 | `full` | Also delete. |
 
-`rm` looks the store up before it asks for confirmation, so a store you cannot
-reach exits 2 (`not_found`) rather than asking for `--yes`. The same goes for
-`ls`, `get` and `put` on a store that names nothing you can reach.
+`rm` looks the store and the file up before it asks for confirmation, so a store
+you cannot reach or a file that isn't there exits 2 (`not_found`), and a folder
+without `-r` exits 2 (`is_a_folder`), rather than asking for `--yes`. The same
+goes for `ls`, `get` and `put` on a store that names nothing you can reach, and
+`get` of a file that isn't there. A refusal — your access level, or a
+partitioned store's folders — exits 3.
 
 Transfers go straight to the object store: an unreachable bucket is exit 4
 naming that host. Deploy keys cannot use `toft store`.
