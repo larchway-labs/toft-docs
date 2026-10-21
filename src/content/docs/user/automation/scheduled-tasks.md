@@ -26,6 +26,9 @@ toft task delete nightly                                          # asks first
 | Overlap | `skip` or `allow` a firing while the previous run is still going. |
 | Retries | Off by default. Applies to scheduled and app-triggered firings, never to a run someone starts by hand. |
 
+A schedule Toft can't read is refused with a message saying either *invalid time
+zone* or *invalid cron expression*, and, over the API, the code `invalid_schedule`.
+
 ## What your app must handle
 
 - **The app must be running.** An app with an enabled schedule does not sleep. If it is stopped or locked, the run fails with the reason.

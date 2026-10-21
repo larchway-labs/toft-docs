@@ -7,13 +7,36 @@ description: Flask, FastAPI, Streamlit, marimo and plain Python — how each is 
 |---|---|---|
 | **Streamlit** | `streamlit` in your dependencies | `streamlit run`, mounted under your app's path |
 | **FastAPI** | `fastapi` in your dependencies | `uvicorn` with `--root-path` set |
-| **Flask** | `flask` in your dependencies | `flask run` |
+| **Flask** | `flask` in your dependencies | `gunicorn` if your dependencies include it, otherwise `flask run` — see [Flask](#flask) |
 | **marimo** | a root `.py` that imports `marimo` and builds a `marimo.App` | `marimo run`, mounted under your app's path |
 | **Python** | anything else | `python <entry point>` |
 
 Dependencies are read from `requirements.txt`, else `pyproject.toml`, else
 `Pipfile`. `marimo` as a dependency alone is not the trigger — a Flask app that
 imports it stays Flask.
+
+## Flask
+
+Toft never adds a web server you didn't ask for. If your dependencies include
+`gunicorn`, your Flask app is served by gunicorn; otherwise it runs on Flask's
+development server. The build log says which one your app got:
+
+```text
+    Serving with gunicorn (app), from this app's requirements.
+```
+
+To move to gunicorn, add `gunicorn` to `requirements.txt` and deploy again.
+
+gunicorn needs to know which object is your app. Toft looks in your entry point
+for a top-level `app = Flask(...)` (or an object named `app` or `application`),
+then for a `create_app()` or `make_app()` factory that takes no arguments. If it
+finds none, the app runs on Flask's development server even with gunicorn
+installed, and the build log says so.
+
+Toft sets the address gunicorn listens on. To choose workers, timeouts and
+other options, set `GUNICORN_CMD_ARGS` as an
+[environment variable](../../run/settings/#environment-variables), for example
+`--workers 4 --timeout 60`.
 
 ## Entry point
 
@@ -48,6 +71,10 @@ python = ">=3.12,<3.14"
 ```
 
 See [Language versions](../versions/).
+
+`requires-python` in `pyproject.toml` never chooses the version, but with no pin
+the deploy warns when it excludes the one Toft chose. See
+[Python's `requires-python`](../versions/#pythons-requires-python).
 
 ## Work that finishes
 

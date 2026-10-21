@@ -18,14 +18,21 @@ The tab opens on the build log while a deploy is running or when the last one fa
 
 The run log carries your app's output and the platform's lines about your app: the deployment it fetched, the interpreter it resolved, why a start was refused, when it was put to sleep. Filter with **All**, **App** or **Platform**.
 
+Each line carries the time it was written, and the two voices are interleaved in
+time order. Output your app wrote before it was last started on an older version
+of Toft has no time; the platform's lines are then shown above it.
+
 ```bash
 toft logs                      # both voices
 toft logs --source app         # only your app
 toft logs --source platform    # only Toft's lines
 toft logs --follow             # keep streaming
-toft logs --lines 500          # more history
+toft logs --lines 500          # the last 500 lines in all
 toft logs --deploy <id>        # a build log
 ```
+
+The number of lines is a total across your app and the platform, not per
+source.
 
 ## What to print
 

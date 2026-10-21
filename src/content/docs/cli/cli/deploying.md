@@ -158,7 +158,7 @@ needs: a tail of the build log, or the dependency findings.
 | `reason` | Where to look |
 |---|---|
 | `build_failed` | The build log: `toft logs --deploy <id>`. |
-| `start_failed`, `not_ready` | It built but did not answer. Read the app log: `toft logs`. |
+| `start_failed`, `not_ready` | It built but did not answer. Read the app log: `toft logs`. An app that crashes while starting fails in seconds, and the message carries its last 20 log lines. |
 | `dependency_blocked` | `toft deps`: the packages, advisories, and fixed versions. |
 | `manifest_invalid` | `toft.toml`. The message names the field. |
 | `unsupported_framework` | Nothing in the tree the install knows how to serve. |

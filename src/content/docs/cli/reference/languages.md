@@ -100,7 +100,6 @@ three:
 | Session scratch, subfolders of scratch | `scratch_dir()` only |
 | Task helpers | — |
 | Job internals (`run.progress`, results, input, output) | — |
-| `toft sdk vendor` | The build installs the package; nothing to vendor. |
 
 A refusal in R is a condition of class `toft_error`, with `e$code`,
 `e$retryable` and `e$hint`. `viewer()` in R answers *who is looking* (like `who`

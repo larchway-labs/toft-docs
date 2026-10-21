@@ -13,6 +13,11 @@ owner can roll back to.
 | **Most deployments an app may keep** (`max_versions_per_app`) | Admin → Settings | Caps every app, whatever its owner asks. `0` means no limit. |
 | **Delete old deployments automatically**, **Deployments to keep** | The app's settings | The owner's choice, within your cap |
 
+Only successful deployments count toward either number, and the serving one is
+one of them. A failed build's files are removed when it fails; its entry and
+build log stay, so a run of failed deploys never pushes a rollback target off
+the disk.
+
 Owners see the policy that applies on the app's **Deployments** tab.
 
 An owner can delete one deployment, or every one that is not current. Deleting an

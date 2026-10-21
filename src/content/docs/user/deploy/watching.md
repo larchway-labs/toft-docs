@@ -42,7 +42,7 @@ terminal.
 | `build_failed` | Your build or dependency install failed. **Read the build log.** |
 | `publish_failed` | The built app could not be stored. Retry. |
 | `start_failed` | The app did not start. |
-| `not_ready` | It started but never answered. **Read the run log**, not the build log. |
+| `not_ready` | It started but never answered, or crashed while starting. **Read the run log**, not the build log. A crash fails the deploy within seconds, and the message includes your app's last 20 log lines. |
 | `internal_error` | A platform fault. Retry, then tell your administrator. |
 
 Warnings — for example a `toft.toml` section that was ignored — are shown

@@ -16,13 +16,11 @@ exactly what that install's build would use.
 
 | Flag | |
 |---|---|
-| `--lang <go\|python\|node>` | Which SDK. Detected from the tree when absent. A tree that is two languages at once is refused, exit 2. |
+| `--lang <go\|python\|node\|r>` | Which SDK. Detected from the tree when absent. A tree that is two languages at once is refused, exit 2. |
 | `--dir <path>` | Where to write it. Default `.toft`. |
 
-The install decides which languages it serves. Vendoring covers **Go, Python and
-Node**; asking for another is refused with `sdk_language_unknown`, exit 2. The R
-package is installed by the build into the app's library and has nothing to
-vendor.
+The install decides which languages it serves. Vendoring covers **Go, Python,
+Node and R**; asking for another is refused with `sdk_language_unknown`, exit 2.
 
 ## Per language
 
@@ -31,11 +29,13 @@ vendor.
 | Go | `.toft/sdk-go/`, plus a `go.work` that uses it | Nothing. No `require` line is needed. |
 | Python | `.toft/sdk-python/` | `uv pip install -e .toft/sdk-python` (or `pip install -e`) |
 | Node | `.toft/sdk-node/` | Add `"@larchway/toft": "file:.toft/sdk-node"` to `package.json`, then `npm install`. |
+| R | `.toft/sdk-r/` | `R CMD INSTALL .toft/sdk-r` into the library you develop against. |
 
 `toft` prints the next step for you.
 
-**Python's copy is added to `.gitignore`** (unless a rule already covers it), so
-the next deploy does not ship it and the platform installs its own. `--json`
+**Python's and R's copies are added to `.gitignore`** (unless a rule already
+covers them), so the next deploy does not ship them and the platform installs its
+own. `--json`
 names the line it added as `gitignore`.
 
 **Node's copy ships on purpose.** `package.json` names it as a `file:`

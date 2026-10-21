@@ -208,7 +208,9 @@ a deploy works. `--json` returns one document: `url`, `status`, a few useful
 `headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
 
 When the platform answers in the app's place, for an app that is stopped,
-locked or crashed, `--json` names that state as `platform_page`. A stopped app
+locked or crashed, `--json` names that state as `platform_page`, using the
+key from the page's `X-Toft-Interstitial` header (such as `stopped` or
+`deploy_failed`). A stopped app
 exits 1 with `app is stopped — toft start --app <slug>` instead of the page.
 
 ```bash
@@ -230,7 +232,7 @@ The apps you can see. `--mine` lists only the ones you own.
 | Flag | |
 |---|---|
 | `-f`, `--follow` | Keep printing new lines, each one once, as it arrives. |
-| `--lines <n>` | Lines of history to start with. Default 100. |
+| `--lines <n>` | Lines of history to start with, in total across your app and the platform. Default 100. |
 | `--source <app\|platform>` | Only one voice. |
 | `--since <t>` | RFC 3339, or a duration such as `2h`. |
 | `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. The id can be a [unique prefix](#deployment-ids); one that names nothing exits 2. |
@@ -292,7 +294,8 @@ A value is taken as typed, split on the first `=`. Flags may go before or after
 the variables.
 
 A name is letters, digits and underscores, and does not start with a digit.
-`PORT`, `HOST` and `BASE_PATH` are set by the platform and cannot be set here.
+Names the platform sets itself — `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`,
+`VIRTUAL_ENV`, `R_LIBS_SITE` and its `TOFT_*` variables — cannot be set here.
 Both refusals exit 2 before anything is sent (`invalid_env_name`,
 `reserved_env_name`).
 

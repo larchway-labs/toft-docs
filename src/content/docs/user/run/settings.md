@@ -25,7 +25,9 @@ Your variables, the ones Toft supplies (`PORT`, `BASE_PATH`, `TOFT_*`), and [cre
 :::
 
 - **One source per key.** You can't set a key an attached credential supplies.
-- **Defaults from the repository.** If the install has an environment tag such as `prod`, each deploy reads `.env.<tag>` (or `.env`) and adds variables the app doesn't have yet. It never overwrites a value set in Toft.
+- **Names are letters, digits and underscores**, not starting with a digit. Anything else is refused.
+- **Toft's own names are refused**, because Toft sets them itself and your value would never reach the app: `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`, `VIRTUAL_ENV`, `R_LIBS_SITE` and the `TOFT_*` variables it sets. See [Environment variables](../../../cli/reference/environment/) in the CLI & SDK guide. A variable you saved before this rule keeps working and doesn't block saving the rest.
+- **Defaults from the repository.** If the install has an environment tag such as `prod`, each deploy reads `.env.<tag>` (or `.env`) and adds variables the app doesn't have yet. It never overwrites a value set in Toft, and it skips an invalid or reserved name with a warning in the build log.
 
 ## Name and slug
 

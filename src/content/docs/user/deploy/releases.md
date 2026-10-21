@@ -45,6 +45,11 @@ newest deployments up to **Deployments to keep** (the serving one included), wit
 your install's limit. Turned off, nothing is deleted, and deploys are refused
 once the app reaches the limit.
 
+Only successful deployments count. A failed deploy stays in the list with its
+build log, so you can read what went wrong, but its files are removed when it
+fails — it can't be rolled back to, and it never pushes one you could roll back
+to out of the count.
+
 To clear space yourself, delete one deployment, or select **Delete old deployments** to
 remove everything but the serving deployment. A pending rollback's target is
 never deleted.

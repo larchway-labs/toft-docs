@@ -16,10 +16,11 @@ Retention settings are on **Admin → Settings** (the integration log's is on
 | `scheduled_log_retention_days` | Lines an app pushes while a task runs | 14 |
 | `announcement_recipient_retention_days` | Per-person announcement delivery rows | 180 |
 | `integrations_retention_days` | The integration log; minimum 30 | 365 |
-| `max_versions_per_app` | A **count**: deployments one app may keep; `0` = no limit | 0 |
+| `max_versions_per_app` | A **count**: successful deployments one app may keep, the serving one included; `0` = no limit | 0 |
 
 `max_versions_per_app` caps every app, whatever its owner asked for; the oldest
-deployment goes first. Owners see the policy on their app's Deployments tab.
+deployment that isn't serving goes first. Failed builds don't count: their files
+are removed when they fail, and their entry and build log are kept. Owners see the policy on their app's Deployments tab.
 
 ## Never pruned
 
