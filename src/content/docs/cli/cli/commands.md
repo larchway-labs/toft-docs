@@ -27,19 +27,27 @@ Every command accepts these.
 | [`link`](#toft-link) | Record which app this directory deploys to. |
 | [`create`](#toft-create) | Create an app and deploy this tree into it. |
 | [`deploy`](#toft-deploy) | Bundle this directory and deploy it. |
+| [`check`](#toft-check) | What a deploy of this directory would decide, without deploying. |
 | [`redeploy`](#toft-redeploy) | Build the app again from its own repository. |
 | [`rollback`](#toft-rollback) | Make an earlier deployment current again. |
 | [`status`](#toft-status) | What is serving, since when, and from what. |
+| [`fetch`](#toft-fetch) | Request a path on the deployed app, as you. |
 | [`apps`](#toft-apps) | The apps you can see. |
 | [`logs`](#toft-logs) | The app's runtime log, or one build's. |
 | [`events`](#toft-events) | What has gone wrong with this app. |
 | [`deps`](#toft-deps) | What the dependency policy says about the app. |
 | [`restart`, `start`, `stop`](#toft-restart-start-stop) | Lifecycle. |
+| [`env`](#toft-env) | The app's environment variables. |
+| [`visibility`](#toft-visibility) | Who may open the app. |
+| [`deployments`](#toft-deployments) | The app's deployment history, and pruning it. |
+| [`delete`](#toft-delete) | Delete an app. |
 | [`job`](#toft-job) | Jobs, which run as their own process. |
 | [`task`](#toft-task) | Scheduled tasks, which are HTTP requests to your app. |
 | [`store`](#toft-store) | Files in a durable store. |
 | [`sdk`](#toft-sdk) | Write the install's app SDK into this directory. |
 | [`api`](#toft-api) | Call the install's HTTP API with your stored credential. |
+| [`whoami`](#toft-whoami) | Who you are on this install, and what it will let you do. |
+| [`skill`](#toft-skill) | Print an agent skill written for this binary. |
 
 ## `toft login`
 
@@ -78,6 +86,8 @@ slug exists.
 | `--link` | Write the slug into `toft.toml` on success. |
 | `--logs` | Stream the first build's log. |
 | `--no-watch` | Return after starting; print the deployment id. |
+| `--verify <path>` | Once the first deploy succeeds, request this path as you. See [`--verify`](#--verify). |
+| `--verify-timeout <d>` | How long `--verify` retries a 5xx. Default `30s`. |
 
 ## `toft deploy`
 
@@ -89,17 +99,67 @@ slug exists.
 | `--logs` | Stream the build log. |
 | `--no-watch` | Return after starting; print the deployment id. |
 | `--watch <deployID>` | Rejoin a deploy started earlier. |
+| `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check). |
+| `--verify <path>` | Once it succeeds, request this path as you. See [`--verify`](#--verify). |
+| `--verify-timeout <d>` | How long `--verify` retries a 5xx. Default `30s`. |
+
+### `--verify`
+
+`toft deploy`, `redeploy`, `rollback` and `create` take `--verify <path>`. Once
+the platform says the deploy succeeded, `toft` requests that path on the app with
+your credential, as [`toft fetch`](#toft-fetch) does, and exits 1 unless it
+answers 2xx or 3xx.
+
+```bash
+toft deploy --verify /healthz
+```
+
+The platform's own readiness check only waits until the app answers something.
+`--verify` asks whether the page you care about works. A 5xx or a refused
+connection is retried for `--verify-timeout` (default `30s`), because a new
+release can still be warming up. Any other answer, a 404 included, is final.
+
+With `--json`, the result object gains a `verify` field: `path`, `status`, `ok`,
+and the `body` when it failed. `--verify` cannot be combined with `--no-watch`.
+
+## `toft check`
+
+`toft check [dir]` sends the bundle `toft deploy` would send, and the install
+answers with the decisions a deploy makes before it builds anything. Nothing is
+deployed and nothing is recorded. `toft deploy --dry-run` is the same command.
+
+It reports:
+
+- what the app is: the framework and entry point;
+- the language version it would get, and where the pin came from;
+- how it would run, and the jobs `toft.toml` declares;
+- anything in `toft.toml` that nothing reads;
+- what unpacking the bundle removed;
+- each problem that would refuse the deploy, with the same `reason` a failed
+  deploy would carry (`unsupported_framework`, `manifest_invalid`,
+  `runtime_version`).
+
+It exits 0 when a deploy would get past these decisions and 1 when it would be
+refused. The dependency policy, the build and the start are not checked: only a
+deploy answers those, and the result lists them under `not_checked`. `--json`
+returns the install's answer as it sent it.
+
+The app must exist already, and the check is refused exactly where an upload
+would be: without edit access, on a locked app, or on an install that does not
+take uploaded bundles.
 
 ## `toft redeploy`
 
 Builds from the repository the app names. Reads and uploads nothing from your
-disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`.
+disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`,
+`--verify <path>`, `--verify-timeout <d>`.
 
 ## `toft rollback`
 
 `toft rollback [<deployID>]` makes an earlier deployment current again. With no
 argument, it rolls back to the previous successful deployment, and names it
-before acting. Nothing is rebuilt. Flags: `--yes`, `--no-watch`, `--json`.
+before acting. Nothing is rebuilt. Flags: `--yes`, `--no-watch`, `--json`,
+`--verify <path>`, `--verify-timeout <d>`.
 
 ## `toft status`
 
@@ -108,6 +168,35 @@ deployment's id on its `deployment` line. Shows `folder` for an app built from a
 repository folder. Warns while code pushed with
 `toft deploy` is serving on a repository-backed app. `--json` includes the
 app's `url`.
+
+## `toft fetch`
+
+`toft fetch [path]` makes one request to the deployed app with your credential
+and prints the status line, then the body. The path is from the app's root:
+`toft fetch /healthz`. With no path it requests `/`.
+
+| Flag | |
+|---|---|
+| `--method <verb>` | The request method. Default `GET`. |
+| `--data <body>` | A request body. `@file` reads a file, `@-` reads stdin. |
+| `--header 'K: V'` | A request header. Repeat for more. |
+| `--max-body <n>` | Print at most `n` bytes of the body. Default `8192`; `0` prints all of it. |
+| `--expect <code>` | Exit 1 unless the status is exactly this. |
+| `--anonymous` | Send no credential, to see what a stranger sees. |
+
+It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check that
+a deploy works. `--json` returns one document: `url`, `status`, a few useful
+`headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
+
+```bash
+toft fetch /api/health --expect 200
+toft fetch /submit --method POST --data @form.json --header 'Content-Type: application/json'
+toft fetch / --anonymous      # a private app answers 401: that is the app working
+```
+
+Your key is sent only to the install's address for apps, and the install removes
+it before the request reaches your app. You never need the key in your shell, or
+to work out the app's URL yourself.
 
 ## `toft apps`
 
@@ -153,6 +242,80 @@ restarts a running one.
 
 Without `--wait`, exit 0 means only that the install accepted the request. A
 batch app has no service, so all three are refused with `no_service`.
+
+## `toft env`
+
+The app's environment variables.
+
+| Subcommand | |
+|---|---|
+| `list` | Names, and the values that are not sensitive. |
+| `set KEY=VALUE [...]` | Set one or more. Other variables are kept. |
+| `unset KEY [...]` | Remove one or more. |
+
+| Flag | |
+|---|---|
+| `--sensitive` | With `set`: store the values write-only. They are never shown again, here or on the Settings page. |
+| `--restart` | With `set` or `unset`: restart the app afterwards. |
+
+```bash
+toft env set DATABASE_URL=postgres://db/app LOG_LEVEL=info
+toft env set API_TOKEN=s3cr3t --sensitive --restart
+toft env unset LOG_LEVEL --restart
+toft env list
+```
+
+A value is taken as typed, split on the first `=`. The app reads its environment
+when it starts, so a change applies at the next restart; `--restart` does that
+for you, and no redeploy is needed. Without it, `--json` says
+`"restart_needed": true`.
+
+A variable stays sensitive once it is marked so, even when you set it again
+without `--sensitive`. Setting a sensitive variable to an empty value keeps the
+stored one.
+
+Changing variables needs edit access to the app. Without it, `list` shows names
+but not values, and `set` and `unset` are refused with exit 3. A variable an
+administrator attached through a credential cannot be set here; the refusal
+(`key_from_credential`) names the credential that supplies it.
+
+## `toft visibility`
+
+```bash
+toft visibility                    # print it
+toft visibility authenticated      # change it
+```
+
+| Level | Who may open the app |
+|---|---|
+| `private` | Only people granted access. A new app starts here. |
+| `authenticated` | Anybody signed in to this install. |
+| `public` | Anybody, signed in or not. |
+
+An install can refuse public apps, and so can its license; the refusal says
+which. `--json` returns `app`, `visibility` and `changed`.
+
+## `toft deployments`
+
+| Subcommand | |
+|---|---|
+| `list` | Newest first. `*` marks the one serving. |
+| `prune` | Delete every deployment except the serving one. Asks first. |
+| `delete <id>` | Delete one. Asks first. |
+
+A deleted deployment can no longer be rolled back to. The serving deployment, a
+build still running and the deployment a rollback is returning to are never
+deleted; the install skips them. `prune` and `delete` print how many were
+deleted and the space freed; `--yes` answers the confirmation.
+
+## `toft delete`
+
+`toft delete <slug> --yes` deletes an app: every deployment, its environment
+variables, schedules, grants and data. There is no undo.
+
+The slug must be typed out. It is never taken from `toft.toml`, `.toft.toml` or
+`TOFT_APP`, because a directory being linked to an app is no reason to delete
+it. Without a terminal, `--yes` is required.
 
 ## `toft job`
 
@@ -277,5 +440,50 @@ to `toft task create --path`.
 :::
 
 Prefer a real verb where one exists: it validates, confirms and explains.
-Things only `toft api` reaches include app environment variables and visibility
-(`PATCH /api/v1/apps/{id}`), tags, and deleting old deployments.
+Environment variables, visibility and old deployments have their own commands
+now: [`env`](#toft-env), [`visibility`](#toft-visibility) and
+[`deployments`](#toft-deployments). Tags are still reached through `toft api`.
+
+A refusal's body always carries `error`, `code` and `retryable`, and `hint` when
+there is a next step worth naming. See
+[Errors as JSON](../exit-codes/#errors-as-json).
+
+## `toft whoami`
+
+Who this credential is and what the install will let it do, in one call. Run it
+before the first deploy instead of learning each limit from a refusal.
+
+```
+$ toft whoami
+ana@example.com  publisher  on https://toft.example.com
+  credential    api_key laptop · full scope · does not expire
+  create apps   yes
+  uploads       allowed
+  public apps   not allowed
+  jobs          allowed
+  new apps run  shared
+  node          22, 20, 18
+  python        3.13, 3.12, 3.11
+Install 0.9.6.
+```
+
+It shows the credential's kind (`api_key` for a personal key, `deploy_key`, or
+`session`), its name, scope and expiry; whether you can create
+apps; whether the install takes uploaded bundles, allows public apps and can run
+jobs; and the language versions a new app is checked against. A deploy key can
+run it. `--json` returns the install's answer under `capabilities`, beside
+`install_url` and, for a person's credential, `user`.
+
+## `toft skill`
+
+Prints an [agent skill](../agents/) built into this `toft` binary, so the
+instructions always match the commands it has. Needs no install and no
+credential.
+
+```bash
+toft skill                                                # list them
+toft skill toft-cli > ~/.claude/skills/toft-cli/SKILL.md
+toft skill toft-sdk > ~/.claude/skills/toft-sdk/SKILL.md
+```
+
+`--json` returns the names, or `{name, content}` for one skill.

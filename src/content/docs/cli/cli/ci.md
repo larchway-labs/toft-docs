@@ -36,9 +36,12 @@ is not a terminal. It then never prompts: anything that needs a confirmation
 ```bash
 set -euo pipefail
 
+toft whoami --app my-app                 # exits 3 if the key cannot be used
+toft check --app my-app                  # exits 1 if the deploy would be refused
 toft deploy --logs --app my-app          # exits 1 if the build fails
 toft job run migrate --app my-app        # exits 1 if the migration fails
 toft restart --wait --app my-app         # exits 1 if the app does not come up
+toft fetch /healthz --app my-app         # exits 1 unless it answers 2xx or 3xx
 ```
 
 Each step fails the pipeline on its own; no output parsing is needed. If a step
@@ -59,8 +62,10 @@ toft job run nightly-extract --app my-app --for 2026-10-06T03:00:00+01:00
 - **One JSON document per line.** A watched deploy streams a frame per phase,
   then a result object. A failed job run prints the run, then the error. Read
   line by line, as `jq` does.
-- **Errors are JSON too**: `{"error", "kind", "code", "exit"}` on stdout, with
-  the sentence on stderr.
+- **Errors are JSON too**: `{"error", "kind", "code", "exit", "retryable"}` on
+  stdout, plus `hint` when the install named a next step, with the sentence on
+  stderr. Retry only when `retryable` is true. See
+  [Errors as JSON](../exit-codes/#errors-as-json).
 - **A failed deploy carries `reason`**, the message, and its detail (a log tail
   or dependency findings). Branch on `reason`, not the message.
 - **The human output may change.** Script against `--json`.
@@ -72,8 +77,15 @@ toft status --json | jq -r .url
 ## Reaching a private app
 
 A new app is private, so an anonymous request answers `authentication
-required`. Send your key as a bearer token; the apps gateway checks it and
-strips it before the app sees the request:
+required`. `toft fetch` sends your key for you; the install checks it and
+removes it before the app sees the request:
+
+```bash
+toft fetch /api/report --expect 200
+toft fetch / --anonymous --expect 401     # confirm it is still private
+```
+
+From another tool, send the key as a bearer token to the app's URL:
 
 ```bash
 URL=$(toft status --json | jq -r .url)
@@ -89,6 +101,7 @@ counting as use of the app.
 ## Don't
 
 - Don't retry exit 1. The same commit will fail the same way.
+- Don't retry a refusal whose `retryable` is false. It will refuse again.
 - Don't read the key out of `credentials.toml`. Use `toft api`.
 - Don't re-point a published git tag. Anything resolved by ref picks up the move
   at its next deploy.

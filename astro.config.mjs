@@ -301,6 +301,7 @@ export default defineConfig({
               { label: "Jobs", slug: "cli/sdk/jobs" },
               { label: "Who is asking", slug: "cli/sdk/viewer" },
               { label: "Scheduled tasks", slug: "cli/sdk/tasks" },
+              { label: "When the platform says no", slug: "cli/sdk/errors" },
             ],
           },
           {
