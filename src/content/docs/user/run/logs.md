@@ -28,7 +28,8 @@ toft logs --source app         # only your app
 toft logs --source platform    # only Toft's lines
 toft logs --follow             # keep streaming
 toft logs --lines 500          # the last 500 lines in all
-toft logs --deploy <id>        # a build log
+toft logs --deploy <id>        # a build log, whole
+toft logs --deploy <id> --lines 50   # its last 50 lines
 ```
 
 The number of lines is a total across your app and the platform, not per
@@ -36,7 +37,7 @@ source.
 
 ## What to print
 
-Write to stdout and stderr. Don't write log files into your app's directory to read later: a deploy replaces it. ANSI color is rendered.
+Write to stdout and stderr. Don't write log files into your app's directory to read later: a deploy replaces it. ANSI color is rendered on the Logs tab and in a terminal; `toft logs` removes it when its output is piped or saved to a file.
 
 :::caution
 Logs are not kept forever. Anything you need to keep, such as an audit trail or a report, belongs in storage, not the log.

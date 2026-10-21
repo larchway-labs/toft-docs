@@ -28,7 +28,7 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft logs` | The app's log; `--follow` to stream, `--deploy <id>` for a build |
 | `toft events` | What has gone wrong with the app |
 | `toft redeploy` | Rebuild from the app's repository |
-| `toft rollback` | Make an earlier deployment current again; the previous one by default |
+| `toft rollback` | Make an earlier deployment current again; by default the one before what is serving |
 | `toft restart` · `start` · `stop` | Lifecycle; `--wait` waits until it is up |
 | `toft deps` | Why the dependency policy refused a deploy, and what fixes it |
 | `toft env` | List, set and unset [environment variables](../../run/settings/); `--restart` applies them |
@@ -41,7 +41,7 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft api GET apps` | Call any API route with your stored credential |
 | `toft skill` | Print the instructions for a coding agent |
 
-Every command takes `--help` and `--json`. Put flags before positional arguments. Full reference: [Commands](../../../cli/cli/commands/) in the CLI & SDK guide.
+Every command takes `--help` and `--json`. Flags can go before or after positional arguments. Full reference: [Commands](../../../cli/cli/commands/) in the CLI & SDK guide.
 
 ## In a pipeline
 
@@ -50,9 +50,9 @@ Every command takes `--help` and `--json`. Put flags before positional arguments
 | Exit code | Meaning |
 |---|---|
 | `0` | It worked |
-| `1` | The platform tried and it failed — a build, a job run, a skipped task run |
-| `2` | Usage or configuration — no app linked, a bad flag, an unknown name, a locked app |
-| `3` | Not authenticated, or refused |
+| `1` | The platform tried and it failed — a build, a job run, a skipped task run — or another deploy is still queued |
+| `2` | Usage or configuration — no app linked, a bad flag, an unknown or already-taken name, a locked app |
+| `3` | Not authenticated, or refused — including by the app's state, such as running a disabled task |
 | `4` | Could not reach the install |
 
 With `--json`, output is one JSON document per line, and a refusal is a JSON object too. See [CI and automation](../../../cli/cli/ci/) and [Exit codes](../../../cli/cli/exit-codes/).
