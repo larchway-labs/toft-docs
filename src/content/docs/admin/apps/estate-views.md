@@ -22,7 +22,7 @@ dropped a row would mislead every decision made from it.
 - **Scan targets** — incomplete coverage means an app has no resolvable address,
   never a skipped row, and the page names which. See
   [scan targets](../../security/scan-targets/).
-- **Languages** — counts the release that is **serving**, not the latest build,
+- **Languages** — counts the deployment that is **serving**, not the latest build,
   and folds the patch away. An app's own Runtime section shows the patch.
 - **Usage** — requests and distinct viewers per app, sampled consumption, active
   users, and the quiet list. A metric a backend does not measure is **blank, not

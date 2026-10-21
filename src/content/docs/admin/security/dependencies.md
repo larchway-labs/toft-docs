@@ -32,7 +32,7 @@ list is never sent anywhere.
 
 | Rung | Means |
 |---|---|
-| **Recorded** | An inventory was taken for this release |
+| **Recorded** | An inventory was taken for this deployment |
 | **Matched** | It was compared to the advisory corpus |
 | **Covered** | The corpus actually covers that ecosystem |
 
@@ -45,7 +45,7 @@ the build log says so.
 
 ## What it never does
 
-- **A restart is not a deploy.** The verdict made for a release stands; a new
+- **A restart is not a deploy.** The verdict made for a deployment stands; a new
   advisory never stops an app coming back.
 - **Policy gates deploys, not serving apps.** Only `dependency_lock_on` reaches a
   running app.
@@ -54,7 +54,7 @@ the build log says so.
 ## The automatic lock
 
 With `dependency_lock_on` set, a **scheduled** sweep [locks](../../apps/locking/)
-and stops an app whose **serving** release has an **unwaived** finding at or above
+and stops an app whose **serving** deployment has an **unwaived** finding at or above
 that level.
 
 - A manual re-check records a reading and never locks.

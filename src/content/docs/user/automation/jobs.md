@@ -1,9 +1,9 @@
 ---
 title: Jobs
-description: Run a command from your app's release in its own process, on a schedule or on demand.
+description: Run a command from your app's deployment in its own process, on a schedule or on demand.
 ---
 
-A job runs a command from your app's release in its own process, with its own memory limit. Use one for reports, exports and other work that takes longer than a request should. Jobs are optional; if your install has not configured them, Toft says so.
+A job runs a command from your app's deployment in its own process, with its own memory limit. Use one for reports, exports and other work that takes longer than a request should. Jobs are optional; if your install has not configured them, Toft says so.
 
 ## Declare a job
 
@@ -30,7 +30,7 @@ expect_within = "26h"               # alert if no success for this long
 
 ## Where a job runs
 
-On a cluster install each run gets its own pod; otherwise it is a separate process on the install's machine. Your app does not need to be running, and a run uses the release it was queued against.
+On a cluster install each run gets its own pod; otherwise it is a separate process on the install's machine. Your app does not need to be running, and a run uses the deployment it was queued against.
 
 - **Static apps** cannot have jobs; declaring one fails the deploy. Rendered documents can.
 - A **locked** app runs no jobs: schedules stop, queued runs are cancelled and running ones stopped. See [locked apps](../../run/locked/).

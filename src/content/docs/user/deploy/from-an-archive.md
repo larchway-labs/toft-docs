@@ -12,7 +12,7 @@ archive.
 
 - **New app → Upload an archive** creates an app from a `.zip`, `.tar.gz` or
   `.tgz`.
-- **Upload version** on the app page ships a new archive to an existing
+- **Upload new version** on the app page ships a new archive to an existing
   uploaded app.
 
 If **Upload an archive** is missing, your administrator has switched uploads
@@ -38,5 +38,5 @@ first.
 ## An uploaded app has no repository
 
 It has no branch, folder or auto-deploy, and `toft redeploy` refuses it — use
-`toft deploy` or **Upload version**. An uploaded app cannot be converted into a
+`toft deploy` or **Upload new version**. An uploaded app cannot be converted into a
 git app; create a new app from the repository instead.

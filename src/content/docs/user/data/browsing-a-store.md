@@ -17,6 +17,11 @@ in commands. Open one to browse the folders you were granted, upload by dragging
 files in, and download or delete files. Folders you hold no grant on are not
 shown.
 
+Uploads show in a tray while they run. A failed upload has **Retry**, which
+sends the same file again without you finding it on disk, unless it failed
+because something else wrote a file of that name first. Closing or reloading the
+tab cancels uploads still running.
+
 Each row has **Commands and code**, and each storage page ends with **From the
 terminal or code**: the `toft store` commands for that storage and folder,
 listing only what your level allows, plus the app code for it.

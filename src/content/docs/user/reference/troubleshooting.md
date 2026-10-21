@@ -15,7 +15,7 @@ Read the build log on the **Logs** tab.
 | Version not available | Pin a version this install has. See [Language versions](../../build/versions/). |
 | Dependency finding | Upgrade the package or ask for a waiver. See [Dependencies](../../run/dependencies/). |
 | Source not allowed | Your install restricts which repositories it deploys from. |
-| Build timed out | Past the install's limit. The serving release stays up. |
+| Build timed out | Past the install's limit. The serving deployment stays up. |
 
 ## The page is blank or unstyled
 

@@ -11,7 +11,7 @@ doing.
 | Limit | Set by | Notes |
 |---|---|---|
 | Builds at once | `MAX_CONCURRENT_BUILDS`; overridable as **Builds at once** (`max_concurrent_builds`) on **Admin → Settings** | Lowering it interrupts nothing running. It cannot exceed the worker pool, which has a floor of four; a higher value is refused, naming the variable. |
-| Build step timeout | **Let a build command run for** (`build_timeout_seconds`), with a per-app override | Bounds each step — install, compile, bundle. Past it the deploy fails; the serving release stays up. |
+| Build step timeout | **Let a build command run for** (`build_timeout_seconds`), with a per-app override | Bounds each step — install, compile, bundle. Past it the deploy fails; the serving deployment stays up. |
 | Notebook render timeout | **Let a notebook render for** (`notebook_render_timeout_seconds`) | Separate, because executing a document is different work. |
 
 ## Memory

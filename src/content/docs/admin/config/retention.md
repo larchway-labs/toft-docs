@@ -1,6 +1,6 @@
 ---
 title: Retention
-description: How long Toft keeps logs, events, runs and releases, and what it never prunes.
+description: How long Toft keeps logs, events, runs and deployments, and what it never prunes.
 ---
 
 Retention settings are on **Admin → Settings** (the integration log's is on
@@ -16,10 +16,10 @@ Retention settings are on **Admin → Settings** (the integration log's is on
 | `scheduled_log_retention_days` | Lines an app pushes while a task runs | 14 |
 | `announcement_recipient_retention_days` | Per-person announcement delivery rows | 180 |
 | `integrations_retention_days` | The integration log; minimum 30 | 365 |
-| `max_versions_per_app` | A **count**: releases one app may keep; `0` = no limit | 0 |
+| `max_versions_per_app` | A **count**: deployments one app may keep; `0` = no limit | 0 |
 
 `max_versions_per_app` caps every app, whatever its owner asked for; the oldest
-release goes first. Owners see the policy on their app's Deployments tab.
+deployment goes first. Owners see the policy on their app's Deployments tab.
 
 ## Never pruned
 

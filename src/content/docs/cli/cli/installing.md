@@ -92,7 +92,7 @@ rm -rf ~/.config/toft
 ```
 
 Deleting the config directory does not revoke your keys. Revoke them under
-**Account → API keys** on the install.
+**Your account → Credentials** on the install.
 
 ## Next
 

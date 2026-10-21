@@ -3,7 +3,8 @@ title: Your account
 description: Your role, everything you can reach, your API keys and your sign-ins.
 ---
 
-Open **Your account** from the menu under your name, top right.
+Open **Your account** from the menu under your name, top right. The same menu
+has **Credentials**, which opens that tab directly.
 
 | Tab | What it shows |
 |---|---|

@@ -3,7 +3,7 @@ title: Jobs
 description: Declare jobs in toft.toml, start them from your app, and write the code that runs inside one.
 ---
 
-A job runs a command from your app's release as **its own process**, with its
+A job runs a command from your app's deployment as **its own process**, with its
 own memory limit, deadline and run record. Use it for work too long or too large
 for a web request.
 
@@ -31,7 +31,7 @@ required = true
 
 | Key | |
 |---|---|
-| `command` | Run with the release's own interpreter. |
+| `command` | Run with the deployment's own interpreter. |
 | `schedule`, `timezone` | Five cron fields, read in `timezone` (IANA name) or UTC. A zoned schedule fires once per wall-clock time through daylight saving changes. |
 | `timeout`, `memory`, `cpu` | Seconds, MiB, millicores. |
 | `retries` | Extra attempts for unattended runs. Off by default. |

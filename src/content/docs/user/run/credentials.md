@@ -16,7 +16,7 @@ At start, the keys are in your app's environment like any other variable. They d
 ## Rules that affect you
 
 - **One source per key.** You can't set a variable a credential already supplies. The save is refused and names the credential.
-- **Detaching restarts your app** onto its current release.
+- **Detaching restarts your app** onto its current deployment.
 - **Changing a credential's values doesn't restart anything.** Your app shows the **Saved, but not running yet** notice until it restarts.
 - **A credential attached to apps can't be deleted** until it is detached.
 

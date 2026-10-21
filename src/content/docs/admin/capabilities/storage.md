@@ -114,8 +114,8 @@ many resources each holds.
 
 ## Levels
 
-A level is how a resource is mounted, not a permission app code asks for. A
-read-only mount can't be written to, whatever the code does.
+A level is how a resource is attached to an app, not a permission app code asks
+for. A resource attached read only can't be written to, whatever the code does.
 
 **What an app can be given:**
 
@@ -138,7 +138,7 @@ included:
 - Each level includes the ones above it.
 - **Can add** is the safe default for a dataset an app or a person contributes
   to: nothing already there can be changed.
-- **Azure Blob can't be mounted at Can add or Can replace.** Its driver mounts
+- **Azure Blob can't be attached at Can add or Can replace.** Its driver mounts
   read-only or read-write, nothing between, so those two are refused when you
   attach. Both still work for people.
 - A resource under a read-only host mount (`:ro`) is **Read only** for everyone.

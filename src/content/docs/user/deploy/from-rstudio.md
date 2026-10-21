@@ -60,8 +60,8 @@ app in Toft when it finishes.
 - **Packages come from the bundle's `manifest.json`.** No `renv.lock` needed.
   See [R](../../build/r/).
 - **Publishing again** from the same folder updates the same app. The previous
-  release serves until the new one is ready; see
-  [Releases and rollback](../releases/).
+  deployment serves until the new one is ready; see
+  [Deployments and rollback](../releases/).
 
 ## Environment variables
 

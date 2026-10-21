@@ -32,8 +32,8 @@ The deploy date is when the app was last deployed, not proof it matches your rep
 
 ## Reach
 
-One list of what the app has been given: who may open it, the credentials and variables it holds, the storage it mounts, what it may send, and the keys that act as it. It shows names, never secret values, and what the app *can* do rather than what it did. The line at the top says what Reach can't see, such as outbound network access.
+One list of what the app has been given: who may open it, the credentials and variables it holds, the storage attached to it, what it may send, and the keys that act as it. It shows names, never secret values, and what the app *can* do rather than what it did. The line at the top says what Reach can't see, such as outbound network access.
 
 ## Deleting an app
 
-**Settings → Danger zone**, type-to-confirm. It removes the app, its releases and its logs, and detaches its storage. Data in a store or volume stays.
+**Settings → Danger zone**, type-to-confirm. It removes the app, its deployments and its logs, and detaches its storage. Data in a store or volume stays.

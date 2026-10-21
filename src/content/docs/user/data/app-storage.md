@@ -27,15 +27,16 @@ append, no rename and no locking, so a database on one breaks.
 
 ## Access levels
 
-The level is how the storage is mounted into your app, not a permission your
-code asks for. A read-only mount can't be written to, whatever your code does.
+The level is how the storage is attached to your app, not a permission your
+code asks for. Storage attached read only can't be written to, whatever your
+code does.
 
 | Kind | Levels |
 |---|---|
 | Volume | **Read only** · **Read & write** |
 | Object store | **Read only** · **Can add** (new files only) · **Can replace** (also overwrite) · **Can delete** (also delete) |
 
-Some object stores can't be mounted at every level. Those levels aren't offered
+Some object stores can't be attached at every level. Those levels aren't offered
 when attaching.
 
 ## Find storage from your code
@@ -65,7 +66,7 @@ On an install with no cluster an object store is not mounted, so it has no path.
 Your app reaches it with the SDK's `upload`, `download`, `url`, `remove` and
 `list` calls instead, which also work everywhere else.
 
-## One storage, two mounts
+## One storage, attached twice
 
 The same storage can be attached twice at different folders and levels, such as
 the root read-only and a `drop` folder writable. Both share a name, so name the

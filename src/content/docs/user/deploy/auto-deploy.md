@@ -28,7 +28,7 @@ that branch, not only the app whose folder changed.
 
 ## When a deploy fails
 
-- The serving release stays where it was. The failure appears in the app's
+- The serving deployment stays where it was. The failure appears in the app's
   [events](../../run/events/).
 - Toft does **not** retry the same commit. Push a fix, or select **Redeploy**.
 - A [locked](../../run/locked/) app refuses auto-deploys like any other deploy.

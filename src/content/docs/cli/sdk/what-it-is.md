@@ -55,7 +55,7 @@ R has a smaller surface than the other three. See
   missing environment variable. There is no dry-run mode; scratch directories
   are the one exception.
 - **Background work is a job.** `jobs.start` runs a command declared in
-  `toft.toml`, from the same release, as its own process with a memory limit and
+  `toft.toml`, from the same deployment, as its own process with a memory limit and
   a deadline.
 
 ## As the app, or as a person

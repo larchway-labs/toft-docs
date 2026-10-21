@@ -36,6 +36,8 @@ Each recipient's row records **delivered**, **failed**, **skipped** or
 ### After sending
 
 - A sent announcement cannot be edited or un-sent (`409`).
+- **Copy to a new draft** starts a new draft with the same subject, body, link and audience.
+  Nothing is sent until you send that draft, which mails everybody again.
 - You can **delete** it with its recipient rows; the audit entry keeps the
   subject, audience, time, sender and counts. Deleting while it is still sending
   is refused (`send_in_flight`).

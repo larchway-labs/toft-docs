@@ -9,14 +9,14 @@ Anything your app writes to stdout or stderr appears on the **Logs** tab, live.
 
 | | Shows |
 |---|---|
-| **Run log** | What the serving release is printing. |
+| **Run log** | What the serving deployment is printing. |
 | **Build log** | The output of one deploy. Pick the build from the list; the address links straight to it. |
 
 The tab opens on the build log while a deploy is running or when the last one failed. Otherwise it opens on the run log. A deploy that fails has no run log, because nothing started.
 
 ## Your lines and the platform's
 
-The run log carries your app's output and the platform's lines about your app: the release it fetched, the interpreter it resolved, why a start was refused, when it was put to sleep. Filter with **All**, **App** or **Platform**.
+The run log carries your app's output and the platform's lines about your app: the deployment it fetched, the interpreter it resolved, why a start was refused, when it was put to sleep. Filter with **All**, **App** or **Platform**.
 
 ```bash
 toft logs                      # both voices

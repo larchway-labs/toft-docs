@@ -24,7 +24,7 @@ which. All flags are in the [command reference](../commands/#toft-create).
 toft create --repo https://github.com/acme/tools --branch main --subdir services/billing
 ```
 
-With `--subdir`, only that folder becomes the release: no `.git`, nothing outside
+With `--subdir`, only that folder is deployed: no `.git`, nothing outside
 it. The slug defaults to the folder's name (`billing`), and `toft status` shows
 the folder. A folder path containing `..`, `.git`, or a symlink is refused.
 

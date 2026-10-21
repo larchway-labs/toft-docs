@@ -29,7 +29,7 @@ From the CLI, a locked app exits with code **2**, not 1, and prints that nothing
 The refusal says which of two things placed the lock:
 
 - **An administrator.** Reply to them; Toft has no way around a lock.
-- **This install's dependency policy.** The serving release installs a package the policy won't run, and the **Dependencies** tab says which. Deploy a release without it, or ask for a waiver. An unlock alone is undone by the next check. See [Dependencies and policy](../dependencies/).
+- **This install's dependency policy.** The serving deployment installs a package the policy won't run, and the **Dependencies** tab says which. Deploy again without it, or ask for a waiver. An unlock alone is undone by the next check. See [Dependencies and policy](../dependencies/).
 
 ## Retired apps
 

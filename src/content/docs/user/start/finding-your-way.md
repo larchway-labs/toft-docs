@@ -24,9 +24,9 @@ for something your install does not have is absent, not disabled.
 
 | Tab | What it answers |
 |---|---|
-| **Overview** | Is it running, its URL, the serving release, what needs attention. |
+| **Overview** | Is it running, its URL, the serving deployment, what needs attention. |
 | **Logs** | The run log, each deploy's build log, and the app's [events](../../run/events/). |
-| **Deployments** | Every deploy, the serving release, rollback. |
+| **Deployments** | Every deployment, the one serving, rollback. |
 | **Usage** | Who opened it and what it consumes. |
 | **Automation** | Scheduled tasks and jobs. |
 | **Dependencies** | What it installs and what your install's policy says about it. |
