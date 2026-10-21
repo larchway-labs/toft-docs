@@ -54,6 +54,9 @@ R has a smaller surface than the other three. See
 - **Off-platform, calls fail.** Every call that needs the platform names the
   missing environment variable. There is no dry-run mode; scratch directories
   are the one exception.
+- **Branch on the code, not the sentence.** Every refusal carries a stable
+  `code`, a `retryable` flag and often a `hint`. See
+  [When the platform says no](../errors/).
 - **Background work is a job.** `jobs.start` runs a command declared in
   `toft.toml`, from the same deployment, as its own process with a memory limit and
   a deadline.

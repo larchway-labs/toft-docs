@@ -24,7 +24,8 @@ toft.run; toft.task(request.headers)
 ```
 
 `snake_case`. Errors are `toft.ToftError` and its subclasses `VersionConflict`
-and `QueueFull`. No third-party dependencies.
+and `QueueFull`, each with `code`, `retryable` and `hint`. No third-party
+dependencies.
 
 ## Node
 
@@ -65,8 +66,9 @@ toft.CurrentRun(); toft.TaskFor(r.Header)
 - `context.Context` first on anything that touches the network; `error` last.
 - Options are structs: `toft.EmailMessage`, `toft.StartOptions`,
   `toft.SlackFileOptions`.
-- `*toft.Error` carries the status and the platform's message. Use `errors.As`
-  for `*toft.QueueFullError` and `*toft.VersionConflictError`.
+- `*toft.Error` carries the status, the platform's message, `Code()`,
+  `Retryable()` and `Hint()`. Use `errors.As` for `*toft.QueueFullError` and
+  `*toft.VersionConflictError`.
 - Values read from `toft.Data` have been through JSON, so numbers are `float64`.
 - No `require` line is needed: the build's `go.work` resolves the import. For
   local builds, see [Vendoring it](../../sdk/vendoring/).
@@ -100,7 +102,9 @@ three:
 | Job internals (`run.progress`, results, input, output) | — |
 | `toft sdk vendor` | The build installs the package; nothing to vendor. |
 
-`viewer()` in R answers *who is looking* (like `who` elsewhere). Write to a store
+A refusal in R is a condition of class `toft_error`, with `e$code`,
+`e$retryable` and `e$hint`. `viewer()` in R answers *who is looking* (like `who`
+elsewhere). Write to a store
 with `store_put()`, never `file.copy()`.
 
 ## The same everywhere
@@ -112,6 +116,8 @@ with `store_put()`, never `file.copy()`.
   notifications work the same way.
 - Off-platform, every call that needs the platform fails, naming the missing
   variable.
+- A refusal carries the same `code`, `retryable` and `hint`. See
+  [When the platform says no](../../sdk/errors/).
 
 Use the language your app is already written in. The SDK is not a reason to
 switch.

@@ -15,7 +15,20 @@ updated with every `toft` release.
 
 ## Install them
 
-For Claude Code, put each in its skills folder:
+`toft` carries both skills, matched to the commands that binary has. For Claude
+Code, write each into its skills folder:
+
+```bash
+for s in toft-cli toft-sdk; do
+  mkdir -p ~/.claude/skills/$s
+  toft skill $s > ~/.claude/skills/$s/SKILL.md
+done
+```
+
+`toft skill` with no name lists them. It needs no sign-in. Run the loop again
+after upgrading `toft`.
+
+To fetch them without `toft` installed, download them from the repository:
 
 ```bash
 for s in toft-cli toft-sdk; do
@@ -26,7 +39,8 @@ done
 ```
 
 Any other agent that reads markdown instructions can load the same two files.
-Re-run the loop after upgrading `toft` to pick up the new version.
+A copy from the repository describes the latest release, which may be newer
+than your `toft`; `toft skill` is the copy that matches.
 
 ## Give the agent a key, not a browser
 
@@ -40,6 +54,20 @@ printf '%s' "$TOFT_KEY" | toft login --token-stdin https://toft.example.com
 Use a personal key (`toftu_`, **Your account → Credentials**) for an agent
 working on your behalf, or a deploy key (`toftd_`, **Admin → Deploy keys**) for
 one running unattended. See [Signing in](../signing-in/).
+
+Have the agent run `toft whoami` first. It says what the key may do and what the
+install allows, so the agent learns its limits before trying a deploy.
+
+## What an agent gets back
+
+- `toft check` says whether a deploy would be refused, without one.
+- `toft deploy --verify /path` fails unless the page answers.
+- `toft fetch /path` shows what the app returns, with the body capped at 8 KB
+  so a large page does not flood the agent's context.
+- With `--json`, every refusal carries `code`, `retryable` and often a `hint`.
+  An agent should retry only when `retryable` is true, and pass the `hint` on
+  to a person when the next step is theirs. See
+  [Errors as JSON](../exit-codes/#errors-as-json).
 
 :::tip
 No local runtime is needed to deploy. The install builds the app, so an agent

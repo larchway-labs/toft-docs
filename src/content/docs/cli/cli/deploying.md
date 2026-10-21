@@ -6,6 +6,17 @@ description: Create an app, push your working tree to it, and read why a deploy 
 `toft deploy` bundles the directory as it is, uncommitted edits included, and
 deploys it. It needs no git remote, no commit, and no repository.
 
+## Before the first deploy
+
+```bash
+toft whoami
+```
+
+`toft whoami` says whether you can create apps, whether this install takes
+uploaded bundles, and which language versions it has. Each of those would
+otherwise surface as a refused deploy. See the
+[command reference](../commands/#toft-whoami).
+
 ## First deploy
 
 ```bash
@@ -83,6 +94,46 @@ Files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`,
 Do not install dependencies before deploying; the install resolves them. For R,
 ignore `renv/library/` and ship `renv.lock`.
 
+## Checking before you deploy
+
+```bash
+toft check             # or: toft deploy --dry-run
+```
+
+`toft check` uploads the bundle and asks the install what a deploy would decide
+before building anything: the framework it detects, the language version it
+would use, the jobs in `toft.toml`, and any problem that would refuse the
+deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
+refused, naming the same `reason` the deploy would fail with.
+
+A check cannot tell you whether the dependency policy will accept your packages,
+or whether the build and start will succeed. It says so in its answer. It needs
+an app to check against, so run it after `toft create` or `toft link`.
+
+## Checking that it works
+
+A successful deploy means the app started and answered. To check that a
+particular page works, add `--verify`:
+
+```bash
+toft deploy --verify /healthz
+```
+
+Once the deploy succeeds, `toft` requests that path as you and exits 1 unless it
+answers 2xx or 3xx. A 5xx is retried for up to 30 seconds while the new release
+warms up (`--verify-timeout` changes that). `redeploy`, `rollback` and `create`
+take the same flags.
+
+To look at any page yourself, use `toft fetch`:
+
+```bash
+toft fetch /healthz
+toft fetch / --anonymous     # what somebody who is not signed in sees
+```
+
+A new app is private, so an anonymous request gets `401`. That is the app
+working; your own request carries your credential.
+
 ## Watching a deploy
 
 ```bash
@@ -117,6 +168,22 @@ result.
 
 A locked app is refused with exit 2 before anything is built. Retrying will not
 help until an administrator lifts the lock.
+
+A deploy the install refuses before it starts, such as a locked app or a key
+that cannot write, carries a `code`, a `retryable` flag and often a `hint`
+naming the next step. See [Errors as JSON](../exit-codes/#errors-as-json).
+
+## After it is deployed
+
+```bash
+toft env set LOG_LEVEL=debug --restart     # change a variable and apply it
+toft visibility authenticated              # let anyone signed in open it
+toft deployments list                      # the history, * marks what is serving
+toft deployments prune --yes               # keep only the serving deployment
+toft delete my-app --yes                   # remove the app entirely
+```
+
+All of these are in the [command reference](../commands/#toft-env).
 
 ## A program with no web server
 
