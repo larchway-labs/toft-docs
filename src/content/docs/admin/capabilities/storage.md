@@ -22,6 +22,25 @@ Each attachment and each grant has a **level** and can be limited to a
 **folder**. That is the whole model. Everything below is a detail of one of
 those parts.
 
+## Name it
+
+A resource's **name** is what everyone types: apps look it up with
+`toft.storage("sales-data")` and people use `toft store ls sales-data`. So it
+has a fixed format:
+
+- 3 to 40 characters: lowercase letters, digits and hyphens
+- starts with a letter, no double hyphen, doesn't end with a hyphen
+- **can't be changed after it's created**, because apps' code is written with it
+
+`sales-data`, `model-weights` and `team-share` work; `Sales data`, `sales_data`
+and `2026-data` don't. Put the plain-English explanation (what it's for, who owns
+it) in the **description**, which you can edit at any time.
+
+Each resource's page shows **Where it lives** (the mount and real directory, or
+the bucket, prefix and URI, or the storage class and claim) and **Use it**: the
+exact `toft store` commands and app code for that resource, in Python, Node, R
+and Go.
+
 An app's attachment and a person's grant are separate. Granting yourself a
 folder doesn't let an app read it, and attaching a resource to an app doesn't
 let you browse it.
@@ -143,8 +162,8 @@ permission change in Toft that restarts a running app.
 - **Attaching or detaching takes effect when the app next deploys or
   restarts**, never under a running app.
 - **Grants take effect at once.**
-- **Renaming a resource** changes its label only. The slug is permanent, because
-  running apps mount by it.
+- **A name never changes.** To fix a wrong one, create a new resource, move the
+  attachments and delete the old one. **Edit description…** is the only edit.
 
 ## Without a cluster
 
@@ -189,4 +208,4 @@ one partitioned share is the way to give many apps their own folder.
 | Audit | Records each upload or download link Toft issues. On a host mount, also the file arriving |
 | Administrators | **Have no automatic access** to a resource's files. Grant yourself if you need to look; it is audited |
 | Deleting an app | Detaches its storage. **The data is kept** |
-| Deleting a resource | Refused while any app uses it. On a cluster the data is kept. Under a host mount it **deletes the directory and every file in it**, after you type its slug |
+| Deleting a resource | Refused while any app uses it. On a cluster the data is kept. Under a host mount it **deletes the directory and every file in it**, after you type its name |
