@@ -68,6 +68,11 @@ toft job run nightly-extract --app my-app --for 2026-10-06T03:00:00+01:00
   [Errors as JSON](../exit-codes/#errors-as-json).
 - **A failed deploy carries `reason`**, the message, and its detail (a log tail
   or dependency findings). Branch on `reason`, not the message.
+- **Warnings are sentences, with codes beside them.** A deploy's or a check's
+  `warnings` are for a person to read; `warning_details` gives each a `code` to
+  branch on. A deploy that carried a `.env` file says so in `warnings`.
+- **Piped output has no color codes**, the app's own included, so a captured
+  `toft logs` is plain text.
 - **The human output may change.** Script against `--json`.
 
 ```bash
@@ -100,7 +105,9 @@ counting as use of the app.
 
 ## Don't
 
-- Don't retry exit 1. The same commit will fail the same way.
+- Don't retry exit 1 unless `retryable` is true. A failed build fails the same
+  way on the same commit; a queued deployment (`deploy_queued`) is worth waiting
+  for.
 - Don't retry a refusal whose `retryable` is false. It will refuse again.
 - Don't read the key out of `credentials.toml`. Use `toft api`.
 - Don't re-point a published git tag. Anything resolved by ref picks up the move

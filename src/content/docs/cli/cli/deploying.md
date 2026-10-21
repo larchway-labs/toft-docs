@@ -105,15 +105,16 @@ toft check             # or: toft deploy --dry-run
 before building anything: the framework it detects, the language version it
 would use, the jobs in `toft.toml`, and any problem that would refuse the
 deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
-refused, naming the same `reason` the deploy would fail with. It also warns when
-`toft.toml` declares jobs and this install does not run them.
+refused, naming the same `reason` the deploy would fail with, such as a `[jobs]`
+table on a static site. It also warns when `toft.toml` declares jobs and this
+install does not run them.
 
 A check cannot tell you whether the dependency policy will accept your packages,
 or whether the build and start will succeed. It says so in its answer.
 
 You don't need an app yet. In a directory that is not linked, `toft check`
-checks the tree as a new app, so you can run it before `toft create` and claim a
-slug only once the answer is clean.
+checks the tree as a new app, and so does `toft deploy --dry-run`, so you can
+run it before `toft create` and claim a slug only once the answer is clean.
 
 ## Checking that it works
 
@@ -148,7 +149,8 @@ toft deploy --watch <id>    # rejoin a deploy started earlier
 toft deploy --json          # NDJSON progress frames, then one result object
 ```
 
-`--watch` on a deploy that already failed still prints why.
+`--watch` on a deploy that already failed still prints why, and a rejoined
+deploy reports how long the whole deploy took, not just the part you watched.
 
 ## When a deploy fails
 
@@ -168,8 +170,10 @@ needs: a tail of the build log, or the dependency findings.
 | `internal_error` | Retry, then tell an administrator. |
 
 A successful deploy can carry `warnings`, such as a `[tasks]` table in
-`toft.toml`, which nothing reads. They print, and appear in the `--json`
-result.
+`toft.toml`, which nothing reads, or a `.env` file the bundle carried. They
+print as sentences, and appear in the `--json` result as `warnings`, with
+`warning_details` giving each one a `code` (`manifest_unread`,
+`requires_python_excluded`) and, for a `toft.toml` key, its `table`.
 
 A locked app is refused with exit 2 before anything is built. Retrying will not
 help until an administrator lifts the lock.

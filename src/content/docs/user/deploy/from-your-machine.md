@@ -71,7 +71,7 @@ your personal key, so the pipeline survives your leaving.
 | Exit code | Meaning |
 |---|---|
 | `0` | Deployed. |
-| `1` | The deploy ran and failed — read the build log. |
-| `2` | Usage or configuration: no app linked, a bad flag. |
+| `1` | The deploy ran and failed — read the build log. Also when another deploy of the app is still queued: wait, then retry. |
+| `2` | Usage or configuration: no app linked, a bad flag, an unknown deployment id. |
 | `3` | Not authenticated, or the credential was refused. |
 | `4` | The install did not answer. |

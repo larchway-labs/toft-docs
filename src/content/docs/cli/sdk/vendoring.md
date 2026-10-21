@@ -63,6 +63,10 @@ isolated install the two can differ if the runner image is older than the
 platform. The deploy still succeeds, with a warning; tell your administrator to
 rebuild the image.
 
+With `--json`, `sdk_version` is the version the SDK itself declares and
+`install_version` is the install's. `version` is the install's version too, as
+before.
+
 ## Keeping it current
 
 Re-run `toft sdk vendor` after the install is upgraded, and read the diff. To go

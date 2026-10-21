@@ -13,11 +13,14 @@ On **Deployments**, select **Make current** on a deployment. Nothing is rebuilt:
 the deployment starts, passes a health check, and traffic moves to it.
 
 ```bash
-toft rollback              # the previous successful deployment
+toft rollback              # the successful deployment before the serving one
 toft rollback <deployID>   # a specific one
 ```
 
 `toft rollback` names the deployment before acting and asks for confirmation.
+Run it twice and it goes back twice; it never moves forward on its own. If there
+is nothing older, it says so and names the newer deployment, which you can
+switch to with `toft rollback <deployID>`.
 In CI, pass `--yes` — without it, a non-interactive run refuses rather than
 hanging.
 

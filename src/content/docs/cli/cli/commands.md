@@ -6,8 +6,10 @@ description: Every toft command and flag. Run toft <command> --help for the same
 `toft <command> [arguments]`. Run `toft <command> --help` for a command's own
 flags.
 
-Flags go before the positional arguments. A word a command does not read is
-refused with exit 2, not ignored. A switch takes its value after `=`: write
+Flags can go before or after the positional arguments, in every command:
+`toft link my-app --local` and `toft login <url> --token-stdin` both read the
+flag. After `--`, every word is an argument, whatever it looks like. A word a
+command does not read is refused with exit 2, not ignored. A switch takes its value after `=`: write
 `--enabled=false`, never `--enabled false`, which is refused.
 
 ## Global flags
@@ -21,7 +23,7 @@ Every command accepts these.
 | `--json` | Machine-readable output on stdout, **one JSON document per line**. |
 | `-q`, `--quiet` | No narration. The answer still goes to stdout. |
 | `--yes` | Answer confirmations. Required when nothing can be asked. |
-| `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same. |
+| `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
 
 ## All commands
 
@@ -62,7 +64,7 @@ Every command accepts these.
 | `--status` | Who this machine is signed in as, and where. |
 | `--forget <install>` | Drop one stored credential. Does not revoke the key. |
 | `--forget-all` | Drop every stored credential. |
-| `--token-stdin` | Read a personal or deploy key from stdin. Put flags before the URL. |
+| `--token-stdin` | Read a personal or deploy key from stdin. |
 | `--no-browser` | Print the approval URL instead of opening it. |
 
 ## `toft link`
@@ -106,8 +108,8 @@ folder here exits 2 (`no_such_directory`) before anything happens, and suggests
 |---|---|
 | `--logs` | Stream the build log. A step's build lines print before its ✓. |
 | `--no-watch` | Return after starting; print the deployment id. |
-| `--watch <deployID>` | Rejoin a deploy started earlier. |
-| `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check). |
+| `--watch <deployID>` | Rejoin a deploy started earlier. The result reports the deploy's real duration. An id that names nothing exits 2. |
+| `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check), including in a directory with no app linked. |
 | `--verify <path>` | Once it succeeds, request this path as you. See [`--verify`](#--verify). |
 | `--verify-timeout <d>` | How long `--verify` retries a 5xx. Default `30s`. |
 
@@ -144,6 +146,8 @@ It reports:
 - anything in `toft.toml` that nothing reads;
 - files that look like secrets, such as `.env`, which the bundle would carry,
   as a deploy warns about them;
+- a `[jobs]` table on a static site, which has nothing to run a job in, as a
+  refusal;
 - a warning when `toft.toml` declares jobs and this install does not run jobs;
 - what unpacking the bundle removed;
 - each problem that would refuse the deploy, with the same `reason` a failed
@@ -154,6 +158,12 @@ It exits 0 when a deploy would get past these decisions and 1 when it would be
 refused. The dependency policy, the build and the start are not checked: only a
 deploy answers those, and the result lists them under `not_checked`. `--json`
 returns the install's answer as it sent it.
+
+Warnings are full sentences, the same ones a deploy prints. Under `--json`,
+`warnings` holds the sentences and `warning_details` holds one object per
+warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads,
+`requires_python_excluded` for a `requires-python` range that leaves out the
+version the app gets), the `table` for a `toft.toml` key, and the `message`.
 
 It works before the app exists. With no app linked, or a slug nobody has
 claimed yet, it checks the directory as a new app, as `toft create` would build
@@ -174,8 +184,11 @@ disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`,
 ## `toft rollback`
 
 `toft rollback [<deployID>]` makes an earlier deployment current again. With no
-argument, it rolls back to the previous successful deployment, and names it
-before acting. Nothing is rebuilt. When it succeeds it names the deployment now
+argument, it rolls back to the newest successful deployment older than the one
+serving, and names it before acting. Run it again and it goes further back; it
+never goes forward. When nothing older exists, it exits 2 (`nothing_older`) and
+names the newer deployment you could switch to. Naming a newer deployment
+yourself works, and says `Switching … forward`. Nothing is rebuilt. When it succeeds it names the deployment now
 serving, the one it restored, and `--json` returns it as `deployment_id`. The id
 can be a [unique prefix](#deployment-ids). Flags: `--yes`, `--no-watch`, `--json`,
 `--verify <path>`, `--verify-timeout <d>`.
@@ -207,7 +220,9 @@ and prints the status line, then the body. The path is from the app's root:
 | `--anonymous` | Send no credential, to see what a stranger sees. |
 
 It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check that
-a deploy works. `--json` returns one document: `url`, `status`, a few useful
+a deploy works. A path with a `.` or `..` segment (or `%2e`) is refused before
+anything is sent, exit 2 `invalid_path`: a fetch stays inside the app. The same
+goes for `--verify`. `--json` returns one document: `url`, `status`, a few useful
 `headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
 
 When the platform answers in the app's place, for an app that is stopped,
@@ -235,10 +250,14 @@ The apps you can see. `--mine` lists only the ones you own.
 | Flag | |
 |---|---|
 | `-f`, `--follow` | Keep printing new lines, each one once, as it arrives. |
-| `--lines <n>` | Lines of history to start with, in total across your app and the platform. Default 100. |
+| `--lines <n>` | Lines of history to start with, in total across your app and the platform. Default 100. With `--deploy`, the last `n` lines of the build log, which is otherwise printed whole. Below 1 exits 2 (`invalid_lines`). |
 | `--source <app\|platform>` | Only one voice. |
 | `--since <t>` | RFC 3339, or a duration such as `2h`. |
 | `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. The id can be a [unique prefix](#deployment-ids); one that names nothing exits 2. |
+
+Color codes your app writes are kept on a terminal and removed when the output
+is piped or redirected, or with `--no-color`, `NO_COLOR` or `TERM=dumb`.
+`--json` lines are never altered.
 
 ## `toft events`
 
@@ -252,7 +271,9 @@ Flags: `--since <t>`, `--severity <s>`, `--kind <k>`, `--limit <n>`.
 The packages a deployment installed, the advisories against them, and the
 versions that fix a refused deploy. The **Refused** and **Serving** lines each
 name their `deployment <id>`. Needs edit access to the app. `--json` returns the
-install's answer unaltered.
+install's answer unaltered. When the dependency policy is off on the install,
+it says so and lists nothing: the install lists an app's packages only while the
+policy is on.
 
 ```bash
 toft deps --json | jq '.refused.findings[] | {package, version, fixed_in, path}'
@@ -268,7 +289,9 @@ restarts a running one.
 | `--wait` | Wait until the app settles. `running`, `sleeping` or `ready` exits 0; `crashed` or `failed` exits 1. |
 | `--wait-timeout <d>` | How long to wait. Default `2m`. |
 
-Without `--wait`, exit 0 means only that the install accepted the request. A
+Without `--wait`, exit 0 means only that the install accepted the request.
+`stop` on an app that is already stopped says `already stopped`, and `--json`
+carries `"changed": false`. A
 batch app has no service, so all three are refused with `no_service`.
 
 ## `toft env`
@@ -310,6 +333,9 @@ A variable stays sensitive once it is marked so, even when you set it again
 without `--sensitive`. Setting a sensitive variable to an empty value keeps the
 stored one.
 
+Under `--json`, `list` gives each row's `value` whenever it is shown, `""` for
+an empty one, and `"sensitive": true` with no value for a sensitive one.
+
 Changing variables needs edit access to the app. Without it, `list` shows names
 but not values, and `set` and `unset` are refused with exit 3. A variable an
 administrator attached through a credential cannot be set here; the refusal
@@ -346,7 +372,9 @@ toft deployments delete 4f1a2b --yes   # a unique prefix is enough
 A deleted deployment can no longer be rolled back to. The serving deployment, a
 build still running and the deployment a rollback is returning to are never
 deleted: `prune` skips them, and `delete <id>` on one of them is refused with
-the reason. `list --json` returns the install's answer as it sent it. `prune` and `delete` print how many were
+the reason; the serving one is exit 3 (`deployment_protected`). An id that names
+nothing exits 2. `list --json` returns the install's answer, with
+`step_timings` as an object rather than a string holding one. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
 
 ### Deployment ids
@@ -415,10 +443,12 @@ See [Jobs](../../sdk/jobs/).
 | `--no-wait`, `--timeout <d>` | As for `job run`. |
 
 A cron expression or time zone the install refuses exits 2 with the install's
-code. A task's log holds only what the app sent with the SDK's `task.log()`; an
+code, and so does `create` with a name an existing task has (`name_taken`).
+Under `--json`, `list` gives `schedule` as the bare cron expression, with
+`timezone` beside it (`UTC` when none was set). A task's log holds only what the app sent with the SDK's `task.log()`; an
 empty one says so, and what the app printed is in `toft logs`.
 
-A disabled task is refused by `run` with `schedule_disabled`. A batch app cannot
+A disabled task is refused by `run` with `schedule_disabled`, exit 3. A batch app cannot
 have tasks. `toft task` needs a personal key; a deploy key cannot use it. See
 [Scheduled tasks](../../sdk/tasks/).
 
@@ -481,8 +511,9 @@ naming that host. Deploy keys cannot use `toft store`.
 ## `toft sdk`
 
 `toft sdk vendor` writes the install's SDK into this directory. Flags:
-`--lang <go|python|node>`, `--dir <path>` (default `.toft`). See
-[Vendoring it](../../sdk/vendoring/).
+`--lang <go|python|node|r>`, `--dir <path>` (default `.toft`). Under `--json`,
+`sdk_version` is the version the SDK declares and `install_version` the
+install's. See [Vendoring it](../../sdk/vendoring/).
 
 ## `toft api`
 
@@ -501,12 +532,14 @@ sent it, a refusal's included: the exit code is still non-zero, and no second
 `--json` document is added, so the install's `code` and `hint` are on stdout
 either way.
 
+It exits by the same rules as every other command:
+
 | Exit | Meaning |
 |---|---|
-| 2 | No route matches the path (`route_not_found`). |
-| 3 | Credential or permission refused. |
+| 2 | No route matches the path (`route_not_found`), a 404, a 400, or a 409 `name_taken`. |
+| 3 | Credential or permission refused, or any other 409: the app's state refused. |
 | 4 | Install unreachable. |
-| 1 | Anything else, including 400 and 422. Read the body. |
+| 1 | Anything else: a 5xx, a 422, or a 409 that means "wait", such as `deploy_queued` or `already_running`. Read the body's `code`. |
 
 :::tip[Windows]
 Git Bash rewrites arguments that start with `/` into Windows paths. Use the
