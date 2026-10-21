@@ -23,6 +23,9 @@ data, which belong to a team that no longer exists.
 
 Toft maintains a read-only `framework` tag from detection.
 
+**Edit…** on a tag's row changes its name and its description, which owners see
+when they choose it.
+
 ## Browsing
 
 `/tags/<tag>` and `/tags/<tag>/<value>` are linkable pages — `/tags/team/payments`

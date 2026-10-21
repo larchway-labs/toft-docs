@@ -47,4 +47,4 @@ move on — or restore from a backup. Do not skip releases across a baseline.
 1. **Open Admin → System checks.** The **Schema migrations** row flags a database
    that moved under a running process, such as a restore.
 2. **Open Admin → System info** for the version, build and toolchains found.
-3. **Apps need nothing.** Each comes back on the release it was serving.
+3. **Apps need nothing.** Each comes back on the deployment it was serving.

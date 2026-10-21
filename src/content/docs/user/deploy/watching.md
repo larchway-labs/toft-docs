@@ -14,7 +14,7 @@ phase bar and the live build log. Leave and come back — it is still there.
 | **Scan** | Check dependencies against your install's [dependency policy](../../run/dependencies/). |
 | **Deploy** | Detect, configure, build, package, start, health-check, go live. |
 
-The serving release keeps serving throughout. A deploy that fails, times out or
+The serving deployment keeps serving throughout. A deploy that fails, times out or
 is refused changes nothing for your users.
 
 ## The build log
@@ -40,7 +40,7 @@ terminal.
 | `manifest_invalid` | [`toft.toml`](../../build/toft-toml/) was refused. |
 | `runtime_version` | A pinned [language version](../../build/versions/) this install does not have. |
 | `build_failed` | Your build or dependency install failed. **Read the build log.** |
-| `publish_failed` | The built release could not be stored. Retry. |
+| `publish_failed` | The built app could not be stored. Retry. |
 | `start_failed` | The app did not start. |
 | `not_ready` | It started but never answered. **Read the run log**, not the build log. |
 | `internal_error` | A platform fault. Retry, then tell your administrator. |

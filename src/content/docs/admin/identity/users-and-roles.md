@@ -11,8 +11,10 @@ description: The three system roles, the People pages, locking, deleting and pub
 | **Publisher** | Also create, deploy and own apps |
 | **Admin** (`system_admin`) | Run the install |
 
-Set a role on **People → the person**; every change is audited. A viewer cannot
-be granted **editor** on an app — promote to publisher first.
+Set a role on **People** or on the person's page; every change is audited.
+Making somebody an administrator asks you to confirm with **Make administrator**
+first. Other role changes apply as soon as you pick them. A viewer cannot be
+granted **editor** on an app — promote to publisher first.
 
 ## The pages
 

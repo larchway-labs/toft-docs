@@ -22,7 +22,7 @@ and a metric a backend cannot measure is **absent, never zero**.
 | Process exits (shared mode) | Noticed, and an event written |
 | Workload exits (isolated mode) | Restarted a bounded number of times, then reported as no longer being restarted |
 | Restart loop (either mode) | **5 restarts within 15 minutes** raises a flapping event. The window matches the kubelet's backoff; an app restarting every ten minutes never trips it |
-| Repeatedly killed at its memory cap | After 3 memory-attributed restarts on one release, the workload is stopped and the app marked crashed |
+| Repeatedly killed at its memory cap | After 3 memory-attributed restarts on one deployment, the workload is stopped and the app marked crashed |
 | Never becomes ready | After **5 minutes** *starting*, the app is marked crashed with the backend's reason — e.g. a pod no node can schedule |
 
 A pull the kubelet is still retrying is not counted as a failed deploy. The
@@ -30,7 +30,7 @@ restart count on the app page states the window it covers.
 
 ## The platform's own log lines
 
-The app's log interleaves the platform's account of the app — the release it
+The app's log interleaves the platform's account of the app — the deployment it
 fetched, the interpreter it resolved, dependencies it repaired, why a start was
 refused, when it stopped retrying — marked and filterable beside the app's own
 output. A failure that repeats unchanged is logged once and then counted.

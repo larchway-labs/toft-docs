@@ -21,7 +21,7 @@ exactly what that install's build would use.
 
 The install decides which languages it serves. Vendoring covers **Go, Python and
 Node**; asking for another is refused with `sdk_language_unknown`, exit 2. The R
-package is installed by the build into the release's library and has nothing to
+package is installed by the build into the app's library and has nothing to
 vendor.
 
 ## Per language

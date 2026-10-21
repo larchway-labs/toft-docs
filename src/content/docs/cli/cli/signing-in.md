@@ -8,8 +8,8 @@ toft login https://toft.your-company.com
 ```
 
 A browser opens, you approve the device, and the install mints a **personal API
-key** for this machine. It appears under **Account → API keys**, named after the
-machine, and you revoke it there.
+key** for this machine. It appears under **Your account → Credentials**, named
+after the machine, and you revoke it there.
 
 | Flag | Effect |
 |---|---|
@@ -34,7 +34,7 @@ Toft has four kinds of credential. The prefix tells you which one you hold.
 
 | Prefix | Kind | Where it comes from | What it is for |
 |---|---|---|---|
-| `toftu_` | Personal API key | `toft login`, or **Account → API keys** | Acting as you, from `toft` or a script. |
+| `toftu_` | Personal API key | `toft login`, or **Your account → Credentials** | Acting as you, from `toft` or a script. |
 | `toftd_` | Deploy key | **Admin → Deploy keys** | CI. Belongs to nobody, so it survives people leaving. |
 | `toft_` | App key | The app's **Sharing** tab | A program calling one app through the apps gateway. |
 | `tofta_` | App token | Injected as `TOFT_APP_TOKEN` | The app's own credential for calling the platform. You never handle it. |

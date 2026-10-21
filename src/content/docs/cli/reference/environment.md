@@ -34,7 +34,7 @@ You rarely read these yourself.
 | `TOFT_APP_TOKEN` | The app's own credential (`tofta_`). Not set inside a job. |
 | `TOFT_ROLE_KEY` | Verifies the signed role header. |
 | `TOFT_SCRATCH_DIR` | The scratch directory. |
-| `TOFT_STORAGE` | The storage mapped to this app. |
+| `TOFT_STORAGE` | The storage attached to this app. |
 
 ## Inside a job
 

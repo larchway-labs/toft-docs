@@ -126,7 +126,7 @@ Jobs cannot start jobs.
 | Rule | Detail |
 |---|---|
 | Who reads job history | Definitions, runs, run detail and logs need edit access to the app — the same audience as logs |
-| Which release runs | The release the run was queued against; if retention removed it, the run is refused by name |
+| Which deployment runs | The deployment the run was queued against; if retention removed it, the run is refused by name |
 | Provenance | The listing shows whether a schedule came from `toft.toml` or the UI |
 | Retries | Opt-in, scheduled runs only (never manual), always shown as retries |
 | Parameters | Never interpolated into a command line |

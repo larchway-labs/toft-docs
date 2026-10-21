@@ -17,7 +17,7 @@ You do not write a Dockerfile, pick a base image or configure a web server.
 | **Logs** | A build log per deploy and a live run log, so a failure tells you why. |
 | **Access control** | Restricted to people you choose, anyone signed in, or public — plus a way for colleagues to ask for access. |
 | **Configuration** | Environment variables, stored encrypted, read at startup. |
-| **Releases** | Every successful deploy is kept, so you can roll back. |
+| **Deployments** | Every successful deploy is kept, so you can roll back. |
 | **Scheduled work** | Tasks that call your app on a schedule, and jobs that run your code on their own. |
 
 ## What it is not
@@ -42,14 +42,14 @@ looks broken — see [Base paths](../../build/base-paths/).
 
 ## Three words
 
-**Deploy** — one attempt to turn source into a running app. It has its own log
-and either produces a release or fails.
+**Deploy** — one attempt to turn source into a running app. Each is listed as a
+**deployment**, with its own build log, and either succeeds or fails.
 
-**Release** — the built output of a successful deploy. One is *serving*; the
-others are what you roll back to.
+**Deployment** — what a deploy leaves. A successful one is the built app: one is
+*serving*; the others are what you roll back to.
 
 **Workload** — the running process that answers requests. It can be restarted,
-slept and woken without the release changing.
+slept and woken without the deployment changing.
 
 :::note[Other guides]
 Running the install itself is the **admin guide**; `toft` and the app SDKs are

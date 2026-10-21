@@ -43,7 +43,7 @@ reports `platform` at startup rather than pretending to isolate.
 | **Isolated execution** (`isolated_execution_enabled`) | Off: creating an isolated app is refused. Existing isolated apps are not migrated. |
 | **New apps are born** (`default_execution_mode`) | The mode when the creator does not say |
 
-A mode is decided at creation, the same way on every creation path. A release
+A mode is decided at creation, the same way on every creation path. A deployment
 records the mode it ran under; changing an app's mode takes effect at its next
 deploy. A refused create writes nothing.
 

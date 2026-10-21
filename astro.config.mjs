@@ -69,7 +69,7 @@ export default defineConfig({
               { label: "From the gallery", slug: "user/deploy/from-the-gallery" },
               { label: "Watching a deploy", slug: "user/deploy/watching" },
               { label: "Deploying on every push", slug: "user/deploy/auto-deploy" },
-              { label: "Releases and rollback", slug: "user/deploy/releases" },
+              { label: "Deployments and rollback", slug: "user/deploy/releases" },
             ],
           },
           {
@@ -203,7 +203,7 @@ export default defineConfig({
               { label: "Locking and retirement", slug: "admin/apps/locking" },
               { label: "Quiet apps", slug: "admin/apps/quiet" },
               { label: "Tags", slug: "admin/apps/tags" },
-              { label: "Releases and retention", slug: "admin/apps/releases" },
+              { label: "Deployments and retention", slug: "admin/apps/releases" },
               { label: "The artifact store", slug: "admin/apps/artifact-store" },
               { label: "The estate views", slug: "admin/apps/estate-views" },
               { label: "What an app can reach", slug: "admin/apps/reach" },

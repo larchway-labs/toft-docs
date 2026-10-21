@@ -28,7 +28,7 @@ Every command accepts these.
 | [`create`](#toft-create) | Create an app and deploy this tree into it. |
 | [`deploy`](#toft-deploy) | Bundle this directory and deploy it. |
 | [`redeploy`](#toft-redeploy) | Build the app again from its own repository. |
-| [`rollback`](#toft-rollback) | Make an earlier release current again. |
+| [`rollback`](#toft-rollback) | Make an earlier deployment current again. |
 | [`status`](#toft-status) | What is serving, since when, and from what. |
 | [`apps`](#toft-apps) | The apps you can see. |
 | [`logs`](#toft-logs) | The app's runtime log, or one build's. |
@@ -97,14 +97,15 @@ disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`.
 
 ## `toft rollback`
 
-`toft rollback [<deployID>]`. With no argument, rolls back to the previous
-successful release, and names it before acting. Nothing is rebuilt. Flags:
-`--yes`, `--no-watch`.
+`toft rollback [<deployID>]` makes an earlier deployment current again. With no
+argument, it rolls back to the previous successful deployment, and names it
+before acting. Nothing is rebuilt. Flags: `--yes`, `--no-watch`, `--json`.
 
 ## `toft status`
 
-What is serving, since when, and from which branch and commit. Shows `folder`
-for an app built from a repository folder. Warns while code pushed with
+What is serving, since when, and from which branch and commit, with the serving
+deployment's id on its `deployment` line. Shows `folder` for an app built from a
+repository folder. Warns while code pushed with
 `toft deploy` is serving on a repository-backed app. `--json` includes the
 app's `url`.
 
@@ -131,8 +132,9 @@ Flags: `--since <t>`, `--severity <s>`, `--kind <k>`, `--limit <n>`.
 
 ## `toft deps`
 
-The packages a release installed, the advisories against them, and the versions
-that fix a refused deploy. Needs edit access to the app. `--json` returns the
+The packages a deployment installed, the advisories against them, and the
+versions that fix a refused deploy. The **Refused** and **Serving** lines each
+name their `deployment <id>`. Needs edit access to the app. `--json` returns the
 install's answer unaltered.
 
 ```bash
@@ -207,11 +209,11 @@ Files in a store an administrator granted you, from outside the platform.
 | Subcommand | |
 |---|---|
 | `ls` | What you can reach, and at what level. |
-| `ls [-r] <store>[/<folder>]` | One level: folders, then objects. `-r` lists everything beneath. |
+| `ls [-r] <store>[/<folder>]` | One level: folders, then files. `-r` lists everything beneath. |
 | `cp [-r] <from> <to>` | Copy a file, or with `-r` a folder's contents, up, down or between stores. The store side is `toft://<store>/<path>`. |
 | `mv [-r] <from> <to>` | Move or rename: copy, then delete each source once its copy has landed. |
 | `mkdir <store>/<folder>` | Create an empty folder. |
-| `rm [-r] <store>/<name>` | Delete an object, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
+| `rm [-r] <store>/<name>` | Delete a file, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
 | `put <store> <file>` | Upload one file. `--as <name>` stores it under another name. |
 | `get <store> <name>` | Download one file. `-o`, `--out <file>` names the local file. |
 
@@ -233,8 +235,8 @@ through your machine.
 | Access level | Allows |
 |---|---|
 | `read` | Download and list. |
-| `write` | Upload new objects; never replace. |
-| `overwrite` | Also replace existing objects. |
+| `write` | Upload new files; never replace. |
+| `overwrite` | Also replace existing files. |
 | `full` | Also delete. |
 
 Transfers go straight to the object store: an unreachable bucket is exit 4
@@ -276,4 +278,4 @@ to `toft task create --path`.
 
 Prefer a real verb where one exists: it validates, confirms and explains.
 Things only `toft api` reaches include app environment variables and visibility
-(`PATCH /api/v1/apps/{id}`), tags, and pruning old releases.
+(`PATCH /api/v1/apps/{id}`), tags, and deleting old deployments.

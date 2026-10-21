@@ -61,5 +61,5 @@ Node is matched on the major version. See [Language versions](../versions/).
 ## What doesn't work
 
 - Dev servers as `start`: `next dev`, `vite`, `nodemon`.
-- Writing into your release directory and expecting it to persist. A restart
+- Writing into your app's directory and expecting it to persist. A restart
   replaces the tree; use [app storage](../../data/app-storage/).

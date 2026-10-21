@@ -13,7 +13,7 @@ the step keys are a stable wire contract across the UI, CLI and API.
 | **Deploy** | Install dependencies, build, start the workload. | Build timeout, language version, a start that produced no process |
 
 :::note[A failure never takes an app down]
-The release that is serving keeps serving. A build that fails, times out, is
+The deployment that is serving keeps serving. A build that fails, times out, is
 killed or is refused changes nothing users see.
 :::
 
@@ -30,8 +30,8 @@ One repository can hold several apps. Each app names its folder:
 | API | `repo_subdir` on `POST /api/v1/apps` and `PATCH /api/v1/apps/{id}` |
 | CLI | `toft create --repo <url> --subdir <folder>`; `toft status` prints `folder` |
 
-- **Only that folder becomes the release.** The repository is cloned beside the
-  release and the folder is moved in; nothing outside it and no `.git` is kept.
+- **Only that folder is deployed.** The repository is cloned beside the
+  deployment's directory and the folder is moved in; nothing outside it and no `.git` is kept.
   Detection, `toft.toml` and the build all treat the folder as the app's root.
 - **Refused:** absolute paths, `.` or `..` segments, anything inside `.git`, and a
   folder that is a symlink in the repository (checked on disk, segment by segment).

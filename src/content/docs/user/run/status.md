@@ -9,9 +9,9 @@ description: What each app status means, how sleeping and waking work, and why a
 | **Running** | Up and serving. |
 | **Sleeping** | Idle, so Toft stopped the process. The next request wakes it. |
 | **Stopped** | Stopped by a person or a lock. Stays down until started. |
-| **Ready** | A [batch app](../../automation/jobs/#where-a-job-runs) with a release. Runs jobs, serves nothing. |
+| **Ready** | A [batch app](../../automation/jobs/#where-a-job-runs) with a deployment. Runs jobs, serves nothing. |
 | **Crashed** | Exited, never came up, or kept running out of memory. |
-| **Failed** | The last deploy didn't produce a working release. |
+| **Failed** | The last deploy didn't produce a working deployment. |
 
 ## Sleeping
 
@@ -34,7 +34,7 @@ A start that isn't up after five minutes reads **Crashed**, with the backend's r
 
 - Five restarts within fifteen minutes raises a **Restart loop** event.
 - An isolated app is restarted up to five times, then left down with a **Not restarting** event.
-- After three memory kills on one release, the app is stopped and marked **Crashed**. The memory ceiling is under **Settings → Runtime**; only an administrator can raise it.
+- After three memory kills on one deployment, the app is stopped and marked **Crashed**. The memory ceiling is under **Settings → Runtime**; only an administrator can raise it.
 
 ## Starting and stopping
 
@@ -44,4 +44,4 @@ toft start
 toft restart --wait
 ```
 
-A restart runs the same release again. It doesn't rebuild or re-check dependencies.
+A restart runs the same deployment again. It doesn't rebuild or re-check dependencies.

@@ -16,7 +16,7 @@ this app been given**, and **which apps hold this thing**. Each app also has a
 | Whether it is told who is looking | [Viewer identity](../../capabilities/optional/) |
 | Values its owner never holds | [Broker credentials](../../capabilities/credentials/) |
 | Values its owner set | Environment variables |
-| Durable storage it mounts | [App storage](../../capabilities/storage/), and where |
+| Durable storage attached to it | [App storage](../../capabilities/storage/), and where |
 | What it may send, and where | [Integrations](../../capabilities/integrations/) |
 | A document it keeps | App data |
 | People it emails on a timer | Report recipients |

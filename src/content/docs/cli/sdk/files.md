@@ -1,6 +1,6 @@
 ---
 title: Files and scratch space
-description: Ephemeral scratch for work in progress, and durable storage an administrator maps to your app.
+description: Ephemeral scratch for work in progress, and durable storage an administrator attaches to your app.
 ---
 
 | | Scratch | Storage |
@@ -50,9 +50,9 @@ Shiny and Streamlit already separate sessions and don't need this.
 ## Storage
 
 ```python
-toft.storage("reports").path                 # a mapped volume or store, by name
+toft.storage("reports").path                 # an attached volume or store, by name
 toft.store("reports").put("nightly.parquet") # copy a file into a store
-toft.mounts()                                # everything mapped
+toft.mounts()                                # everything attached
 ```
 ```js
 toft.storage("reports").path;
@@ -73,10 +73,10 @@ mounts()
 
 Storage is resolved **by name**. The administrator decides what `"reports"`
 points at, so the same code works in either execution mode and on another
-install. Each mount carries its `access` level: Python `read_only`, Node
+install. Each one carries its `access` level: Python `read_only`, Node
 `writable`, Go `ReadOnly()`.
 
-A `.sqlite` or `.duckdb` file on a mapped volume is opened directly at its path.
+A `.sqlite` or `.duckdb` file on an attached volume is opened directly at its path.
 
 ### A store, mounted or not
 
@@ -86,7 +86,7 @@ path, `.path` raises, and `put` tells you to use `upload`.
 
 ```python
 s = toft.store("uploads")
-s.upload("report.csv")                        # new objects only, at write
+s.upload("report.csv")                        # new files only, at write
 data = s.download("report.csv")
 link = s.url("report.csv", attachment=True)   # for a browser, valid 15 minutes
 s.remove("report.csv")                        # needs full
@@ -109,16 +109,16 @@ store_url(s, "report.csv", attachment = TRUE)
 ```
 
 The bytes go straight between your app and the object store. Anyone holding a
-link from `url` can read that object until it expires, so don't log one.
+link from `url` can read that file until it expires, so don't log one.
 
 :::caution[R: write with store_put]
-`file.copy()` onto a store mount creates an empty object and returns `FALSE`.
+`file.copy()` onto a store mount creates an empty file and returns `FALSE`.
 Use `store_put()`.
 :::
 
-### One name, two mounts
+### One name, attached twice
 
-An administrator can map one resource twice, for example its root read-only and
+An administrator can attach one resource twice, for example its root read-only and
 a folder writable. Both arrive under the same name; name the folder to pick one:
 
 ```python
@@ -134,15 +134,15 @@ toft.StorageIn("drop", "backup")             // and toft.StoreIn
 storage("drop", "backup")
 ```
 
-With no folder named, a name that matches two mounts raises and lists what is
-mounted. An empty folder (`""`) means the root.
+With no folder named, a name that matches two attachments raises and lists what
+is attached. An empty folder (`""`) means the root.
 
 ### Rules
 
-- **Absent, not empty.** Asking for a name nobody mapped raises and names what
-  is mounted. `mounts()` with nothing mapped returns an empty list.
-- **An app's mapping and a person's grant are separate.** Your app having
-  `"reports"` mapped doesn't let you browse it, and your grant gives your app
+- **Absent, not empty.** Asking for a name nobody attached raises and names what
+  is attached. `mounts()` with nothing attached returns an empty list.
+- **An app's attachment and a person's grant are separate.** Your app having
+  `"reports"` attached doesn't let you browse it, and your grant gives your app
   nothing. People use [`toft store`](../../cli/commands/#toft-store).
-- **`put` never escapes the mount.** A name that is really a path outside it is
-  refused, and so is a write to a read-only mount.
+- **`put` never escapes the storage.** A name that is really a path outside it is
+  refused, and so is a write to storage attached read only.

@@ -33,7 +33,7 @@ They are separate. The slug is the end of the address, so changing it breaks the
 
 ## Source and runtime
 
-Source is the repository, branch, optional folder and auto-deploy; see [From a git repository](../../deploy/from-git/). Runtime shows the exact language version the serving release resolved. Execution mode, **Never sleep** and the memory limit are visible but only an administrator can change them.
+Source is the repository, branch, optional folder and auto-deploy; see [From a git repository](../../deploy/from-git/). Runtime shows the exact language version the serving deployment resolved. Execution mode, **Never sleep** and the memory limit are visible but only an administrator can change them.
 
 ## Tags and ownership
 

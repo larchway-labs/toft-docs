@@ -32,7 +32,7 @@ toft create --repo https://github.com/acme/platform --subdir apps/web --branch r
 
 Set **Folder** to build one app out of a repository that holds several:
 
-- Only that folder becomes the release — no `.git`, nothing outside it.
+- Only that folder is deployed — no `.git`, nothing outside it.
   Detection, `toft.toml` and dependency files are read from the folder.
 - The slug defaults to the app name, or else the folder's name.
 - Paths containing `..` or `.git`, and folders that are symlinks, are refused.

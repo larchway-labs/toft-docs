@@ -60,7 +60,7 @@ Your install may differ.
 ## What's running
 
 Your app's **Settings** tab, under **Runtime**, shows the exact version the
-serving release runs on. A restart keeps it.
+serving deployment runs on. A restart keeps it.
 
 If your administrator removes a version, running apps keep it. Your next deploy
 re-resolves and is refused if the pin no longer matches — that's your cue to

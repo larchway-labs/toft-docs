@@ -19,11 +19,21 @@ environment variable is simpler.
 | In the app | Ordinary environment variables at start, but not shown in the app's own variable list |
 | Key collisions | A key two sources would both supply is refused with `409`, at the attach or at the owner's write, naming the key |
 | Edit values | **No restart.** Attached apps show an unapplied-change banner and pick it up at their next start |
-| Detach | **Restarts the app** onto its current release |
-| Delete | Refused with `409` while attached, naming the apps |
+| Detach | **Restarts the app** onto its current deployment |
+| Delete | Not offered while any app holds it: the dialog says how many apps still hold it, and to detach them first. The API refuses with `409`, naming the apps |
 
 ## Rotate a credential
 
-1. Edit the values in **Admin → Credentials**.
+1. Open the credential in **Admin → Credentials** and select **Replace values**.
+   Every stored name is listed. Type a new value only for the names you are
+   rotating: a value left blank keeps the stored one. A name is removed only
+   with the **×** on its row, and the dialog lists what will be removed from
+   every attached app before you save. **Add another** adds a new name.
 2. Restart the attached apps when you want the new value live — immediately, if the
    old value must stop working now. Otherwise each picks it up at its next start.
+
+From the API, `PATCH /api/v1/admin/credentials/{id}` takes `values` (the names
+whose values you are setting) and `keep` (the stored names to leave as they
+are). A stored name in neither is removed, and a `keep` naming something not
+stored is refused. Like every credentials route, it needs a signed-in
+administrator; API keys are refused.
