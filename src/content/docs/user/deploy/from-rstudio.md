@@ -83,8 +83,9 @@ shown back. Change it by publishing again or on
 ## Signing RStudio out
 
 The key appears under **Your account → Credentials** as **RStudio (rsconnect)**.
-**Revoke** it to sign RStudio out. It expires after 90 days; then remove the
-account in RStudio and add it again.
+**Revoke** it to sign RStudio out. It does not expire unless your administrator
+has set a limit on how long keys may last; if it does expire, remove the account
+in RStudio and add it again.
 
 Posit Workbench works the same way; the approval page opens in the browser you
 use Workbench from.
