@@ -17,13 +17,17 @@ The status is there too (`err.status`, `Status`, `e$status`), and so is the
 decoded body (`err.body`, `Body`, `e$body`), for refusals that carry figures
 such as a full queue's limit. A current install always sends a `code`.
 
+The same fields are on every refusal, whether it came from your app's own calls
+or, inside a [job](../jobs/), from the run's calls such as `run.progress()` and
+`set_result()`.
+
 ## Should I retry?
 
 Use `retryable`. It is the platform's decision, not a guess from the status: a
 `409 queue_full` means "wait for a run to finish", which is worth retrying, while
 a `503` that means "this install is not configured for that" never succeeds on a
-retry. The SDK falls back to the status (429 and most 5xx) only when the platform
-said nothing, such as a network failure or a proxy's error page.
+retry. The SDK falls back to the status (429, and any 5xx except 501) only when
+the platform said nothing, such as a network failure or a proxy's error page.
 
 When the platform says how long to wait, the error carries it: `retry_after`
 (Python, seconds), `retryAfter` (Node, seconds), `RetryAfter` (Go, a

@@ -144,9 +144,15 @@ refused. The dependency policy, the build and the start are not checked: only a
 deploy answers those, and the result lists them under `not_checked`. `--json`
 returns the install's answer as it sent it.
 
-The app must exist already, and the check is refused exactly where an upload
-would be: without edit access, on a locked app, or on an install that does not
-take uploaded bundles.
+It works before the app exists. With no app linked, or a slug nobody has
+claimed yet, it checks the directory as a new app, as `toft create` would build
+it, and says `a new app` where it would name the slug. So the usual order is
+`toft check`, then `toft create`.
+
+The check is refused exactly where the deploy would be. For an existing app:
+without edit access, on a locked app, or on an install that does not take
+uploaded bundles. For a new app: without the publisher role, with uploads off,
+or at the license's app limit. A deploy key can run it.
 
 ## `toft redeploy`
 
@@ -260,13 +266,13 @@ The app's environment variables.
 
 ```bash
 toft env set DATABASE_URL=postgres://db/app LOG_LEVEL=info
-toft env set --sensitive --restart API_TOKEN=s3cr3t
-toft env unset --restart LOG_LEVEL
+toft env set API_TOKEN=s3cr3t --sensitive --restart
+toft env unset LOG_LEVEL --restart
 toft env list
 ```
 
-Flags go before the variables: `toft env set --restart KEY=VALUE`, not after
-them. A value is taken as typed, split on the first `=`. The app reads its environment
+A value is taken as typed, split on the first `=`. Flags may go before or after
+the variables. The app reads its environment
 when it starts, so a change applies at the next restart; `--restart` does that
 for you, and no redeploy is needed. Without it, `--json` says
 `"restart_needed": true`.
@@ -307,7 +313,7 @@ which. `--json` returns `app`, `visibility` and `changed`.
 A deleted deployment can no longer be rolled back to. The serving deployment, a
 build still running and the deployment a rollback is returning to are never
 deleted: `prune` skips them, and `delete <id>` on one of them is refused with
-the reason. `prune` and `delete` print how many were
+the reason. `list --json` returns the install's answer as it sent it. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
 
 ## `toft delete`
