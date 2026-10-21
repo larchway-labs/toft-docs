@@ -19,6 +19,15 @@ A sleeping app still answers its address; the first request is slower while it s
 
 Apps sleep only if your administrator set an idle timeout; **Settings → Runtime → Never sleep** shows it. An app never sleeps if it runs in isolated mode, has an enabled [scheduled task](../../automation/scheduled-tasks/), or an administrator exempted it.
 
+## What visitors see when the app can't answer
+
+If your app is stopped, sleeping, starting, crashed, locked or still building,
+Toft answers in its place with a page saying so, with status `503`. That page
+always carries an `X-Toft-Interstitial` header naming the state — for example
+`stopped`, `sleeping`, `waking`, `crashed` or `deploy_failed` — and your app's own
+responses never do. A monitor or script can check for the header to tell Toft's
+page from a `503` your app sent itself.
+
 ## Why an app crashes
 
 The **Logs** tab has the reason. Usually:

@@ -12,8 +12,10 @@ description: The variables Toft sets for your app and its jobs, and what never r
 | `BASE_PATH` | Where the app is mounted, e.g. `/apps/reports`. |
 | `TMPDIR` | Points at the app's scratch directory. |
 
-`PORT`, `HOST` and `BASE_PATH` are the platform's to set: `toft env set`
-refuses them (`reserved_env_name`).
+These, `VIRTUAL_ENV`, `R_LIBS_SITE` and the `TOFT_*` variables named below are the
+platform's to set, so a value of your own would never reach the app. `toft env
+set`, the app's Settings tab and the API all refuse them (`reserved_env_name`),
+and a name that isn't letters, digits and underscores (`invalid_env_name`).
 
 ### Base paths
 

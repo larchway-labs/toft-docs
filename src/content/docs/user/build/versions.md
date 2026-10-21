@@ -25,13 +25,21 @@ Toft picks the **highest** installed version that satisfies the range.
 
 - Operators are `>=`, `<=`, `>`, `<` and `==`. A bare version means exactly
   that version. A comma means AND.
-- `^`, `~`, `~=`, `||`, `!=` and `*` are refused, each with the range to write
-  instead.
+- One wildcard is accepted: a trailing `.*` after `==`, as in
+  `python = "==3.13.*"`, which means the 3.13 line — the same as `3.13`.
+- `^`, `~`, `~=`, `||`, `!=` and any other `*` are refused, each with the range
+  to write instead.
 - Extra components are refused, not truncated: `3.12.4` for Python, `22.4` for
   Node.
 
 To stay on an older version, give an upper bound or an exact version
 (`python = "3.13"`). A bare `>=` floor always takes the newest.
+
+## Python's `requires-python`
+
+Toft does not pick a Python version from `requires-python` in `pyproject.toml`.
+With no `[runtime] python` pin, if `requires-python` excludes the version Toft
+chose, the deploy and `toft check` warn you and name a pin that satisfies it.
 
 ## Go
 

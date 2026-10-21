@@ -53,7 +53,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `app_event_retention_days` | Keep failure events for | Failures nobody caused: failed builds, failed health checks, runs that couldn’t start. | 7–3,650 days |
 | `platform_log_retention_days` | Keep the platform’s own log for | What Toft logged about each app: fetches, starts, repairs and refusals. | 7–3,650 days |
 | `announcement_recipient_retention_days` | Keep announcement recipients for | Who each announcement was mailed to, and what happened to each send. | 30–3,650 days |
-| `max_versions_per_app` | Most deployments an app may keep | The most deployments one app keeps. 0 means no limit. | 2–100 deployments, or 0 |
+| `max_versions_per_app` | Most deployments an app may keep | The most successful deployments one app keeps, the serving one included. Failed builds don’t count. 0 means no limit. | 2–100 deployments, or 0 |
 | `environment_tag` | Environment name | This install’s environment, such as stage or prod. Leave blank to turn this off. | — |
 
 ## Admin → Authentication
