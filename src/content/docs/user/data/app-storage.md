@@ -40,8 +40,11 @@ when attaching.
 
 ## Find storage from your code
 
-Look storage up by the name your administrator gave it, never by its path, so
-the administrator can move it without breaking your app.
+Look storage up by its name, never by its path, so the administrator can move it
+without breaking your app. A name is lowercase letters, digits and hyphens, like
+`sales-data`, and it never changes. On your app's **Overview**, each storage
+under **Storage** has a **Code** section with these calls already written for
+it, in Python, Node, R and Go.
 
 ```python
 import toft

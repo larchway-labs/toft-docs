@@ -12,9 +12,14 @@ keeps it somewhere Toft can reach; the administrator will know.
 
 ## In Toft
 
-**Your account → Storage** lists the storage you can reach. Open one to browse
-the folders you were granted, upload by dragging files in, and download or delete
-files. Folders you hold no grant on are not shown.
+**Your account → Storage** lists the storage you can reach, by the name you type
+in commands. Open one to browse the folders you were granted, upload by dragging
+files in, and download or delete files. Folders you hold no grant on are not
+shown.
+
+Each row has **Commands and code**, and each storage page ends with **From the
+terminal or code**: the `toft store` commands for that storage and folder,
+listing only what your level allows, plus the app code for it.
 
 ## From the terminal
 
