@@ -11,7 +11,7 @@ its own id.
 | Id | Name | Category | What it reads |
 |---|---|---|---|
 | `database` | Database | Platform | The connection and the schema. |
-| `storage` | Storage | Storage | `apps_dir`, `logs_dir`, `cache_dir`, `artifact_store` and shared storage roots. `fail` when a mount is gone or read-only. A `host_data_plane` row says whether people can reach host storage, and what is missing when they cannot. |
+| `storage` | Storage | Storage | `apps_dir`, `logs_dir`, `cache_dir`, `artifact_store` and shared storage roots. A root `fail`s when it is no longer declared, is gone or has turned read-only, or a resource's directory under it is missing; it `warn`s when nothing is mounted there, which is what a file system that didn't come back after a reboot looks like. A `host_data_plane` row says whether people can reach host storage, and what is missing when they cannot. |
 | `host` | Host | Platform | CPU, memory, disk. |
 | `execution` | Execution backends | Execution | Two rows: `shared_backend` and `isolated_backend`. |
 | `toolchains` | Toolchains | Execution | Node, Python, Go and R. An absent family is re-probed; a present one shows the age of its reading. |
