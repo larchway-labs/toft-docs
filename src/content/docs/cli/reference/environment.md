@@ -12,6 +12,9 @@ description: The variables Toft sets for your app and its jobs, and what never r
 | `BASE_PATH` | Where the app is mounted, e.g. `/apps/reports`. |
 | `TMPDIR` | Points at the app's scratch directory. |
 
+`PORT`, `HOST` and `BASE_PATH` are the platform's to set: `toft env set`
+refuses them (`reserved_env_name`).
+
 ### Base paths
 
 The proxy strips `BASE_PATH` before your handler sees the request and adds it

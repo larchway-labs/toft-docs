@@ -7,7 +7,7 @@ description: What each toft exit code means, and which ones are worth retrying.
 |---|---|---|
 | `0` | It worked. | |
 | `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page. | No. Fix the cause. |
-| `2` | Usage or configuration: a bad flag, no app linked, a refused prompt. | No. Fix the command. |
+| `2` | Usage or configuration: a bad flag, an argument no command reads, no app linked, a refused prompt. | No. Fix the command. |
 | `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit. | No. Fix the credential. |
 | `4` | The install could not be reached. | Yes. |
 
@@ -17,7 +17,21 @@ These exit 2 because nothing was attempted:
 
 - **A locked app.** An administrator or the dependency policy locked it. Nothing
   was built.
-- **A name that does not resolve**, such as `toft job run <unknown>`.
+- **A name that does not resolve**: `toft job run <unknown>`, an unknown
+  deployment id in `toft logs --deploy`, a run of another task in
+  `toft task logs`, or a store you cannot reach (`not_found`). A deployment id
+  that is too short (`invalid_id`) or matches several (`ambiguous_id`) lands
+  here too.
+- **A word no command reads**, or a switch written `--enabled false` instead of
+  `--enabled=false`.
+- **A `toft.toml` that does not parse** (`manifest_invalid`).
+- **A directory argument that is not a directory** (`no_such_directory`).
+- **A bad value for `toft task create` or `edit`**: `--method` (`invalid_method`),
+  `--overlap` (`invalid_overlap`), or a cron expression or time zone the install
+  refuses (the install's own code).
+- **An environment variable name `toft env set` refuses**: not letters, digits
+  and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
+  (`reserved_env_name`).
 - **A path matching no route** in `toft api` (`route_not_found`).
 - **A confirmation nothing could answer**, in CI or with stdin redirected.
 - **A token without `TOFT_URL`**, or both `TOFT_TOKEN` and `TOFT_TOKEN_FILE`.
@@ -63,7 +77,7 @@ goes to stderr.
 | `error` | The sentence, for a person. Don't match on it; the wording can change. |
 | `kind` | `usage`, `auth`, `unreachable`, `locked` or `failed`. |
 | `exit` | The exit code, repeated. |
-| `code` | A stable name to branch on, such as `key_expired`, `app_locked` or `not_found`. Present whenever the install refused; absent for a refusal `toft` made itself, such as a bad flag. |
+| `code` | A stable name to branch on, such as `key_expired`, `app_locked` or `not_found`. Present whenever the install refused, and on the exit-2 refusals `toft` makes itself that have a name, such as `manifest_invalid` or `no_such_directory`. Absent for a plain usage mistake, such as a bad flag. |
 | `retryable` | Always present. Whether trying again could work. |
 | `hint` | The next step in the install's words, when there is one. |
 
@@ -79,5 +93,6 @@ A failed deploy writes its result object instead, with no second document. So
 does a failed `toft check`, `toft fetch` or `--verify`: the result already says
 what went wrong.
 
-The same fields are in the body of every refusal the API sends, so a script
+The same fields are in the body of every refusal the API sends. `toft api`
+prints that body on stdout as it is, with no second document, so a script
 using `toft api`, or the [app SDK](../../sdk/errors/), reads them the same way.

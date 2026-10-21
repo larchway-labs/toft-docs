@@ -6,6 +6,10 @@ description: Every toft command and flag. Run toft <command> --help for the same
 `toft <command> [arguments]`. Run `toft <command> --help` for a command's own
 flags.
 
+Flags go before the positional arguments. A word a command does not read is
+refused with exit 2, not ignored. A switch takes its value after `=`: write
+`--enabled=false`, never `--enabled false`, which is refused.
+
 ## Global flags
 
 Every command accepts these.
@@ -75,6 +79,10 @@ slug exists.
 
 `toft create [dir]`. Claims a slug, so it names it and asks first.
 
+The argument is a directory, not a name. `toft create my-app` with no `my-app/`
+folder here exits 2 (`no_such_directory`) before anything happens, and suggests
+`--app my-app`, which is how you set the slug.
+
 | Flag | |
 |---|---|
 | `--app <slug>` | The slug. Otherwise `toft.toml`, then the folder or directory name. |
@@ -96,7 +104,7 @@ slug exists.
 
 | Flag | |
 |---|---|
-| `--logs` | Stream the build log. |
+| `--logs` | Stream the build log. A step's build lines print before its ✓. |
 | `--no-watch` | Return after starting; print the deployment id. |
 | `--watch <deployID>` | Rejoin a deploy started earlier. |
 | `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check). |
@@ -134,6 +142,9 @@ It reports:
 - the language version it would get, and where the pin came from;
 - how it would run, and the jobs `toft.toml` declares;
 - anything in `toft.toml` that nothing reads;
+- files that look like secrets, such as `.env`, which the bundle would carry,
+  as a deploy warns about them;
+- a warning when `toft.toml` declares jobs and this install does not run jobs;
 - what unpacking the bundle removed;
 - each problem that would refuse the deploy, with the same `reason` a failed
   deploy would carry (`unsupported_framework`, `manifest_invalid`,
@@ -164,7 +175,9 @@ disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`,
 
 `toft rollback [<deployID>]` makes an earlier deployment current again. With no
 argument, it rolls back to the previous successful deployment, and names it
-before acting. Nothing is rebuilt. Flags: `--yes`, `--no-watch`, `--json`,
+before acting. Nothing is rebuilt. When it succeeds it names the deployment now
+serving, the one it restored, and `--json` returns it as `deployment_id`. The id
+can be a [unique prefix](#deployment-ids). Flags: `--yes`, `--no-watch`, `--json`,
 `--verify <path>`, `--verify-timeout <d>`.
 
 ## `toft status`
@@ -194,6 +207,10 @@ It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check tha
 a deploy works. `--json` returns one document: `url`, `status`, a few useful
 `headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
 
+When the platform answers in the app's place, for an app that is stopped,
+locked or crashed, `--json` names that state as `platform_page`. A stopped app
+exits 1 with `app is stopped — toft start --app <slug>` instead of the page.
+
 ```bash
 toft fetch /api/health --expect 200
 toft fetch /submit --method POST --data @form.json --header 'Content-Type: application/json'
@@ -212,11 +229,11 @@ The apps you can see. `--mine` lists only the ones you own.
 
 | Flag | |
 |---|---|
-| `-f`, `--follow` | Keep printing new lines. |
+| `-f`, `--follow` | Keep printing new lines, each one once, as it arrives. |
 | `--lines <n>` | Lines of history to start with. Default 100. |
 | `--source <app\|platform>` | Only one voice. |
 | `--since <t>` | RFC 3339, or a duration such as `2h`. |
-| `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. |
+| `--deploy <id>` | One build's log instead. Not combinable with `--source` or `--since`. The id can be a [unique prefix](#deployment-ids); one that names nothing exits 2. |
 
 ## `toft events`
 
@@ -272,8 +289,14 @@ toft env list
 ```
 
 A value is taken as typed, split on the first `=`. Flags may go before or after
-the variables. The app reads its environment
-when it starts, so a change applies at the next restart; `--restart` does that
+the variables.
+
+A name is letters, digits and underscores, and does not start with a digit.
+`PORT`, `HOST` and `BASE_PATH` are set by the platform and cannot be set here.
+Both refusals exit 2 before anything is sent (`invalid_env_name`,
+`reserved_env_name`).
+
+The app reads its environment when it starts, so a change applies at the next restart; `--restart` does that
 for you, and no redeploy is needed. Without it, `--json` says
 `"restart_needed": true`.
 
@@ -310,11 +333,27 @@ which. `--json` returns `app`, `visibility` and `changed`.
 | `prune` | Delete every deployment except the serving one. Asks first. |
 | `delete <id>` | Delete one. Asks first. |
 
+```bash
+toft deployments delete 4f1a2b --yes   # a unique prefix is enough
+```
+
 A deleted deployment can no longer be rolled back to. The serving deployment, a
 build still running and the deployment a rollback is returning to are never
 deleted: `prune` skips them, and `delete <id>` on one of them is refused with
 the reason. `list --json` returns the install's answer as it sent it. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
+
+### Deployment ids
+
+Wherever a command takes a deployment id (`toft deployments delete`,
+`toft rollback` and `toft logs --deploy`), a unique prefix of six or more
+characters is enough. Each of these exits 2 with a code:
+
+| Code | |
+|---|---|
+| `invalid_id` | Fewer than six characters. |
+| `not_found` | No deployment of this app starts with it. |
+| `ambiguous_id` | It starts several deployments; the message lists them. |
 
 ## `toft delete`
 
@@ -351,23 +390,27 @@ See [Jobs](../../sdk/jobs/).
 
 | Subcommand | |
 |---|---|
-| `list` | The tasks this app schedules. |
+| `list` | The tasks this app schedules, with a column saying `enabled` or `disabled`. |
 | `create <name>` | Create one. Needs `--path`. |
-| `edit <name>` | Change only the flags you name. |
+| `edit <name>` | Change only the flags you name. Prints whether the task is enabled. |
 | `delete <name>` | Remove one and its run history. Asks first. |
 | `run <name>` | Fire one now and wait. `skipped` exits 1. |
-| `runs <name>` | Recent runs. |
-| `logs <runID> --task <name>` | What one run pushed. |
+| `runs <name>` | Recent runs, in local time with the zone. |
+| `logs <runID> --task <name>` | What one run pushed. `--task` is required; a run of another task exits 2. |
 
 | Flag | |
 |---|---|
 | `--path </p>` | Path on your app, from its root. |
 | `--schedule <cron>` | Five fields, UTC. Omit for an on-demand task; `--schedule ''` on `edit` removes it. |
-| `--timezone <zone>` | Read the schedule in this zone, e.g. `Europe/London`. Repeat it whenever you pass `--schedule`. |
-| `--method <verb>` | `GET` or `POST`. Default `GET`. |
-| `--overlap <policy>` | `skip` or `allow` when the previous run is still going. |
-| `--enabled` | Whether the schedule fires. Default true. |
+| `--timezone <zone>` | Read the schedule in this zone, e.g. `Europe/London`. Repeat it whenever you pass `--schedule`. On `edit`, `--timezone` alone re-zones the schedule the task already has. |
+| `--method <verb>` | `GET` or `POST`. Default `GET`. Anything else exits 2 (`invalid_method`). |
+| `--overlap <policy>` | `skip` or `allow` when the previous run is still going. Anything else exits 2 (`invalid_overlap`). |
+| `--enabled=<bool>` | Whether the schedule fires. Default true. Write `--enabled=false`; `--enabled false` is refused. |
 | `--no-wait`, `--timeout <d>` | As for `job run`. |
+
+A cron expression or time zone the install refuses exits 2 with the install's
+code. A task's log holds only what the app sent with the SDK's `task.log()`; an
+empty one says so, and what the app printed is in `toft logs`.
 
 A disabled task is refused by `run` with `schedule_disabled`. A batch app cannot
 have tasks. `toft task` needs a personal key; a deploy key cannot use it. See
@@ -410,6 +453,10 @@ through your machine.
 | `overwrite` | Also replace existing files. |
 | `full` | Also delete. |
 
+`rm` looks the store up before it asks for confirmation, so a store you cannot
+reach exits 2 (`not_found`) rather than asking for `--yes`. The same goes for
+`ls`, `get` and `put` on a store that names nothing you can reach.
+
 Transfers go straight to the object store: an unreachable bucket is exit 4
 naming that host. Deploy keys cannot use `toft store`.
 
@@ -432,7 +479,9 @@ cat body.json | toft api POST /api/v1/apps/<id>/cron --data @-
 
 `--data` takes inline JSON, `@file`, or `@-` for stdin. A path without a leading
 slash is relative to `/api/v1/`. The response body goes to stdout as the install
-sent it.
+sent it, a refusal's included: the exit code is still non-zero, and no second
+`--json` document is added, so the install's `code` and `hint` are on stdout
+either way.
 
 | Exit | Meaning |
 |---|---|

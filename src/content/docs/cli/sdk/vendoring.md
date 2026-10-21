@@ -34,6 +34,14 @@ vendor.
 
 `toft` prints the next step for you.
 
+**Python's copy is added to `.gitignore`** (unless a rule already covers it), so
+the next deploy does not ship it and the platform installs its own. `--json`
+names the line it added as `gitignore`.
+
+**Node's copy ships on purpose.** `package.json` names it as a `file:`
+dependency, so the build's `npm ci` needs it, and the platform then keeps your
+copy.
+
 :::caution[Go: ignore both or neither]
 `go.work` and `.toft/` ship with `toft deploy`, and the platform then uses your
 copy. Ignore both in `.gitignore`, or neither. Ignoring only `.toft/` leaves a
@@ -58,7 +66,8 @@ rebuild the image.
 ## Keeping it current
 
 Re-run `toft sdk vendor` after the install is upgraded, and read the diff. To go
-back to the platform's own copy, delete `.toft/` (and `go.work` for Go).
+back to the platform's own copy, delete `.toft/` (and `go.work` for Go, or the
+`file:` dependency for Node).
 
 The same source is published at
 [larchway-labs/toft-sdk](https://github.com/larchway-labs/toft-sdk)

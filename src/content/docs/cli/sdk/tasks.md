@@ -46,8 +46,8 @@ task.Log(ctx, "read 1,204 rows")
 task.LogError(ctx, "row 88 malformed")
 ```
 
-Your app's stdout belongs to the app, not to this run. These lines are the only
-log the run gets, and they appear on the run where someone investigating it will
+Your app's stdout belongs to the app, not to this run, and is in `toft logs`.
+These lines are the only log the run gets, and they appear on the run where someone investigating it will
 look. Add them to anything that might outlive the timeout: a run that never
 answers is recorded as a failure with nothing else in it.
 
