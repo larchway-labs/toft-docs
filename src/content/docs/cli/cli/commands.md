@@ -183,10 +183,13 @@ can be a [unique prefix](#deployment-ids). Flags: `--yes`, `--no-watch`, `--json
 ## `toft status`
 
 What is serving, since when, and from which branch and commit, with the serving
-deployment's id on its `deployment` line. Shows `folder` for an app built from a
-repository folder. Warns while code pushed with
-`toft deploy` is serving on a repository-backed app. `--json` includes the
-app's `url`.
+deployment's id on its `deployment` line. The `status` line says how long the app
+has been in that state (`stopped for 3 minutes`). `since` is when this release
+went live, and `built` is when it was built — after a rollback the two differ.
+When the app is not running, the release line reads `release` rather than
+`serving`. Shows `folder` for an app built from a repository folder. Warns while
+code pushed with `toft deploy` is serving on a repository-backed app. `--json`
+includes the app's `url`, `serving_since` and `status_changed_at`.
 
 ## `toft fetch`
 
