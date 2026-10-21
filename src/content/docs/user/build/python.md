@@ -72,8 +72,8 @@ python = ">=3.12,<3.14"
 
 See [Language versions](../versions/).
 
-`requires-python` in `pyproject.toml` never chooses the version, but with no pin
-the deploy warns when it excludes the one Toft chose. See
+With no pin, `requires-python` in `pyproject.toml` is used only when it rules out
+the install's default Python. Then Toft builds with the newest version it allows. See
 [Python's `requires-python`](../versions/#pythons-requires-python).
 
 ## Work that finishes

@@ -56,6 +56,7 @@ briefly. `toft job runs` marks which.
 run = toft.jobs.start("reconcile", params={"month": "2026-03"})
 run = run.wait(timeout=600)
 run.succeeded, run.output(), run.logs()
+run.output_json()   # the output decoded as JSON
 ```
 ```js
 const run = await toft.jobs.start("reconcile", { params: { month: "2026-03" } });
@@ -109,9 +110,11 @@ environment; see [Environment variables](../../reference/environment/#inside-a-j
   alone has no payload at all.
 - **The exit code decides the outcome.** A job that records a result and then
   exits non-zero has failed.
-- **A job can send notifications**, through the app's integrations, and nothing
-  else as the app. Data, viewer identity and starting another job are refused
-  with `job_send_only`.
+- **A job can send notifications** through the app's integrations, and reach the
+  stores its app is attached to with the SDK's `upload`, `download`, `url`,
+  `remove` and `list` calls, at the app's own access levels. That is how a job
+  reaches a store that is not mounted. Data, viewer identity and starting
+  another job are refused with `job_send_only`.
 
 ### The instant a run is for
 

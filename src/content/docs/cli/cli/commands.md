@@ -70,7 +70,7 @@ Every command accepts these.
 ## `toft link`
 
 `toft link <slug>`. Writes an `[app]` table into `toft.toml` after checking the
-slug exists.
+slug exists. A slug together with a different `--app` is refused (exit 2).
 
 | Flag | |
 |---|---|
@@ -161,9 +161,9 @@ returns the install's answer as it sent it.
 
 Warnings are full sentences, the same ones a deploy prints. Under `--json`,
 `warnings` holds the sentences and `warning_details` holds one object per
-warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads,
-`requires_python_excluded` for a `requires-python` range that leaves out the
-version the app gets), the `table` for a `toft.toml` key, and the `message`.
+warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads), the
+`table` for a `toft.toml` key, and the `message`. When `requires-python` chose
+the Python version, `runtime.requires_python` says so.
 
 It works before the app exists. With no app linked, or a slug nobody has
 claimed yet, it checks the directory as a new app, as `toft create` would build
@@ -218,6 +218,7 @@ and prints the status line, then the body. The path is from the app's root:
 | `--max-body <n>` | Print at most `n` bytes of the body. Default `8192`; `0` prints all of it. |
 | `--expect <code>` | Exit 1 unless the status is exactly this. |
 | `--anonymous` | Send no credential, to see what a stranger sees. |
+| `--timeout <d>` | How long to wait for the app's answer. Default `60s`. |
 
 It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check that
 a deploy works. A path with a `.` or `..` segment (or `%2e`) is refused before
@@ -404,9 +405,9 @@ it. Without a terminal, `--yes` is required.
 |---|---|
 | `list` | The jobs this app defines, with schedule, zone and alert window. |
 | `run <name>` | Start one and wait. The run's outcome is the exit code. |
-| `runs` | Recent runs, with the instant each was for. |
+| `runs [name]` | Recent runs, with the instant each was for. Name a job to see only its runs. |
 | `logs <runID>` | What one run printed. |
-| `cancel <runID>` | Stop a run that is still going. |
+| `cancel <runID>` | Stop a run that is still going. A run that already finished prints `already finished (<status>)` and exits 0; `--json` has `"changed": false`. |
 
 | Flag | |
 |---|---|
@@ -461,7 +462,7 @@ Files in a store an administrator granted you, from outside the platform.
 | `ls` | What you can reach, and at what level. |
 | `ls [-r] <store>[/<folder>]` | One level: folders, then files. `-r` lists everything beneath. |
 | `cp [-r] <from> <to>` | Copy a file, or with `-r` a folder's contents, up, down or between stores. The store side is `toft://<store>/<path>`. |
-| `mv [-r] <from> <to>` | Move or rename: copy, then delete each source once its copy has landed. |
+| `mv [-r] <from> <to>` | Move or rename: copy, then delete each source once its copy has landed. Needs `full` at the source and `write` at the destination; without them it is refused before anything is copied (exit 3). |
 | `mkdir <store>/<folder>` | Create an empty folder. |
 | `rm [-r] <store>/<name>` | Delete a file, or with `-r` a folder and everything in it. Needs full access. `rm <store> <name>` also works. |
 | `put <store> <file>` | Upload one file. `--as <name>` stores it under another name. |
@@ -503,7 +504,8 @@ you cannot reach or a file that isn't there exits 2 (`not_found`), and a folder
 without `-r` exits 2 (`is_a_folder`), rather than asking for `--yes`. The same
 goes for `ls`, `get` and `put` on a store that names nothing you can reach, and
 `get` of a file that isn't there. A refusal — your access level, or a
-partitioned store's folders — exits 3.
+partitioned store's folders — exits 3. That includes `put` onto a name that
+already exists when your access is `write`.
 
 Transfers go straight to the object store: an unreachable bucket is exit 4
 naming that host. Deploy keys cannot use `toft store`.
@@ -538,7 +540,7 @@ It exits by the same rules as every other command:
 |---|---|
 | 2 | No route matches the path (`route_not_found`), a 404, a 400, or a 409 `name_taken`. |
 | 3 | Credential or permission refused, or any other 409: the app's state refused. |
-| 4 | Install unreachable. |
+| 4 | Install unreachable, including a proxy's 502, 503 or 504 page while the install restarts. |
 | 1 | Anything else: a 5xx, a 422, or a 409 that means "wait", such as `deploy_queued` or `already_running`. Read the body's `code`. |
 
 :::tip[Windows]

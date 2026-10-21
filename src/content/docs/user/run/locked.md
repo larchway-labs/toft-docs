@@ -19,6 +19,7 @@ An administrator can **lock** an app. Locking stops it, and it stays stopped unt
 - Starting and restarting
 - **Rolling back**, because it would change what is served
 - Running jobs: scheduled runs don't fire, queued runs are canceled, and a run in progress is stopped
+- Changing the app's settings, including its visibility and environment variables
 
 Every refusal includes the lock message: the administrator's own words, or the install's default if they didn't write one. Read it; it is written for you.
 
