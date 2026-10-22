@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 96 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 94 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **96**. Settings for one app are on that app's own pages
+renders it. There are **94**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -37,19 +37,17 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. | 10–86,400 seconds, or 0 |
 | `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. | — |
 | `log_level` | Platform log level | How much the platform logs about itself. | — |
-| `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
-| `max_run_retries` | Most automatic retries | The most extra attempts an automation may ask for. 0 turns retries off everywhere. | 0–10 retries |
 | `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. | 60–3,600 seconds |
 | `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. | 60–3,600 seconds |
 | `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |
-| `max_scheduled_tasks_per_app` | Most scheduled tasks an app may have | Counted per schedule. | 1–100 tasks |
-| `scheduled_task_timeout_seconds` | Give up waiting for the app after | Past this, the run is recorded as failed. | 30–900 seconds |
-| `scheduled_run_result_bytes` | Keep of each response | How much of the app’s answer is stored as the run’s result. 0 stores none. | 0–262,144 bytes |
+| `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
+| `max_queued_runs_per_app` | Runs waiting per app | How many of one app’s runs may wait. A start past this is refused until one finishes. | 1–10,000 runs |
+| `default_job_timeout_seconds` | Stop a job after | The timeout for a job whose toft.toml declares none. | 60–604,800 seconds |
+| `max_job_timeout_seconds` | Longest a job may run | The ceiling on any job’s timeout. | 60–604,800 seconds |
+| `max_job_memory_mb` | Most memory a job may have | The ceiling on any job’s memory. | 128–262,144 MB |
 | `gallery_deploy_mode` | Gallery | What the gallery offers: nothing, extensions only, or extensions and examples. | — |
 | `job_log_retention_days` | Keep job logs for | A background job’s log lines. | 1–365 days |
 | `job_run_retention_days` | Keep job runs for | Job runs and their output files. | 1–3,650 days |
-| `scheduled_run_retention_days` | Keep run history for | Scheduled task runs, by age. | 1–365 days |
-| `scheduled_log_retention_days` | Keep task logs for | Lines an app logs while a task runs. | 1–365 days |
 | `app_event_retention_days` | Keep failure events for | Failures nobody caused: failed builds, failed health checks, runs that couldn’t start. | 7–3,650 days |
 | `platform_log_retention_days` | Keep the platform’s own log for | What Toft logged about each app: fetches, starts, repairs and refusals. | 7–3,650 days |
 | `announcement_recipient_retention_days` | Keep announcement recipients for | Who each announcement was mailed to, and what happened to each send. | 30–3,650 days |
@@ -177,14 +175,15 @@ accepted; what 0 means is in the row.
 | Rule | Applies to |
 |---|---|
 | **0 or blank means "use the environment's value"**, never "off". The memory and CPU values can be sent in either unit (`app_memory_limit_gb`, `app_cpu_request_cores`, `app_cpu_limit_cores`), but not both in one save. | The operating dials: `app_memory_limit_mb`, `app_cpu_request_millicores`, `app_cpu_limit_millicores`, `max_concurrent_builds`, `auto_deploy_poll_seconds`, `r_package_repository`, `log_level` |
-| **Default on, and an absent row reads as on.** Turning one off takes a capability away. | `public_apps_enabled`, `apps_listable_to_authenticated` |
+| **Default on, and an absent row reads as on.** Turning one off takes a capability away. | `public_apps_enabled`, `apps_listable_to_authenticated`, `background_jobs_enabled` |
 | **Write-only.** Never returned to a browser; leaving the field blank keeps the stored value. | `email_password`, `email_api_key`, `telemetry_headers`, `dependency_feed_credential` |
 | **Required together.** An expiry is required whenever there is a contact; a date in the past is refused. | `security_txt_contact`, `security_txt_expires` |
 | **Floored at 30 days.** | `integrations_retention_days` |
+| **A ceiling refuses new declarations and caps old ones.** A job whose `toft.toml` asks for more is refused at `toft check` and deploy with `limit_exceeds_ceiling`; a job already deployed above a ceiling you lower is capped and marked `clamped`. | `max_job_timeout_seconds`, `max_job_memory_mb` |
 | **Blank turns `.env.<tag>` defaults off.** 1–32 lowercase letters, digits, dashes or underscores. | `environment_tag` |
 
 :::note[Not settings]
-`log_format` is reported read-only beside `effective_log_level`. The settings API
+`log_format` is reported read-only beside `effective_log_level`. `job_placement` (`cluster` or `this machine`) and `job_memory_enforcement` (`cgroup` or `watchdog`) are reported read-only under **Jobs**, as **Where runs go** and **Memory limits**. The settings API
 refuses `docs_url`, `gallery_catalog_url`, `gallery_catalog_source` and
 `gallery_sync`: set `DOCS_URL` and `GALLERY_CATALOG_URL` in the
 [environment](../environment/) instead.

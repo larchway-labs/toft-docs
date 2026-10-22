@@ -37,6 +37,6 @@ Check **Logs**. Usually the app does not listen on `PORT`, misses an environment
 | Public, but unreachable outside | Usually DNS, firewall, proxy or TLS. Ask your administrator. |
 | You see an app but cannot open it | Open it and request access. See [Sharing](../../share/people/). |
 | A storage upload fails silently | Usually missing CORS on the bucket — an administrator fix. |
-| A scheduled task never fires | Check the app is running and the path is right; skipped runs show a reason. |
+| A scheduled job never runs | Check the schedule on the **Automation** tab: is it paused, and when is the next run? Skipped runs show a reason. |
 | `toft` exits with 3 | Run `toft login` again, or check `TOFT_TOKEN` and `TOFT_URL` match. |
 | A tab or button is missing | Your install has not configured that feature. Ask your administrator. |

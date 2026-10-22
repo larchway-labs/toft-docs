@@ -95,9 +95,15 @@ me, err := toft.ViewerFor(r.Header)
 me.Jobs.Start(ctx, "reconcile", opts)
 ```
 
+```r
+viewer_jobs(req) |> job_start("reconcile", params = list(month = month))
+```
+
 Work started through `viewer()` is recorded in that person's name. It raises
-when no one is signed in, rather than silently acting as the app. In R, pass the
-request's `X-Toft-Act-For` header value as `job_start(name, act_for = …)`.
+`no_viewer` when no one is signed in, rather than silently acting as the app.
+Toft adds no role check of its own: declaring the job allows your app to start
+it, and whether this person may press the button is your app's rule. Answer
+the request with `toft.jobs.respond(run)`; see [Jobs](../jobs/#respond-dont-wait).
 
 ## Your app enforces its own rules
 

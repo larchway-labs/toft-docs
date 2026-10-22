@@ -171,11 +171,16 @@ needs: a tail of the build log, or the dependency findings.
 | `publish_failed` | The install's artifact store. Tell an administrator. |
 | `internal_error` | Retry, then tell an administrator. |
 
-A successful deploy can carry `warnings`, such as a `[tasks]` table in
-`toft.toml`, which nothing reads, or a `.env` file the bundle carried. They
-print as sentences, and appear in the `--json` result as `warnings`, with
-`warning_details` giving each one a `code` (`manifest_unread`) and, for a
-`toft.toml` key, its `table`.
+A successful deploy can carry `warnings`, such as a `toft.toml` table nothing
+reads, a `.env` file the bundle carried, or a job capped by a ceiling an
+administrator lowered. They print as sentences, and appear in the `--json`
+result as `warnings`, with `warning_details` giving each one a `code`
+(`manifest_unread`, `limit_clamped`) and, for a `toft.toml` key, its `table`.
+
+A `[tasks]` table, or a job key Toft no longer reads (`retries`,
+`viewer_runnable`, `enabled`), fails the deploy with `removed_key` and a hint
+naming what replaced it. So does a job asking for more time or memory than the
+install allows, with `limit_exceeds_ceiling`. `toft check` finds both first.
 
 A locked app is refused with exit 2 before anything is built. Retrying will not
 help until an administrator lifts the lock.

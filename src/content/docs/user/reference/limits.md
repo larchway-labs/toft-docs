@@ -22,7 +22,7 @@ These vary by install. When you hit one, the app page, build log or error messag
 |---|---|
 | Building | Build timeout, concurrent builds, archive upload size, available language versions |
 | Running | Memory per app (overridable per app), CPU in isolated mode, idle time before sleeping |
-| Automation | Job memory, CPU, timeout and retries; concurrent job runs per app; scheduled tasks per app and their timeout |
+| Automation | Default job timeout; the most time and memory a job may ask for; concurrent job runs and waiting runs per app |
 | History | Deployments kept per app; how long logs and events are kept |
 | Access | Whether apps can be public, session length, whether personal API keys are offered, dependency policy and waiver length |
 

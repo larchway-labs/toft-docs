@@ -60,27 +60,33 @@ command  = "python extract.py"
 schedule = "0 2 * * *"
 ```
 
-See [Jobs](../../automation/jobs/).
+See [Schedule work with jobs](../../automation/jobs/).
 
 ## `[jobs.<name>]`
 
-One table per [job](../../automation/jobs/).
+One table per [job](../../automation/jobs/). This file is the only place a job
+is defined; every deploy makes the app's jobs match it.
 
 | Key | Meaning |
 |---|---|
-| `command` | What to run. Required. |
-| `schedule` | Cron expression. UTC unless `timezone` is set. |
+| `command` | What to run. Required, unless `args` is given. |
+| `args` | Go apps only: arguments to the binary the build produced, instead of `command`. `["job", "extract"]`. |
+| `schedule` | Cron expression. UTC unless `timezone` is set. Leave it out for an on-demand job. |
 | `timezone` | IANA zone for `schedule`, e.g. `Europe/London`. |
+| `overlap` | `queue` (default) or `skip`: what a scheduled firing does while the last run is still going. |
+| `notify` | `none` (default), `failures` or `always`: when to email the app's owners about a run. |
 | `expect_within` | Report the job overdue after this long without a success: `26h`, `7d` (1 hour to 31 days). |
-| `timeout` | Seconds before a run is stopped. |
-| `memory` | Memory limit in MiB. |
+| `timeout` | How long a run may take: `"45m"`, or seconds. Your install's default without it. |
+| `memory` | Memory limit in MB. |
 | `cpu` | CPU limit in millicores (50–32000). |
-| `retries` | Extra attempts for a failed scheduled run (0–10). |
-| `enabled` | `false` to define the job without scheduling it. |
-| `viewer_runnable` | `true` to let viewers of the app start it. |
 
 Declare parameters as `[jobs.<name>.params.<param>]` with `type` (`string`,
-`int`, `float` or `bool`), `required`, `default` and `help`.
+`int`, `float` or `bool`), `required` or `default`, `choices` and `help`.
+
+A `timeout` or `memory` above what your administrator allows fails the deploy
+with `limit_exceeds_ceiling`. `retries`, `viewer_runnable`, `enabled` and a
+`[tasks]` table are no longer read; a deploy refuses them with `removed_key`
+and says what replaced each.
 
 :::note
 Parameters are passed to your process as values, never pasted into the

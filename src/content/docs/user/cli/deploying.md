@@ -35,7 +35,7 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft visibility` | Print or change [who can see the app](../../share/visibility/) |
 | `toft deployments` | List old deployments, or delete them |
 | `toft delete <slug>` | Delete the app; there is no undo |
-| `toft job` · `toft task` | Run [jobs](../../automation/jobs/) and [scheduled tasks](../../automation/scheduled-tasks/) |
+| `toft job` | Run [jobs](../../automation/jobs/), rerun them, wait for them and read their logs |
 | `toft store` | Files in a store: `ls`, `put`, `get`, `rm` |
 | `toft sdk vendor` | Copy the [app SDK](../sdk/) into your project |
 | `toft api GET apps` | Call any API route with your stored credential |
@@ -50,9 +50,9 @@ Every command takes `--help` and `--json`. Flags can go before or after position
 | Exit code | Meaning |
 |---|---|
 | `0` | It worked |
-| `1` | The platform tried and it failed — a build, a job run, a skipped task run — or another deploy is still queued |
+| `1` | The platform tried and it failed — a build, or a job run that did not succeed — or another deploy is still queued |
 | `2` | Usage or configuration — no app linked, a bad flag, an unknown or already-taken name, a locked app |
-| `3` | Not authenticated, or refused — including by the app's state, such as running a disabled task |
+| `3` | Not authenticated, or refused — including by the app's state, such as a locked app |
 | `4` | Could not reach the install |
 
 With `--json`, output is one JSON document per line, and a refusal is a JSON object too. See [CI and automation](../../../cli/cli/ci/) and [Exit codes](../../../cli/cli/exit-codes/).

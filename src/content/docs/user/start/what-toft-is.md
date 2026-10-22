@@ -18,7 +18,7 @@ You do not write a Dockerfile, pick a base image or configure a web server.
 | **Access control** | Restricted to people you choose, anyone signed in, or public — plus a way for colleagues to ask for access. |
 | **Configuration** | Environment variables, stored encrypted, read at startup. |
 | **Deployments** | Every successful deploy is kept, so you can roll back. |
-| **Scheduled work** | Tasks that call your app on a schedule, and jobs that run your code on their own. |
+| **Scheduled work** | Jobs that run your code on a schedule or on demand, in their own process. |
 
 ## What it is not
 

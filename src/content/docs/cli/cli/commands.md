@@ -48,8 +48,7 @@ Every command accepts these.
 | [`visibility`](#toft-visibility) | Who may open the app. |
 | [`deployments`](#toft-deployments) | The app's deployment history, and pruning it. |
 | [`delete`](#toft-delete) | Delete an app. |
-| [`job`](#toft-job) | Jobs, which run as their own process. |
-| [`task`](#toft-task) | Scheduled tasks, which are HTTP requests to your app. |
+| [`job`](#toft-job) | Jobs: run, rerun, wait for and read the work your app declares in `toft.toml`. |
 | [`store`](#toft-store) | Files in a durable store. |
 | [`sdk`](#toft-sdk) | Write the install's app SDK into this directory. |
 | [`api`](#toft-api) | Call the install's HTTP API with your stored credential. |
@@ -165,7 +164,9 @@ It reports:
 
 - what the app is: the framework and entry point;
 - the language version it would get, and where the pin came from;
-- how it would run, and the jobs `toft.toml` declares;
+- how it would run, and the jobs `toft.toml` declares, each with the timeout
+  and memory a run of it will get and where each came from (`declared`,
+  `install default`, `app limit` or `clamped`);
 - anything in `toft.toml` that nothing reads;
 - files that look like secrets, such as `.env`, which the bundle would carry,
   as a deploy warns about them;
@@ -175,7 +176,10 @@ It reports:
 - what unpacking the bundle removed;
 - each problem that would refuse the deploy, with the same `reason` a failed
   deploy would carry (`unsupported_framework`, `manifest_invalid`,
-  `runtime_version`).
+  `runtime_version`), and a `code` and `hint` where there is one: a job asking
+  for more than the install allows is `limit_exceeds_ceiling`, and a key Toft
+  no longer reads (`retries`, `viewer_runnable`, `enabled`, `[tasks]`) is
+  `removed_key`.
 
 It exits 0 when a deploy would get past these decisions and 1 when it would be
 refused. The dependency policy, the build and the start are not checked: only a
@@ -184,9 +188,12 @@ returns the install's answer as it sent it.
 
 Warnings are full sentences, the same ones a deploy prints. Under `--json`,
 `warnings` holds the sentences and `warning_details` holds one object per
-warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads), the
+warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads,
+`limit_clamped` for a job an administrator's lowered ceiling caps), the
 `table` for a `toft.toml` key, and the `message`. When `requires-python` chose
-the Python version, `runtime.requires_python` says so.
+the Python version, `runtime.requires_python` says so. `job_limits` lists each job
+with its `limits`: `timeout` and `memory`, each a `value`, its `source` and, when
+clamped, what was `declared`.
 
 It works before the app exists. With no app linked, or a slug nobody has
 claimed yet, it checks the directory as a new app, as `toft create` would build
@@ -437,57 +444,44 @@ it. Without a terminal, `--yes` is required.
 
 ## `toft job`
 
+Jobs are declared in `toft.toml`; `toft job` operates them. A run id may be the
+eight characters `toft job runs` prints.
+
 | Subcommand | |
 |---|---|
-| `list` | The jobs this app defines, with schedule, zone and alert window. |
-| `run <name>` | Start one and wait. The run's outcome is the exit code. |
-| `runs [name]` | Recent runs, with the instant each was for. Name a job to see only its runs. A retry shows `attempt N`, and a failed attempt that was retried shows `retried as <runID>`; `--json` carries `attempt`, `retry_of` and `retried_by`. |
+| `list` | The jobs this app declares: schedule and zone, parameters, effective limits with their source, whether the schedule is paused, and where runs go. |
+| `run` | With no job named: the jobs and their parameters, and how to run one. |
+| `run <job>` | Start one and wait. The run's outcome is the exit code. |
+| `rerun <runID>` | Run a finished run again, with the same parameters and the same instant it was for. Waits like `run`. A run still queued or running is refused with `run_still_open`. |
+| `wait <runID>` | Wait for a run that has already started (by its schedule, the app, or an earlier `--no-wait`), with the same exit code as `run`. |
+| `runs [job]` | Recent runs, of one job when named: status, who started it, when, and why it did not succeed, with the command to try next. |
+| `runs <runID>` | One run in full: parameters, limits, peak memory, reason, and what to try next. |
 | `logs <runID>` | What one run printed. |
 | `cancel <runID>` | Stop a run that is still going. A run that already finished prints `already finished (<status>)` and exits 0; `--json` has `"changed": false`. |
 
 | Flag | |
 |---|---|
-| `--param k=v` | A parameter. Repeatable. Values are strings, never parsed. A parameter with no name (`=x`) is refused, exit 2. |
-| `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`. No offset means UTC. |
+| `--param k=v` | A parameter. Repeatable. The install holds it to the job's declared type and choices and converts it, so `--param rows=500` arrives as a number. A required one left out is asked for when a terminal is attached. |
+| `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`; `2026-10-06` or `2026-10-06T03:00` are read as UTC. The run sees it as `TOFT_SCHEDULED_FOR`. |
+| `--idempotency-key <k>` | Starts carrying the same key within 24 hours are one run. |
 | `--no-wait` | Start and return the run id. |
-| `--logs` | Stream the run's log while waiting. |
-| `--timeout <d>` | How long to wait. Default: no limit. Running out exits 1 and the run carries on; the message names the command that follows it. |
-| `--follow` | With `logs`: keep reading. |
+| `--follow` | Stream the run's log while waiting; with `logs`, keep reading until the run ends. `--logs` is the same. |
+| `--timeout <d>` | How long to wait. Default: as long as it takes. Running out exits 1 and the run carries on; the message names the `toft job wait` command that picks it up. |
 | `--limit <n>` | With `runs`: how many. |
+| `--json` | One document per line. A run that did not succeed prints the run, then the refusal. |
 
-See [Jobs](../../sdk/jobs/).
+`run`, `rerun` and `wait` exit with the run's outcome: 0 for `succeeded`; 1 for
+`failed`, `timed_out`, `out_of_memory`, `cancelled` or `skipped`, with the
+state and its reason on the last line. A full queue (`queue_full`) is 1 too:
+try again later. A parameter the job refuses (`param_required`, `param_type`,
+`param_choice`) or a job the app does not declare (`no_such_job`) is 2, with a
+hint naming the command to fix it.
 
-## `toft task`
+Nothing is retried for you; `toft job rerun` is how you try again, and the new
+run records which one it repeats (`rerun_of`).
 
-| Subcommand | |
-|---|---|
-| `list` | The tasks this app schedules, with a column saying `enabled` or `disabled`. |
-| `create <name>` | Create one. Needs `--path`. |
-| `edit <name>` | Change only the flags you name. Prints whether the task is enabled. |
-| `delete <name>` | Remove one and its run history. Asks first. |
-| `run <name>` | Fire one now and wait. `skipped` exits 1. |
-| `runs <name>` | Recent runs, in local time with the zone. |
-| `logs <runID> --task <name>` | What one run pushed. `--task` is required; a run of another task exits 2. |
-
-| Flag | |
-|---|---|
-| `--path </p>` | Path on your app, from its root. |
-| `--schedule <cron>` | Five fields, UTC. Omit for an on-demand task; `--schedule ''` on `edit` removes it. |
-| `--timezone <zone>` | Read the schedule in this zone, e.g. `Europe/London`. Repeat it whenever you pass `--schedule`. On `edit`, `--timezone` alone re-zones the schedule the task already has. |
-| `--method <verb>` | `GET` or `POST`. Default `GET`. Anything else exits 2 (`invalid_method`). |
-| `--overlap <policy>` | `skip` or `allow` when the previous run is still going. Anything else exits 2 (`invalid_overlap`). |
-| `--enabled=<bool>` | Whether the schedule fires. Default true. Write `--enabled=false`; `--enabled false` is refused. |
-| `--no-wait`, `--timeout <d>` | As for `job run`. |
-
-A cron expression or time zone the install refuses exits 2 with the install's
-code, and so does `create` with a name an existing task has (`name_taken`).
-Under `--json`, `list` gives `schedule` as the bare cron expression, with
-`timezone` beside it (`UTC` when none was set). A task's log holds only what the app sent with the SDK's `task.log()`; an
-empty one says so, and what the app printed is in `toft logs`.
-
-A disabled task is refused by `run` with `schedule_disabled`, exit 3. A batch app cannot
-have tasks. `toft task` needs a personal key; a deploy key cannot use it. See
-[Scheduled tasks](../../sdk/tasks/).
+`toft task` is gone. It exits 2 with `removed_command` and points at
+`[jobs.<name>]` in `toft.toml`. See [Jobs](../../sdk/jobs/).
 
 ## `toft store`
 
@@ -561,7 +555,7 @@ install's. See [Vendoring it](../../sdk/vendoring/).
 ```bash
 toft api GET apps                                   # same as /api/v1/apps
 toft api PATCH /api/v1/apps/<id> --data @patch.json
-cat body.json | toft api POST /api/v1/apps/<id>/cron --data @-
+cat body.json | toft api POST /api/v1/apps/<id>/job-runs --data @-
 ```
 
 `--data` takes inline JSON, `@file`, or `@-` for stdin. A path without a leading
@@ -581,8 +575,7 @@ It exits by the same rules as every other command:
 
 :::tip[Windows]
 Git Bash rewrites arguments that start with `/` into Windows paths. Use the
-relative form, `toft api GET apps`, or set `MSYS_NO_PATHCONV=1`. The same applies
-to `toft task create --path`.
+relative form, `toft api GET apps`, or set `MSYS_NO_PATHCONV=1`.
 :::
 
 Prefer a real verb where one exists: it validates, confirms and explains.

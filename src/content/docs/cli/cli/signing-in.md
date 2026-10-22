@@ -57,7 +57,7 @@ A scope bounds Toft's own API. It does not limit what a deployed app does with
 a request it receives.
 
 A deploy key does less than a personal key. It cannot manage credentials or
-grants, and it cannot use `toft task` or `toft store`.
+grants, and it cannot use `toft store`.
 
 ## The administrator's session
 

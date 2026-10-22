@@ -20,15 +20,15 @@ Set both or neither. If the runner mounts secrets as files, use
 an environment variable is visible in `/proc` and inherited by child processes.
 
 A deploy key can create apps, deploy, roll back, restart, stop, run jobs, and
-read logs, events and dependencies. It cannot manage scheduled tasks, use
-`toft store`, or manage keys and grants. For those, use a full personal key
+read logs, events and dependencies. It cannot use `toft store`, or manage
+keys and grants. For those, use a full personal key
 (`toftu_`).
 
 ## No prompts
 
 `toft` treats a run as unattended when `--yes` is passed, `CI` is set, or stdin
 is not a terminal. It then never prompts: anything that needs a confirmation
-(`create`, `rollback`, `task delete`) is refused with exit 2 unless you pass
+(`create`, `rollback`, `delete`) is refused with exit 2 unless you pass
 `--yes`.
 
 ## A deploy pipeline

@@ -36,8 +36,9 @@ app.
 
 The latest delivery result is shown beside the recipient list.
 
-## Render schedule vs. scheduled task
+## Render schedule vs. a scheduled job
 
 A render schedule rebuilds and republishes a document. A
-[scheduled task](../../automation/scheduled-tasks/) calls an HTTP path on a
-running app. Documents have no running app, so they use render schedules.
+[job](../../automation/jobs/) with a schedule runs a command from your
+deployment and leaves the published document as it is. Use a render schedule
+to refresh what readers see; use a job for work alongside it.
