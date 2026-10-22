@@ -42,7 +42,9 @@ These exit 2 because nothing was attempted:
 - **An environment variable name `toft env set` refuses**: not letters, digits
   and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
   (`reserved_env_name`).
-- **A path matching no route** in `toft api` (`route_not_found`).
+- **A path matching no route** in `toft api` (`route_not_found`), or a route
+  that exists but not for that method (`method_not_allowed`) — whose hint names
+  the method it takes.
 - **A confirmation nothing could answer**, in CI or with stdin redirected.
 - **A token without `TOFT_URL`**, or both `TOFT_TOKEN` and `TOFT_TOKEN_FILE`.
 
