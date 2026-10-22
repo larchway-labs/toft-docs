@@ -37,7 +37,9 @@ toft create --repo https://github.com/acme/tools --branch main --subdir services
 
 With `--subdir`, only that folder is deployed: no `.git`, nothing outside
 it. The slug defaults to the folder's name (`billing`), and `toft status` shows
-the folder. A folder path containing `..`, `.git`, or a symlink is refused.
+the folder. A folder path containing `..`, `.git`, or a symlink is refused, and
+so is a folder the branch does not have — before anything is created, exit 1
+`source_unavailable`.
 
 To rebuild from the repository later:
 
