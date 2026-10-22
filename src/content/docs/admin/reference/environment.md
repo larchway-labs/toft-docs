@@ -78,6 +78,7 @@ Register `{BASE_URL}/api/v1/auth/{OIDC_PROVIDER_ID}/callback` as the redirect UR
 |---|---|---|
 | `APPS_DIR` | `./apps` | Releases. Resolved to an absolute path. |
 | `LOGS_DIR` | `./logs` | App logs. |
+| `JOB_RUN_DIR` | — | Shared mode: where each job run gets its own working folder and copy of the app's release. Unset, runs live under `APPS_DIR`. Point it at local disk when `APPS_DIR` is a network filesystem such as EFS, where copying a large release can take minutes per run. Needs room for the releases of all runs in progress at once. |
 | `CACHE_DIR` | `./data/cache` | Build cache. |
 | `PORT_RANGE_START`, `PORT_RANGE_END` | `3100`, `3999` | Ports for shared-mode apps. Not a dial: changing it strands running apps. |
 | `RUNTIME` | `pm2` | Process manager for shared mode. |
