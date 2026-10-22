@@ -441,7 +441,7 @@ it. Without a terminal, `--yes` is required.
 |---|---|
 | `list` | The jobs this app defines, with schedule, zone and alert window. |
 | `run <name>` | Start one and wait. The run's outcome is the exit code. |
-| `runs [name]` | Recent runs, with the instant each was for. Name a job to see only its runs. |
+| `runs [name]` | Recent runs, with the instant each was for. Name a job to see only its runs. A retry shows `attempt N`, and a failed attempt that was retried shows `retried as <runID>`; `--json` carries `attempt`, `retry_of` and `retried_by`. |
 | `logs <runID>` | What one run printed. |
 | `cancel <runID>` | Stop a run that is still going. A run that already finished prints `already finished (<status>)` and exits 0; `--json` has `"changed": false`. |
 
@@ -574,7 +574,7 @@ It exits by the same rules as every other command:
 
 | Exit | Meaning |
 |---|---|
-| 2 | No route matches the path (`route_not_found`), a 404, a 400, or a 409 `name_taken`. |
+| 2 | No route matches the path (`route_not_found`), the route does not take that method (`method_not_allowed`), a 404, a 400, or a 409 `name_taken`. |
 | 3 | Credential or permission refused, or any other 409: the app's state refused. |
 | 4 | Install unreachable, including a proxy's 502, 503 or 504 page while the install restarts. |
 | 1 | Anything else: a 5xx, a 422, or a 409 that means "wait", such as `deploy_queued` or `already_running`. Read the body's `code`. |
