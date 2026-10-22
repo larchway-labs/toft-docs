@@ -9,7 +9,8 @@ description: Read the app's id, slug, mode and mount path, and ask what an admin
 toft.app.id, toft.app.slug, toft.app.name, toft.app.mode, toft.app.base_path
 ```
 ```js
-await toft.app.slug();   // also id(), name(), mode(), basePath()
+toft.app.id;  toft.app.slug;   // plain properties
+await toft.app.mode();         // also name(), basePath()
 ```
 ```go
 self, err := toft.App.Self(ctx)   // self.ID, .Slug, .Name, .Mode, .BasePath
@@ -19,9 +20,11 @@ info <- app_info()                # info$slug, info$base_path, ...
 app_base_path()
 ```
 
-:::caution[Node: these are async]
-In Node, `toft.app.slug()` returns a Promise. Forget the `await` and a template
-renders `[object Promise]`. In Python they are plain properties.
+:::caution[Node: id and slug are properties, the rest are async]
+In Node, `toft.app.id` and `toft.app.slug` are plain strings — calling them,
+`toft.app.slug()`, is a `TypeError`. `name()`, `mode()` and `basePath()` return
+a Promise: forget the `await` and a template renders `[object Promise]`. In
+Python they are all plain properties.
 :::
 
 The answer is fetched once and cached for the life of the process. Call
