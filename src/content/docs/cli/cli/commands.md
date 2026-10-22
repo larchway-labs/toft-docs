@@ -21,7 +21,7 @@ Every command accepts these.
 | `--app <slug>` | Which app. Otherwise `TOFT_APP`, `.toft.toml`, then `toft.toml`. |
 | `--install <url>` | Which install, by URL or alias. Otherwise the default from `toft login`. |
 | `--json` | Machine-readable output on stdout, **one JSON document per line**. |
-| `-q`, `--quiet` | No narration. The answer still goes to stdout. |
+| `-q`, `--quiet` | No narration. The answer still goes to stdout, and the reason an item of a `store` copy failed still goes to stderr. |
 | `--yes` | Answer confirmations. Required when nothing can be asked. |
 | `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
 | `--session` | Act through the administrator session `toft login --password-stdin` stored, instead of the key. Never falls back to the key. See [The administrator's session](../signing-in/#the-administrators-session). |
@@ -222,8 +222,10 @@ has been in that state (`stopped for 3 minutes`). `since` is when this release
 went live, and `built` is when it was built — after a rollback the two differ.
 When the app is not running, the release line reads `release` rather than
 `serving`. Shows `folder` for an app built from a repository folder. Warns while
-code pushed with `toft deploy` is serving on a repository-backed app. `--json`
-includes the app's `url`, `serving_since` and `status_changed_at`.
+code pushed with `toft deploy` is serving on a repository-backed app. A locked
+app gets a `locked` line: who locked it, when, and their message. `--json`
+includes the app's `url`, `serving_since`, `status_changed_at` and `lock`
+(`null` unless locked).
 
 ## `toft fetch`
 

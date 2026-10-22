@@ -36,4 +36,6 @@ An administrator creates these. A deploy key belongs to nobody, so it keeps work
 
 No key can create keys, change permissions or change who can see what — that needs a browser session. A revoked key stops working on the next request.
 
+You can hold ten personal keys. An expired key still counts until you revoke it, and `toft login` does not revoke the key it replaces — so if creating one is refused with `key_limit_reached`, revoke old ones on **Credentials** first.
+
 Your administrator can revoke any key, or turn personal keys off; existing ones then stop working.

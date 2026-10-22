@@ -65,8 +65,11 @@ person is behind it, and `viewer(headers)` refuses for the same reason. To test
 this code from a terminal, `toft fetch --session` sends the request as a
 signed-in browser (see [The administrator's session](../../cli/signing-in/#the-administrators-session)).
 
-It fails for one reason: viewer identity is not switched on for this app. That
-is an administrator's setting, not a state to branch on.
+It fails for one reason: a signed-in person is looking and viewer identity is not
+switched on for this app. That is an administrator's setting, not a state to
+branch on. With nobody on the request — anonymous, or an API key — it returns
+nothing whatever the setting; `toft.app.can("viewer.identity")` reads the
+setting itself.
 
 - `role` is `owner`, `editor` or `viewer` on this app in Toft. A rule about your
   own domain, such as who approves invoices, belongs on groups.
