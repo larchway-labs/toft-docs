@@ -33,7 +33,8 @@ dependencies.
 ```js
 import toft from "@larchway/toft";
 
-await toft.app.slug();                      // every toft.app call is async
+toft.app.slug;                              // id and slug are properties
+await toft.app.basePath();                  // the rest of toft.app is async
 await toft.app.can("email");
 await toft.data.update((s) => { s.runs = (s.runs ?? 0) + 1; });
 await toft.notify.email({ to, subject, text });
