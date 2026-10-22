@@ -33,7 +33,7 @@ required = true
 |---|---|
 | `command` | Run with the deployment's own interpreter. |
 | `schedule`, `timezone` | Five cron fields, read in `timezone` (IANA name) or UTC. A zoned schedule fires once per wall-clock time through daylight saving changes. |
-| `timeout`, `memory`, `cpu` | Seconds, MiB, millicores. |
+| `timeout`, `memory`, `cpu` | Seconds, MiB, millicores. A run that hits its timeout is `timed_out` and keeps everything it printed; `toft job logs` shows it, and `--logs` streams it about once a second while it runs. |
 | `retries` | Extra attempts for unattended runs. Off by default. |
 | `expect_within` | `1h` to `31d`. Owners are told once if the job goes this long without succeeding. |
 | `viewer_runnable` | Lets a viewer start it. |
