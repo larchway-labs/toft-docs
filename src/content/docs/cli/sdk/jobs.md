@@ -43,6 +43,10 @@ required = true
 The declaration ships with the code, so a rollback takes the job definition back
 with it. The build log names any key it did not read.
 
+In a Go app, a job runs the binary the build produced, `./toft-app`. One binary
+serves the web app and every job, so have it read its arguments:
+`command = "./toft-app job reconcile"`.
+
 ## Where it runs
 
 On an install with a cluster, each run gets its own container. On one without,
