@@ -73,7 +73,9 @@ Every command accepts these.
 ## `toft link`
 
 `toft link <slug>`. Writes an `[app]` table into `toft.toml` after checking the
-slug exists. A slug together with a different `--app` is refused (exit 2).
+slug exists. If `toft.toml` already has an `[app]` table with no `slug`, the slug
+is added to it. A table that already names a slug is refused (exit 2): edit it,
+or use `--install`. A slug together with a different `--app` is refused (exit 2).
 
 | Flag | |
 |---|---|
@@ -124,7 +126,7 @@ document and returns.
 | Flag | |
 |---|---|
 | `--logs` | Stream the build log. A step's build lines print before its ✓. |
-| `--no-watch` | Return after starting; print the deployment id. |
+| `--no-watch` | Return after starting; print the deployment id. With `--json`, one `{app, url, deployment_id}` object. |
 | `--watch <deployID>` | Rejoin a deploy started earlier. The result reports the deploy's real duration. An id that names nothing exits 2. |
 | `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check), including in a directory with no app linked. |
 | `--verify <path>` | Once it succeeds, request this path as you. See [`--verify`](#--verify). |
