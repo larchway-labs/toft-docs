@@ -11,7 +11,8 @@ no `latest` tag.
 |---|---|---|
 | **Apps run** | In **shared mode**: processes under PM2, each as its own OS account | In **isolated mode**: one container per app, with its own network policy |
 | **Choose it for** | A team, a department, a first install | App-to-app isolation, mixed resource profiles, an existing Kubernetes |
-| **Not available** | Isolated execution, the artifact store, background jobs, telemetry export | — |
+| **Jobs run** | As processes on the machine, under their app's account | In their own pods |
+| **Not available** | Isolated execution, the artifact store, telemetry export | — |
 
 ## One box
 
