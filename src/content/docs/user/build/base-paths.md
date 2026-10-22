@@ -34,18 +34,19 @@ URLs — must land under the prefix.
 
 Relative URLs work everywhere. Use `BASE_PATH` when you can't be relative.
 
-## Redirects don't
+## Redirects don't need to
 
-The proxy adds the prefix to an absolute-path `Location` header, so redirect as
-if your app were at the root:
+The proxy adds the prefix to an absolute-path `Location` header, so you can
+redirect as if your app were at the root, in every framework:
 
 ```python
 return redirect("/dashboard")               # right
-return redirect("/apps/reports/dashboard")  # wrong: prefixed twice
+return redirect("/apps/reports/dashboard")  # also right: never prefixed twice
 ```
 
-Relative redirects (`new/`, `?page=2`) pass through untouched. Next.js,
-Streamlit and marimo build prefixed redirects themselves.
+A `Location` that already carries the prefix, from `url_for` or a framework's
+own helpers, is left as it is. Relative redirects (`new/`, `?page=2`) pass
+through untouched.
 
 ## By framework
 
