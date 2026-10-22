@@ -39,6 +39,11 @@ changes neither.
 | `not_a_store` | A store-only call on a volume. |
 | `invalid_name` | An empty name, an absolute one, or one with `.` or `..`. |
 | `viewer_required` | `jobs.mine()` on the app acting as itself. |
+| `no_viewer` | `viewer(headers)` on a request with nobody signed in — an API key, a health check, a local server. |
+| `bad_request` | An argument the SDK rejects before sending: an email with no recipient, blank text, an empty send or session id, app data that is not an object. |
+| `input_not_given`, `input_expired` | A job reading a payload it was never given, or after its link expired. |
+| `no_output` | `write_output` in a run that has no output location. |
+| `off_platform` | A variable the platform injects is missing — the code is running outside Toft. |
 
 In R these are `toft_error` conditions like the platform's, with `e$status` `NA`.
 

@@ -54,6 +54,8 @@ help     = "Which region to report on"
 toft job run report --param region=emea
 ```
 
+Declared parameters are checked when a run starts: a missing `required` one, or a value of the wrong `type`, is refused before anything runs, and a `default` fills in one that was not given. Values from `--param` are text, so `--param rows=500` satisfies `type = "int"`.
+
 Parameters are never put into the command line; your process reads them as values (`toft.run.params`). A **payload** is a larger body of input your app passes when it [starts a run](../from-your-app/); read it at the start of the run, because its link expires.
 
 ## The time a run is for

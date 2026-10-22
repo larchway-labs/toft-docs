@@ -38,7 +38,7 @@ required = true
 | `expect_within` | `1h` to `31d`. Owners are told once if the job goes this long without succeeding. |
 | `viewer_runnable` | Lets a viewer start it. |
 | `enabled` | Whether it is switched on. |
-| `params.<name>` | `type`, `required`, `default`, `help`. |
+| `params.<name>` | `type`, `required`, `default`, `help`. Checked when a run starts: a missing required parameter is refused `param_required`, a wrong type `param_type`, and a default fills one not given. |
 
 The declaration ships with the code, so a rollback takes the job definition back
 with it. The build log names any key it did not read.
