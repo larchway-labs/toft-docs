@@ -13,7 +13,7 @@ Each forwarded request carries a signed `X-Toft-Role` header.
 |---|---|
 | `owner`, `editor`, `viewer` | A signed-in person, by their role on this app. An administrator with no grant reads as `viewer`. |
 | `anonymous` | A visitor who is not signed in. Only a public app sees it. |
-| `system` | Toft firing a scheduled task on its schedule. |
+| `system` | Toft itself, with nobody behind it. A job started by its schedule sees this as its trigger role. |
 | `app` | The app's own credential, such as an app key. |
 | `unknown` | The header is missing, unsigned, tampered with or expired. Treat it as no role. |
 
@@ -52,5 +52,5 @@ On a public app, `email` is always empty. Viewer identity is not available to [s
 - **Verify, never trust a raw header.** Anything that can reach your app can send any header. Use the SDK.
 - **A role is not a person.** Two people with the same role look the same. Use `toft.who` when you need an identity.
 - **A role is not domain authority.** "Owners may approve invoices" is a rule about invoices; put it on a group and check `group_names`.
-- **Do not assume a viewer exists.** Scheduled tasks and health checks reach your app with nobody behind them.
+- **Do not assume a viewer exists.** Health checks reach your app with nobody behind them, and a scheduled job runs for nobody in particular.
 - **Do not re-implement Toft's rules.** Visibility and grants are enforced before your app is reached. Your app enforces only its own rules on its own screens.

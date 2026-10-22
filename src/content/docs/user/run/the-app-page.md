@@ -9,7 +9,7 @@ Everything about one app lives on its page. You see only the tabs your role and 
 |---|---|---|
 | **Overview** | Address, status, last deploy, preview, notices | Anyone who can open the app |
 | **Usage** | Requests, viewers, CPU, memory | Anyone who can open the app |
-| **Automation** | Scheduled tasks and jobs | Editors |
+| **Automation** | The app's jobs and their runs | Editors |
 | **Logs** | Run log, build log, recent failures | Editors |
 | **Deployments** | Every deploy, rollback | Editors |
 | **Dependencies** | Packages and policy findings, when the install has a policy | Editors |

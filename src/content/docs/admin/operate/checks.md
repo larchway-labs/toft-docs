@@ -42,7 +42,7 @@ install every optional subsystem is a skip, and that is healthy.
 | Notifications | Notifications |
 | Sources | Clone credentials |
 | Security | security.txt, At-rest encryption, Development switches, Trusted proxy |
-| Automation | Stuck work, Scheduled tasks |
+| Automation | Stuck work, Scheduled jobs |
 
 ## Rows worth knowing
 
@@ -59,7 +59,7 @@ install every optional subsystem is a skip, and that is healthy.
 | App health | Counts locked, suspended and withheld apps without raising the verdict |
 | Advisory corpus | `warn` past 7 days, or when the policy is on and no feed has synced |
 | Public reachability | `warn`, never `fail`; `skip` when nothing is published or no verdict has arrived |
-| Stuck work, Scheduled tasks | Job runs past their deadline, task runs past the sweeper's cutoff, a schedule more than 10 minutes overdue |
+| Stuck work, Scheduled jobs | Job runs past their deadline and still claimed; a job schedule more than 10 minutes past due and never dispatched — the scheduler, not the app |
 
 ## Build cache and report
 

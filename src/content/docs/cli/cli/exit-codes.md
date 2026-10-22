@@ -8,7 +8,7 @@ description: What each toft exit code means, and which ones are worth retrying.
 | `0` | It worked. | |
 | `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page. | No. Fix the cause. |
 | `2` | Usage or configuration: a bad flag, an argument no command reads, no app linked, a refused prompt, a name that does not exist or is already taken. | No. Fix the command. |
-| `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit, or the app's state, such as running a disabled task or deleting the serving deployment. | No. Fix the credential, or the state. |
+| `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit, jobs switched off on the install, or the app's state, such as rerunning a run that has not finished or deleting the serving deployment. | No. Fix the credential, or the state. |
 | `4` | The install could not be reached. | Yes. |
 
 ## Cases that land on 2
@@ -17,15 +17,13 @@ These exit 2 because nothing was attempted:
 
 - **A locked app.** An administrator or the dependency policy locked it. Nothing
   was built.
-- **A name that does not resolve**: `toft job run <unknown>`, `toft task run
-  <unknown>` (`no_such_task`), an unknown
+- **A name that does not resolve**: `toft job run <unknown>` (`no_such_job`),
+  an unknown run id in `toft job runs`, `rerun`, `wait` or `logs`, an unknown
   deployment id in `toft logs --deploy`, `toft deploy --watch` or
-  `toft deployments delete`, a run of another task in `toft task logs`, or a
-  store you cannot reach (`not_found`). A deployment id that is too short
+  `toft deployments delete`, or a store you cannot reach (`not_found`). A deployment id that is too short
   (`invalid_id`) or matches several (`ambiguous_id`) lands here too.
-- **A name that is already taken** (`name_taken`): `toft task create` with the
-  name of an existing task, or `toft create` with a slug you named (`--app`,
-  `toft.toml`) that someone has claimed.
+- **A name that is already taken** (`name_taken`): `toft create` with a slug
+  you named (`--app`, `toft.toml`) that someone has claimed.
 - **Nothing older to roll back to** (`nothing_older`): `toft rollback` with no
   argument when the serving deployment is the oldest successful one, or the
   only one.
@@ -33,14 +31,19 @@ These exit 2 because nothing was attempted:
   (`invalid_path`), with `--verify` too. Nothing is sent.
 - **`toft logs --lines` below 1** (`invalid_lines`), and **`-j` below 1** on the
   store tree commands (`invalid_jobs`).
+- **A parameter the job refuses**: a required one missing (`param_required`), a
+  value of the wrong type (`param_type`) or not among its choices
+  (`param_choice`). The hint is the command with the parameter filled in.
 - **A `toft job run --param` with no name** (`=x`, `invalid_param`).
-- **A word no command reads**, or a switch written `--enabled false` instead of
-  `--enabled=false`.
+- **A `toft.toml` asking for something the install will not give**:
+  `limit_exceeds_ceiling` for a job's timeout or memory above the
+  administrator's ceiling, and `removed_key` for `retries`, `viewer_runnable`,
+  `enabled` or a `[tasks]` table, at `toft check` and deploy.
+- **`toft task`**, which is gone (`removed_command`). Declare `[jobs.<name>]` in
+  `toft.toml` instead.
+- **A word no command reads.**
 - **A `toft.toml` that does not parse** (`manifest_invalid`).
 - **A directory argument that is not a directory** (`no_such_directory`).
-- **A bad value for `toft task create` or `edit`**: `--method` (`invalid_method`),
-  `--overlap` (`invalid_overlap`), or a cron expression or time zone the install
-  refuses (the install's own code).
 - **An environment variable name `toft env set` refuses**: not letters, digits
   and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
   (`reserved_env_name`).
@@ -60,12 +63,11 @@ These exit 2 because nothing was attempted:
 | `key_read_scope` | The key can read but not write. Mint a full key. |
 | `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
-| `schedule_disabled` | `toft task run` of a disabled task. Enable it first. |
-| `job_disabled` | `toft job run` of a disabled job. |
+| `jobs_unavailable` | Jobs are switched off on this install, or there is nowhere to run them. An administrator's decision. |
+| `run_still_open` | `toft job rerun` of a run still queued or running. `toft job wait` it first. |
 | `deployment_protected` | `toft deployments delete` of the serving deployment. Roll back or deploy first. |
 | `already_current` | The deployment you asked to make current is already serving. |
 | `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `overwrite`. |
-| `rendered_document` | A task on a rendered document. It has no handler to call; give it a re-render schedule instead. |
 
 Any refusal of this kind, where the app's state rather than your credential says
 no, has `"kind": "refused"` under `--json`, with the install's `code`.
@@ -79,14 +81,18 @@ command again. `retryable` says which ones are worth retrying automatically.
 
 ## A run's outcome is the exit code
 
-`toft job run` and `toft task run` wait by default, and exit with the run's
-outcome:
+`toft job run`, `toft job rerun` and `toft job wait` wait by default, and exit
+with the run's outcome: 0 for `succeeded`, 1 for `failed`, `timed_out`,
+`out_of_memory`, `cancelled` or `skipped`.
 
 ```bash
 toft job run nightly-report --param region=emea   # exits 1 if the job fails
 ```
 
-A task run that was `skipped` exits 1. The exit code is the same with `--json`.
+The last line names the state and its reason, such as `timed out after 45m`,
+because two of those states send you to different fixes. A run skipped by its
+job's `overlap` rule did no work, so it exits 1 too. The exit code is the same
+with `--json`.
 
 ## Restart with `--wait`
 

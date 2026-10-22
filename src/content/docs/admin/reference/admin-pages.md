@@ -62,7 +62,9 @@ A control that cannot work on this install is left out, not greyed.
 | Where | Hidden when |
 |---|---|
 | **Admin → Storage** (sidebar and `⌘K`) | The install has no storage. |
-| **Background jobs**, **New apps are born**, **CPU reserved per app**, **CPU ceiling per app** on Admin → Settings | The install cannot isolate an app. The **Isolated execution** row stays and explains why. |
+| **New apps are born**, **CPU reserved per app**, **CPU ceiling per app** on Admin → Settings | The install cannot isolate an app. The **Isolated execution** row stays and explains why. |
+| **Background jobs** on Admin → Settings | There is nowhere to run a job: no cluster and no way to run one on this machine. |
+| The job limits and job retention rows on Admin → Settings | Background jobs are switched off. |
 | An app's **Isolated execution** block | The app is shared and the install has no isolation, or the reader may not choose. |
 
 `/admin/metrics` redirects to Usage; `/admin/job-runs` and `/admin/scheduled`

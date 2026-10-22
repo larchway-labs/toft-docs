@@ -26,6 +26,9 @@ export default defineConfig({
     "/user/": `${base}/user/start/what-toft-is/`,
     "/admin/": `${base}/admin/start/architecture/`,
     "/cli/": `${base}/cli/cli/installing/`,
+    // Scheduled tasks were removed; scheduled work is a job.
+    "/user/automation/scheduled-tasks/": `${base}/user/automation/jobs/`,
+    "/cli/sdk/tasks/": `${base}/cli/sdk/jobs/`,
   },
   integrations: [
     starlight({
@@ -117,8 +120,7 @@ export default defineConfig({
           {
             label: "Automating",
             items: [
-              { label: "Scheduled tasks", slug: "user/automation/scheduled-tasks" },
-              { label: "Jobs", slug: "user/automation/jobs" },
+              { label: "Schedule work with jobs", slug: "user/automation/jobs" },
               { label: "Starting jobs from your app", slug: "user/automation/from-your-app" },
             ],
           },
@@ -300,7 +302,6 @@ export default defineConfig({
               { label: "Notifications", slug: "cli/sdk/notify" },
               { label: "Jobs", slug: "cli/sdk/jobs" },
               { label: "Who is asking", slug: "cli/sdk/viewer" },
-              { label: "Scheduled tasks", slug: "cli/sdk/tasks" },
               { label: "When the platform says no", slug: "cli/sdk/errors" },
             ],
           },

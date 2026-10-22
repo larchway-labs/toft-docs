@@ -20,7 +20,8 @@ toft.jobs.start("reconcile", params={"month": "2026-03"})
 toft.caller(request.headers).at_least(toft.ROLE_EDITOR)
 toft.who(request.headers); toft.viewer(request.headers)
 toft.scratch_dir("uploads"); toft.storage("reports").path
-toft.run; toft.task(request.headers)
+toft.run                                    # inside a job; None elsewhere
+return toft.jobs.respond(run)               # answer a request that started a job
 ```
 
 `snake_case`. Errors are `toft.ToftError` and its subclasses `VersionConflict`
@@ -40,11 +41,12 @@ await toft.jobs.start("reconcile", { params });
 toft.caller(req.headers).atLeast(toft.ROLE_EDITOR);
 await toft.who(req.headers); toft.viewer(req.headers);
 toft.scratchDir("uploads"); toft.storage("reports").path;
-toft.run; toft.task(req.headers);
+toft.run;                                   // inside a job; null elsewhere
+return toft.jobs.respond(run, req);         // a Fetch Response
 ```
 
 ES module, Node 18 or later. From CommonJS, use `await import("@larchway/toft")`.
-Network calls return Promises; `caller`, `task`, `viewer`, `run`, `storage` and
+Network calls return Promises; `caller`, `viewer`, `run`, `storage`, `respond` and
 the scratch helpers are synchronous.
 
 ## Go
@@ -60,7 +62,8 @@ run, err := toft.Jobs.Start(ctx, "reconcile", toft.StartOptions{Params: params})
 c := toft.CallerFor(r.Header)
 me, err := toft.Who(ctx, r.Header); v, err := toft.ViewerFor(r.Header)
 dir, err := toft.ScratchDir("uploads"); m, err := toft.Storage("reports")
-toft.CurrentRun(); toft.TaskFor(r.Header)
+toft.CurrentRun()                           // nil outside a job
+toft.Jobs.Respond(w, r, run)
 ```
 
 - `context.Context` first on anything that touches the network; `error` last.
@@ -81,12 +84,12 @@ library(toft)
 app_info(); app_base_path()
 app_data_get(); app_data_set(list(period = p), if_version = NULL)
 notify("slack", text = "done")
-job_start("reconcile", params = list(month = "2026-03")); job_status(id)
+run <- job_start("reconcile", params = list(month = "2026-03")); job_respond(run)
 caller_role(req$HEADERS); caller_can(req$HEADERS, "editor")
 viewer(req$HEADERS)                         # who is looking, or NULL
 scratch_dir(); mounts(); storage("reports"); store("drop", "backup")
 store_put(store("reports"), "report.parquet")
-scheduled_for()                             # inside a job
+current_run(); run_progress(40, "loading")  # inside a job
 ```
 
 Flat functions instead of objects, and a **smaller surface** than the other
@@ -96,10 +99,7 @@ three:
 |---|---|
 | `app.can()` | `app_info()` lists the capabilities. |
 | `data.update()` | `app_data_set(..., if_version = n)` |
-| Acting as a viewer | `job_start(..., act_for = <X-Toft-Act-For header>)` |
 | Session scratch, subfolders of scratch | `scratch_dir()` only |
-| Task helpers | — |
-| Job internals (`run.progress`, results, input, output) | — |
 
 A refusal in R is a condition of class `toft_error`, with `e$code`,
 `e$retryable` and `e$hint`. `viewer()` in R answers *who is looking* (like `who`

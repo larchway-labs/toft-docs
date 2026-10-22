@@ -19,7 +19,7 @@ such as a full queue's limit. A current install always sends a `code`.
 
 The same fields are on every refusal, whether it came from your app's own calls
 or, inside a [job](../jobs/), from the run's calls such as `run.progress()` and
-`set_result()`.
+`write_output()`.
 
 ## Refusals the SDK makes itself
 
@@ -38,11 +38,12 @@ changes neither.
 | `already_exists` | An upload of a name that exists, at `write`. |
 | `not_a_store` | A store-only call on a volume. |
 | `invalid_name` | An empty name, an absolute one, or one with `.` or `..`. |
-| `viewer_required` | `jobs.mine()` on the app acting as itself. |
-| `no_viewer` | `viewer(headers)` on a request with nobody signed in — an API key, a health check, a local server. |
+| `no_viewer` | `viewer(headers)` on a request with nobody signed in — an API key, a health check, a local server — or `jobs.mine()` on the app acting as itself. The hint names starting the job as the app instead. |
+| `would_outlive_request` | `wait()` while serving a request, with no timeout or one past the request's deadline. The hint is `return toft.jobs.respond(run)`. |
+| `wait_timeout` | `wait()` ran out of time before the run finished. Retryable: the run is still going. |
 | `bad_request` | An argument the SDK rejects before sending: an email with no recipient, blank text, an empty send or session id, app data that is not an object. |
-| `input_not_given`, `input_expired` | A job reading a payload it was never given, or after its link expired. |
 | `no_output` | `write_output` in a run that has no output location. |
+| `no_run` | An in-job call (R's `run_progress()`, `run_write_output()`) outside a job. |
 | `off_platform` | A variable the platform injects is missing — the code is running outside Toft. |
 
 In R these are `toft_error` conditions like the platform's, with `e$status` `NA`.

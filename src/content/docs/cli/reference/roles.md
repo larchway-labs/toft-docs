@@ -12,7 +12,7 @@ may do**, not who they are.
 | `viewer` | May look. |
 | `editor` | May change. |
 | `owner` | Owns this app. |
-| `system` | Toft itself, such as a task firing on its schedule. |
+| `system` | Toft itself, such as a job's schedule starting it. A job reads it as its trigger role. |
 | `app` | An app credential: an app key at the gateway, or a job the app started. |
 | `unknown` | Not sent by the platform. The SDK's answer for a missing, invalid or expired role. |
 
@@ -31,8 +31,8 @@ satisfies checks exactly as a person with that role does.
 
 ## Things that surprise people
 
-- **A manual task firing is not `system`.** It carries the role of whoever
-  pressed **Run now**.
+- **A job started by hand is not `system`.** Its trigger role is that of
+  whoever pressed **Run now** or ran `toft job run`.
 - **A Toft administrator with no grant reads as `viewer`.** The role has no admin
   bit; use [`who`](../../sdk/viewer/) and `is_admin`.
 - **The role is always on.** Viewer identity (`who`) is off until an

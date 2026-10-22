@@ -10,7 +10,7 @@ updated with every `toft` release.
 
 | Skill | Load it to | Source |
 |---|---|---|
-| **toft-cli** | Ship an app: sign in without a browser, the deploy loop, exit codes and `--json` shapes, jobs and tasks, what `toft` refuses and why | [SKILL.md](https://github.com/larchway-labs/toft-cli/blob/main/skills/toft-cli/SKILL.md) |
+| **toft-cli** | Ship an app: sign in without a browser, the deploy loop, exit codes and `--json` shapes, jobs and their runs, what `toft` refuses and why | [SKILL.md](https://github.com/larchway-labs/toft-cli/blob/main/skills/toft-cli/SKILL.md) |
 | **toft-sdk** | Write the app: `PORT`, `HOST` and `BASE_PATH`, how the build detects a framework, `toft.toml`, and the SDK for Python, Node, R and Go | [SKILL.md](https://github.com/larchway-labs/toft-cli/blob/main/skills/toft-sdk/SKILL.md) |
 
 ## Install them

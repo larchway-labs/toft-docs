@@ -12,7 +12,7 @@ a support question; an absent one reads as what it is.
 | Artifact store | Its routes 404; nothing in the UI |
 | Isolated backend | The mode is not offered |
 | App storage | No storage on any app |
-| Background jobs | No jobs (no *cluster* still allows jobs on the platform's machine) |
+| Background jobs | On by default. Switched off, no job runs and no schedule fires. With no cluster, runs go to the platform's own machine |
 
 **Admin → System info** and **[Admin → Checks](../../operate/checks/)** show what is
 on. On Checks an unconfigured capability reads `skip` with a reason, never `fail`.

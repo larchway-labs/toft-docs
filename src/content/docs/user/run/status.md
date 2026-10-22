@@ -17,7 +17,7 @@ description: What each app status means, how sleeping and waking work, and why a
 
 A sleeping app still answers its address; the first request is slower while it starts. If that delay matters, make startup faster.
 
-Apps sleep only if your administrator set an idle timeout; **Settings → Runtime → Never sleep** shows it. An app never sleeps if it runs in isolated mode, has an enabled [scheduled task](../../automation/scheduled-tasks/), or an administrator exempted it.
+Apps sleep only if your administrator set an idle timeout; **Settings → Runtime → Never sleep** shows it. An app never sleeps if it runs in isolated mode or an administrator exempted it. A [job's](../../automation/jobs/) schedule does not keep it awake: jobs run in their own process.
 
 ## What visitors see when the app can't answer
 

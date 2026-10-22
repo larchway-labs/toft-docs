@@ -28,7 +28,7 @@ for something your install does not have is absent, not disabled.
 | **Logs** | The run log, each deploy's build log, and the app's [events](../../run/events/). |
 | **Deployments** | Every deployment, the one serving, rollback. |
 | **Usage** | Who opened it and what it consumes. |
-| **Automation** | Scheduled tasks and jobs. |
+| **Automation** | The app's jobs: run one now, pause a schedule, read runs. |
 | **Dependencies** | What it installs and what your install's policy says about it. |
 | **Integrations** | Where this app may send messages and files. |
 | **Reach** | Everything the platform has given this app, in one place. |

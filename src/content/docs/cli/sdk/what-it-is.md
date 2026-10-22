@@ -35,9 +35,8 @@ its own copy; see [Vendoring it](../vendoring/).
 | [App data](../data/) | `toft.data` | `toft.data` | `toft.Data` | `app_data_get()` |
 | [Files](../files/) | `toft.storage`, `toft.scratch_dir` | `toft.storage`, `toft.scratchDir` | `toft.Storage`, `toft.ScratchDir` | `storage()`, `scratch_dir()` |
 | [Notifications](../notify/) | `toft.notify` | `toft.notify` | `toft.Notify` | `notify()` |
-| [Jobs](../jobs/) | `toft.jobs`, `toft.run` | `toft.jobs`, `toft.run` | `toft.Jobs`, `toft.CurrentRun()` | `job_start()`, `scheduled_for()` |
+| [Jobs](../jobs/) | `toft.jobs`, `toft.run` | `toft.jobs`, `toft.run` | `toft.Jobs`, `toft.CurrentRun()` | `job_start()`, `job_respond()`, `current_run()` |
 | [Who is asking](../viewer/) | `toft.caller`, `toft.who`, `toft.viewer` | same | `toft.CallerFor`, `toft.Who`, `toft.ViewerFor` | `caller_role()`, `viewer()` |
-| [Scheduled tasks](../tasks/) | `toft.task` | `toft.task` | `toft.TaskFor` | — |
 
 R has a smaller surface than the other three. See
 [Language notes](../../reference/languages/).

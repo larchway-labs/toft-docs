@@ -28,8 +28,8 @@ its own id.
 | `reachability` | Public reachability | Platform | The stored verdict, certificate expiry (21 days), suspended apps. `warn`, never `fail`; `skip` when nothing is published. |
 | `clock` | Clock | Platform | Skew against the database. `warn` past 2 s, `fail` past 30 s. Nothing contacts a time server. |
 | `encryption` | At-rest encryption | Security | `pass` with the backend, current key id, number of keys held and KEK URI: the key that must be in your backup. |
-| `stuck_work` | Stuck work | Automation | Job runs past their deadline; cron runs past the sweeper's cutoff. |
-| `scheduled_tasks` | Scheduled tasks | Automation | `warn` when a task is more than 10 minutes overdue, naming the app and task. |
+| `stuck_work` | Stuck work | Automation | Job runs past their deadline and still claimed: a worker that died between claiming the work and finishing it. |
+| `scheduled_jobs` | Scheduled jobs | Automation | `warn` when a job's schedule is more than 10 minutes past due and has not been dispatched, naming the app and job. That is the scheduler, not the app: a failed run is recorded on the app. `skip` when no app has an enabled schedule. |
 | `telemetry` | Telemetry | Platform | Exporters, and whether they are working. |
 | `db_pool` | Database pool | Platform | `warn` at 90% of connections in use, or on accumulated wait. |
 | `runner_images` | Runner images | Execution | `warn` for a language with no image, or an image on `latest` or no tag. |

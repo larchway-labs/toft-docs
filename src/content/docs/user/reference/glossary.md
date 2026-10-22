@@ -16,12 +16,12 @@ description: The terms this guide uses, in one place.
 | **Event** | Something that went wrong without anyone doing it, such as a crash. |
 | **Execution mode** | `shared` (a process on the install's machine) or `isolated` (its own container). |
 | **Grant** | Access to an app for a person or group: list, view or edit. |
-| **Job** | A command run in a fresh process from your app's deployment. |
+| **Job** | A command your app declares in `toft.toml`, run in its own process from your app's deployment, on a schedule or when started. Toft's one kind of automation. |
 | **List access** | Shows an app in someone's list without letting them open it. |
 | **Lock** | An administrator's stop. Only an administrator can lift it. |
 | **Personal key** (`toftu_`) | A credential that acts as you. |
 | **Publisher** | The role that may create and own apps. |
-| **Scheduled task** | An HTTP request to a path in your app, on a schedule or on demand. |
+| **Run** | One start of a job. It ends once: succeeded, failed, timed out, out of memory, cancelled or skipped. |
 | **Sleeping** | Stopped to save memory; woken by the next request. |
 | **Slug** | The lowercase identifier in your app's address. |
 | **Viewer** | The role that may open apps but not create them; also the middle level of a grant. |

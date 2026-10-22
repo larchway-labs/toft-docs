@@ -79,6 +79,8 @@ Register `{BASE_URL}/api/v1/auth/{OIDC_PROVIDER_ID}/callback` as the redirect UR
 | `APPS_DIR` | `./apps` | Releases. Resolved to an absolute path. |
 | `LOGS_DIR` | `./logs` | App logs. |
 | `JOB_RUN_DIR` | — | Shared mode: where each job run gets its own working folder and copy of the app's release. Unset, runs live under `APPS_DIR`. Point it at local disk when `APPS_DIR` is a network filesystem such as EFS, where copying a large release can take minutes per run. Needs room for the releases of all runs in progress at once. Toft creates it if missing; an existing directory is never changed, so it must already let other users pass through (mode `0711` or `1777`). |
+| `JOB_CGROUP_PARENT` | — | A cgroup v2 directory under which each job run on this machine gets its own cgroup, so the kernel holds it to its memory limit. Unset, the platform uses its own cgroup, which works when it runs as root in a container or as a systemd service with `Delegate=yes`. Where neither is possible, runs fall back to a sampled watchdog, and **Admin → Settings → Jobs** says which applies. |
+| `APP_REQUEST_DEADLINE_SECONDS` | `300` | How long a request into an app can be expected to live, including any load balancer in front of Toft. Sent to the app as `X-Toft-Request-Deadline`, so the SDKs refuse to wait on a job past it. Advisory: no request is cut off at it. Match it to your load balancer's idle timeout. |
 | `CACHE_DIR` | `./data/cache` | Build cache. |
 | `PORT_RANGE_START`, `PORT_RANGE_END` | `3100`, `3999` | Ports for shared-mode apps. Not a dial: changing it strands running apps. |
 | `RUNTIME` | `pm2` | Process manager for shared mode. |
