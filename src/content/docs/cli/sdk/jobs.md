@@ -80,7 +80,9 @@ values, never interpolated into the command, so a viewer can safely supply them.
 
 `wait()` follows retries: if the platform retried, you get the outcome of the
 retry, not of the first attempt. A full queue raises `QueueFull`
-(`*toft.QueueFullError` in Go).
+(`*toft.QueueFullError` in Go). A wait that runs out raises code
+`wait_timeout`, retryable, because the run is still going (Python raises the
+built-in `TimeoutError`).
 
 ### As a person
 

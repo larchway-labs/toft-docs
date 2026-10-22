@@ -17,7 +17,8 @@ These exit 2 because nothing was attempted:
 
 - **A locked app.** An administrator or the dependency policy locked it. Nothing
   was built.
-- **A name that does not resolve**: `toft job run <unknown>`, an unknown
+- **A name that does not resolve**: `toft job run <unknown>`, `toft task run
+  <unknown>` (`no_such_task`), an unknown
   deployment id in `toft logs --deploy`, `toft deploy --watch` or
   `toft deployments delete`, a run of another task in `toft task logs`, or a
   store you cannot reach (`not_found`). A deployment id that is too short
@@ -26,12 +27,13 @@ These exit 2 because nothing was attempted:
   name of an existing task, or `toft create` with a slug you named (`--app`,
   `toft.toml`) that someone has claimed.
 - **Nothing older to roll back to** (`nothing_older`): `toft rollback` with no
-  argument when the serving deployment is the oldest successful one.
+  argument when the serving deployment is the oldest successful one, or the
+  only one.
 - **A `.` or `..` segment in a `toft fetch` path, or an absolute URL**
   (`invalid_path`), with `--verify` too. Nothing is sent.
 - **`toft logs --lines` below 1** (`invalid_lines`), and **`-j` below 1** on the
   store tree commands (`invalid_jobs`).
-- **A `toft job run --param` with no name** (`=x`).
+- **A `toft job run --param` with no name** (`=x`, `invalid_param`).
 - **A word no command reads**, or a switch written `--enabled false` instead of
   `--enabled=false`.
 - **A `toft.toml` that does not parse** (`manifest_invalid`).
@@ -46,7 +48,9 @@ These exit 2 because nothing was attempted:
   that exists but not for that method (`method_not_allowed`) — whose hint names
   the method it takes.
 - **A confirmation nothing could answer**, in CI or with stdin redirected.
-- **A token without `TOFT_URL`**, or both `TOFT_TOKEN` and `TOFT_TOKEN_FILE`.
+- **A token without `TOFT_URL`**, or both `TOFT_TOKEN` and `TOFT_TOKEN_FILE`, or
+  `TOFT_TOKEN` and `TOFT_URL` together with an `--install` that names an
+  install too — drop one.
 
 ## Cases that land on 3
 
@@ -60,6 +64,8 @@ These exit 2 because nothing was attempted:
 | `job_disabled` | `toft job run` of a disabled job. |
 | `deployment_protected` | `toft deployments delete` of the serving deployment. Roll back or deploy first. |
 | `already_current` | The deployment you asked to make current is already serving. |
+| `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `overwrite`. |
+| `rendered_document` | A task on a rendered document. It has no handler to call; give it a re-render schedule instead. |
 
 Any refusal of this kind, where the app's state rather than your credential says
 no, has `"kind": "refused"` under `--json`, with the install's `code`.

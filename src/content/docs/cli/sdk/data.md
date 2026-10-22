@@ -44,7 +44,8 @@ lost.
 `update` reads the document, applies your function, and writes it back only if
 the version is unchanged, retrying if someone else wrote in between. Your
 function may change the document in place or return a replacement. It receives
-`{}` when nothing is stored.
+`{}` when nothing is stored. It also waits out the app's rate limit (60 calls a
+minute) rather than losing the write, so several writers at once all land.
 
 For a single conditional write, pass the version you read:
 `set(doc, if_version=n)` in Python, `{ ifVersion }` in Node, `SetIf` in Go,
