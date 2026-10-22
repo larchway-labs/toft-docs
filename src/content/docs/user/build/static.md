@@ -34,7 +34,7 @@ committed, and not listed in `.gitignore`.
 |---|---|---|
 | `root` | repository root | Folder to serve, relative to the repository. |
 | `entry` | `index.html`, else the only `.html` file in the root | The page served at `/apps/<slug>/`. Several candidates and no `entry` fails the deploy. |
-| `fallback` | `false` | Serve `entry` for unmatched paths with no file extension that accept HTML. Turn on for single-page apps with client-side routing. |
+| `fallback` | `false` | Serve `entry` for unmatched GET requests whose path has no file extension, unless the request asks only for a non-HTML type such as JSON. A missing file with an extension stays a 404. Turn on for single-page apps with client-side routing. |
 
 A `404.html` in the root is used for unmatched paths. A subfolder with its own
 `index.html` is served at its path; directory listings are off.
