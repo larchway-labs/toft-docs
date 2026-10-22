@@ -23,7 +23,7 @@ description: The terms this guide uses, in one place.
 | **Publisher** | The role that may create and own apps. |
 | **Run** | One start of a job. It ends once: succeeded, failed, timed out, out of memory, cancelled or skipped. |
 | **Sleeping** | Stopped to save memory; woken by the next request. |
-| **Slug** | The lowercase identifier in your app's address. |
+| **Slug** | The lowercase identifier in your app's address: letters, digits and hyphens, at most 54 characters. |
 | **Viewer** | The role that may open apps but not create them; also the middle level of a grant. |
 | **Visibility** | Private, authenticated or public — who may reach the app. |
 | **Workload** | The running process or container. |
