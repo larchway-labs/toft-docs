@@ -84,7 +84,7 @@ Register `{BASE_URL}/api/v1/auth/{OIDC_PROVIDER_ID}/callback` as the redirect UR
 | `CACHE_DIR` | `./data/cache` | Build cache. |
 | `PORT_RANGE_START`, `PORT_RANGE_END` | `3100`, `3999` | Ports for shared-mode apps. Not a dial: changing it strands running apps. |
 | `RUNTIME` | `pm2` | Process manager for shared mode. |
-| `MAX_CONCURRENT_BUILDS` | `1` | An operating dial. |
+| `MAX_CONCURRENT_BUILDS` | half the CPUs, 1–4 | An operating dial. Set `1` for one build at a time. |
 | `AUTO_DEPLOY_POLL_INTERVAL` | `60` | Seconds. An operating dial; `0` starts no poller at all. |
 | `BUILD_ALLOW_SCRIPTS` | off | Lets npm lifecycle scripts run. Not a dial: it decides what code a build executes. |
 | `TOFT_R_REPOS` | Posit Package Manager | An operating dial; the biggest lever on R build time. |
