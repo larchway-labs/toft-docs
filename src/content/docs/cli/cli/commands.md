@@ -26,6 +26,12 @@ Every command accepts these.
 | `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
 | `--session` | Act through the administrator session `toft login --password-stdin` stored, instead of the key. Never falls back to the key. See [The administrator's session](../signing-in/#the-administrators-session). |
 
+In a terminal, `toft` draws its output for a person: tables have a header row,
+statuses are colored badges (`● running`, `○ sleeping`, `✕ failed`), a deploy
+ends in a summary box and an error starts with `✗`. Piped, redirected or in CI,
+the same commands print plain lines with no color codes and errors start with
+`toft:`. Scripts should read `--json` rather than either.
+
 ## All commands
 
 | Command | Does |
