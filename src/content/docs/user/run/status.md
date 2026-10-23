@@ -47,6 +47,8 @@ A start that isn't up after five minutes reads **Crashed**, with the backend's r
 
 ## Starting and stopping
 
+On the app page, a stopped app's first button is **Start app** and a crashed app's is **Restart app**. Start, Restart and Stop are also in the **⋯** menu. From the command line:
+
 ```bash
 toft stop
 toft start
