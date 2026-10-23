@@ -11,18 +11,16 @@ setting by its words, and offers only what the sidebar shows.
 | Page | Address | Answers |
 |---|---|---|
 | **Home** | `/admin` | What needs attention. |
-| **System info** | `/admin/info` | Version, host, runtimes, how this install was deployed, who uses it. |
+| **System info** | `/admin/info` | Version, host, runtimes and which apps use each, how this install was deployed, who uses it. |
 | **[System checks](../../operate/checks/)** | `/admin/checks` | What this install can and cannot do, checked live. |
-| **[Processes](../../operate/health-and-processes/)** | `/admin/processes` | Host CPU, memory and disk, every running workload, who is signed in. |
+| **[Processes](../../operate/health-and-processes/)** | `/admin/processes` | Host CPU, memory and disk, every running workload, the build queue, who is signed in. |
 
 ## Apps
 
 | Page | Address | Answers |
 |---|---|---|
 | **[Usage](../../operate/usage/)** | `/admin/usage` | Which apps are used, what they cost, which nobody opens. |
-| **[Languages](../../build/languages/)** | `/admin/estate` | What the estate is written in, and which version each app runs. |
 | **[Scan targets](../../security/scan-targets/)** | `/admin/estate/targets` | Every app as an address, for a scanner. |
-| **[Queue](../../build/queue-and-limits/)** | `/admin/queue` | Builds waiting and building. |
 | **[Automation](../../operate/automation/)** | `/admin/automation` | Every schedule and every run. |
 | **[Tags](../../apps/tags/)** | `/admin/tags` | The tags apps are filed under, and who may add them. |
 | **[Storage](../../capabilities/storage/)** | `/admin/storage` | Storage locations, and which apps and people reach each. |
@@ -53,7 +51,7 @@ setting by its words, and offers only what the sidebar shows.
 | **[API keys](../../security/keys/)** | `/admin/api-keys` | Every personal key, and how to stop one. |
 | **[Deploy keys](../../security/keys/)** | `/admin/deploy-keys` | Keys that pipelines hold, owned by nobody. |
 | **[Activity](../../security/audit/)** | `/admin/audit` | What people did, and what broke on its own. |
-| **[Integration log](../../capabilities/integrations/)** | `/admin/integration-log` | Every message an app sent, with recipients. |
+| **[Integration log](../../capabilities/integrations/)** | `/admin/integration-log` | Every message an app sent, with recipients. Linked from Integrations; not in the sidebar. |
 
 ## What is hidden, not disabled
 

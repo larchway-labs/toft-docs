@@ -9,7 +9,7 @@ description: What is running now, how crashes and restart loops are judged, and 
 |---|---|
 | `GET /api/v1/system/health` | Administrators get host metrics and a `server` block (version and build revision); everyone else gets health scoped to the apps they can see |
 | **Admin → Processes** | Host CPU, memory and disk; every running workload on both backends; who is signed in |
-| **Admin → Queue** | Builds waiting and building, and each one's step — see [The build queue](../../build/queue-and-limits/) |
+| **Admin → Processes → Build queue** | Builds waiting and building, and each one's step — see [The build queue](../../build/queue-and-limits/) |
 
 On Processes, readings are sortable and the page states what it is not listing.
 A stopped entry is never shown as running, uptime is zero for anything not up,
