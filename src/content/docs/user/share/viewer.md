@@ -14,7 +14,7 @@ Each forwarded request carries a signed `X-Toft-Role` header.
 | `owner`, `editor`, `viewer` | A signed-in person, by their role on this app. An administrator with no grant reads as `viewer`. |
 | `anonymous` | A visitor who is not signed in. Only a public app sees it. |
 | `system` | Toft itself, with nobody behind it. A job started by its schedule sees this as its trigger role. |
-| `app` | The app's own credential, such as an app key. |
+| `app` | The app acting as itself — a job it started. |
 | `unknown` | The header is missing, unsigned, tampered with or expired. Treat it as no role. |
 
 The signing key is per app and changes on every start, and one signed role is good for two minutes. Let the SDK verify it:
@@ -27,7 +27,7 @@ if not c.at_least(toft.ROLE_EDITOR):
     return Response(status_code=403)
 ```
 
-An [app key](../../cli/api-keys/) reaches your app as `app` unless it was given `viewer` or `editor`. A key's role can be narrowed later, never widened.
+A script calling your app is an account you granted on it, and it reaches your app with that grant — `viewer` or `editor` — like a person.
 
 ## Asking who the viewer is
 

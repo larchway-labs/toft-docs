@@ -1,15 +1,14 @@
 ---
 title: Machine credentials
-description: Personal, app and deploy keys, the app token, what each may do, and what no key can do.
+description: Personal and deploy keys, the app token, what each may do, and what no key can do.
 ---
 
-Three key classes, told apart by **who they belong to**, plus one token an app uses
+Two key classes, told apart by **who they belong to**, plus one token an app uses
 to call out.
 
 | Prefix | Class | Belongs to | Managed on |
 |---|---|---|---|
 | `toftu_` | **Personal key** — acts as a person | That person | **Me → Credentials**; all on **Admin → API keys** |
-| `toft_` | **App key** — lets a caller into one app | The app | The app's settings |
 | `toftd_` | **Deploy key** — for pipelines | Nobody | **Admin → Deploy keys** |
 | `tofta_` | **App token** — the app calling Toft | One running workload | Injected as `TOFT_APP_TOKEN`; nobody handles it |
 
@@ -45,14 +44,18 @@ It is **off by default**, and turning it off stops existing keys immediately.
 through a browser approval page — nobody pastes a token. See
 [Publishing from RStudio](../../capabilities/rstudio-publishing/).
 
-## App keys
+## Machines that call one app
 
-Possession is the authorization, for one app only, at the apps gateway. An app key
-survives its creator being locked or deleted. It may carry a caller role,
-`viewer` or `editor`, which never widens what the app's own access allows.
+There are no app keys. A script, integration or assistant calling an app is an
+account of its own from your identity provider, granted on that app, using its
+own personal key — so your provider owns its lifecycle, and the app's Access tab
+is the one list of who can reach it. Give each integration its own account and
+grant it on the one app it serves: a personal key reaches every app its account
+can read.
 
-Hand one to whoever runs a security scan against a single app — see
-[scan targets](../scan-targets/).
+A key starting `toft_` (a removed app key) is refused at the gateway and the API
+with a message saying what replaced it. Security scanners use a
+[scanner account](../scan-targets/).
 
 ## Deploy keys
 

@@ -7,7 +7,6 @@ description: The terms this guide uses, in one place.
 |---|---|
 | **App** | One deployable thing, with a slug, owner, history and address. |
 | **App data** | The one JSON document (up to 256 KiB) each app can read and write. |
-| **App key** (`toft_`) | A credential for one app. |
 | **Base path** | The `/apps/your-slug` prefix your app is served under (`BASE_PATH`). |
 | **Deploy key** (`toftd_`) | A credential for a pipeline, belonging to no person. |
 | **Deployment** | One deploy, as the **Deployments** tab lists it. A successful one serves or is a rollback target. |

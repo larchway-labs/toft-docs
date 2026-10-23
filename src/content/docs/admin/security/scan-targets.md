@@ -21,7 +21,6 @@ the URL a scanner should hit — the apps origin on a split-origin install.
 | Administrator | Yes |
 | The scanner account | Yes |
 | Deploy key (`toftd_`) | Yes — the only `/admin` route a key reaches |
-| App key (`toft_`) | No — it is a grant on one app |
 | Other signed-in users | 404 |
 
 Every row carries `caller_can_reach`: whether the account asking could open that
@@ -45,8 +44,8 @@ A locked account's mark has no effect.
 
 ## Marking scan traffic
 
-Send `X-Toft-Scan: 1` from the scanner account, or with an app key (`toft_`), and
-the request is not counted as usage, so a sweep does not keep
+Send `X-Toft-Scan: 1` from the scanner account and the request is not counted as
+usage, so a sweep does not keep
 [quiet](../../apps/quiet/) apps looking busy. It grants nothing else, is ignored
 from anyone else, and is stripped before the request reaches the app.
 
