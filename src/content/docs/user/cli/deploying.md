@@ -27,7 +27,7 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft fetch /path` | Request a page of your app as you; `--anonymous` as a stranger |
 | `toft logs` | The app's log; `--follow` to stream, `--deploy <id>` for a build |
 | `toft events` | What has gone wrong with the app |
-| `toft redeploy` | Rebuild from the app's repository |
+| `toft redeploy` | Rebuild from the app's own source — its repository, or what was last uploaded |
 | `toft rollback` | Make an earlier deployment current again; by default the one before what is serving |
 | `toft restart` · `start` · `stop` | Lifecycle; `--wait` waits until it is up |
 | `toft deps` | Why the dependency policy refused a deploy, and what fixes it |
