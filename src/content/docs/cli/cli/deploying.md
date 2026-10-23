@@ -47,8 +47,9 @@ To rebuild from the repository later:
 toft redeploy
 ```
 
-`toft redeploy` uploads nothing. It prints the repository and branch first, and
-is refused on an app created from an upload.
+`toft redeploy` uploads nothing. It prints the repository and branch first. On
+an app created from an upload it rebuilds the source last uploaded, which is
+what you want after changing an environment variable.
 
 :::note
 `toft deploy` to a repository-backed app deploys your local tree, but does not

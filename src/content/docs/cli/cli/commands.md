@@ -35,7 +35,7 @@ Every command accepts these.
 | [`create`](#toft-create) | Create an app and deploy this tree into it. |
 | [`deploy`](#toft-deploy) | Bundle this directory and deploy it. |
 | [`check`](#toft-check) | What a deploy of this directory would decide, without deploying. |
-| [`redeploy`](#toft-redeploy) | Build the app again from its own repository. |
+| [`redeploy`](#toft-redeploy) | Build the app again from its own source. |
 | [`rollback`](#toft-rollback) | Make an earlier deployment current again. |
 | [`status`](#toft-status) | What is serving, since when, and from what. |
 | [`fetch`](#toft-fetch) | Request a path on the deployed app, as you. |
@@ -207,9 +207,11 @@ or at the license's app limit. A deploy key can run it.
 
 ## `toft redeploy`
 
-Builds from the repository the app names. Reads and uploads nothing from your
-disk. Refused on an app created from an upload. Flags: `--logs`, `--no-watch`,
-`--verify <path>`, `--verify-timeout <d>`.
+Builds the app again from its own source: the repository it names, or, for an
+app created from an upload, the source last uploaded to it. Reads and uploads
+nothing from your disk. Refused on an uploaded app that has never deployed
+successfully. Flags: `--logs`, `--no-watch`, `--verify <path>`,
+`--verify-timeout <d>`.
 
 ## `toft rollback`
 
