@@ -1,0 +1,22 @@
+---
+/**
+ * The three guides, as the header's right-hand group — in the slot Starlight
+ * keeps for social icons, which this site has none of. The same component is
+ * the switcher at the top of the phone menu (Sidebar.astro).
+ */
+import { guides } from "../sidebar.mjs";
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const current = Astro.locals.starlightRoute.id.split("/")[0];
+const short = { user: "User", admin: "Admin", cli: "CLI & SDK" };
+---
+
+<nav class="toft-guide-nav" aria-label="Guides">
+  {
+    guides.map((g) => (
+      <a href={`${base}/${g.first}/`} aria-current={g.id === current ? "true" : undefined}>
+        {short[g.id] ?? g.label}
+      </a>
+    ))
+  }
+</nav>

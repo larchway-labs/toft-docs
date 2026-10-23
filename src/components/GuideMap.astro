@@ -1,0 +1,95 @@
+---
+/**
+ * The home page's body: one numbered band per guide, then one for agents.
+ *
+ * Each guide's band is its whole table of contents — a section per row, its
+ * pages beside it — drawn from the same list as the sidebar, so the map is
+ * never a hand-picked "popular" strip that goes stale. It is the landing
+ * page's band: a rule, a number, the heading and who it is for on the left,
+ * hairline rows on the right.
+ */
+import { guides } from "../sidebar.mjs";
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const href = (slug: string) => `${base}/${slug}/`;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const agentRows = [
+  {
+    label: "Index",
+    path: "llms.txt",
+    body: "Every page with its one-line summary, linking to its Markdown copy. Start an agent here.",
+  },
+  {
+    label: "One guide",
+    path: "llms-user.txt",
+    body: "Each guide as a single file: llms-user.txt, llms-admin.txt and llms-cli.txt.",
+  },
+  {
+    label: "Everything",
+    path: "llms-full.txt",
+    body: "All three guides in reading order, as one file.",
+  },
+  {
+    label: "One page",
+    path: "user/start/first-app.md",
+    body: "Add .md to any page’s address. Every page also has a Copy as Markdown button under its title.",
+  },
+];
+---
+
+<div class="not-content toft-map">
+  {
+    guides.map((g, i) => (
+      <section class="toft-band">
+        <div class="toft-band-label">
+          <p class="toft-num">{pad(i + 1)}</p>
+          <h2>
+            <a href={href(g.first)}>{g.label}</a>
+          </h2>
+          <p>{g.audience}</p>
+        </div>
+        <ul class="toft-rows">
+          {g.group.items.map((section) => (
+            <li>
+              <span class="toft-row-label">{section.label}</span>
+              <ul class="toft-links">
+                {(section.items ?? [section]).map((page) => (
+                  <li>
+                    <a href={href(page.slug)}>{page.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <section class="toft-band">
+    <div class="toft-band-label">
+      <p class="toft-num">{pad(guides.length + 1)}</p>
+      <h2>For coding agents</h2>
+      <p>
+        Every page is also plain Markdown. Give an agent the index and it can fetch the rest. To let it
+        deploy, install the CLI’s <a href={href("cli/cli/agents")}>two agent skills</a>.
+      </p>
+    </div>
+    <ul class="toft-rows">
+      {
+        agentRows.map((row) => (
+          <li>
+            <span class="toft-row-label">{row.label}</span>
+            <div>
+              <a class="toft-path" href={`${base}/${row.path}`}>
+                {row.path}
+              </a>
+              <p>{row.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</div>

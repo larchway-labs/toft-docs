@@ -1,60 +1,17 @@
 ---
 title: Toft documentation
-description: Deploy, run and share your organization's own apps — guides for people who build them, people who run Toft, and the command line.
+description: How to deploy apps on Toft, run an install, and drive both from a terminal. Every page is also available as Markdown for coding agents.
 template: splash
 hero:
-  title: Your organization's apps, deployed in minutes
-  tagline: Point Toft at a repository or a folder on your machine. It builds, runs and serves the app behind your own sign-in.
+  title: 'Deploy, run and build on Toft. <span>Written for people and their agents.</span>'
+  tagline: Toft builds Python, R, Node, Go and notebook projects and serves them behind your organization’s sign-in. Start with the user guide if you’re putting an app on it.
   actions:
     - text: Deploy your first app
       link: user/start/first-app/
-      icon: right-arrow
-      variant: primary
     - text: Install the CLI
       link: cli/cli/installing/
-      variant: secondary
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import GuideMap from '../../components/GuideMap.astro';
 
-<div class="toft-guides">
-<CardGrid>
-  <Card title="User guide" icon="rocket">
-    Deploy from git, your machine, RStudio or the gallery. Run, share, schedule
-    and store.
-
-    <a class="toft-card-link" href="user/start/what-toft-is/">Read the user guide →</a>
-  </Card>
-  <Card title="Admin guide" icon="setting">
-    Sign-in, roles and policy, capabilities, operations and security — for
-    whoever runs an install.
-
-    <a class="toft-card-link" href="admin/start/architecture/">Read the admin guide →</a>
-  </Card>
-  <Card title="CLI & SDK guide" icon="seti:shell">
-    The `toft` command for deploying from a terminal, and the app SDKs for
-    Python, Node, R and Go.
-
-    <a class="toft-card-link" href="cli/cli/installing/">Read the CLI & SDK guide →</a>
-  </Card>
-</CardGrid>
-</div>
-
-## From zero to a running app
-
-```bash title="Terminal"
-curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh
-toft login https://toft.example.com
-toft create --yes --link        # in your app's folder
-```
-
-## Popular
-
-<CardGrid>
-  <LinkCard title="Deploy from a git repository" href="user/deploy/from-git/" description="Including one folder of a repository that holds several apps." />
-  <LinkCard title="Base paths" href="user/build/base-paths/" description="Why a root-absolute link breaks, and the one-line fix." />
-  <LinkCard title="Sharing your app" href="user/share/visibility/" description="Private, signed-in, or public — and who decides." />
-  <LinkCard title="Setting up sign-in" href="admin/identity/providers/" description="OIDC, GitHub and the built-in administrator." />
-  <LinkCard title="Skills for coding agents" href="cli/cli/agents/" description="Let Claude Code or another agent deploy and write Toft apps." />
-  <LinkCard title="Every command and flag" href="cli/cli/commands/" description="The complete toft reference." />
-</CardGrid>
+<GuideMap />
