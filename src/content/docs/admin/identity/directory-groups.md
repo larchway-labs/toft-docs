@@ -10,7 +10,8 @@ claim. It is opt-in, per group, and absent until you attach a mapping.
 
 1. Create the group (**People → Groups**).
 2. On the group, open **Directory** and attach a **claim value** for a provider —
-   the string your IdP sends, usually a group name or object id.
+   the string your IdP sends, usually a group name or object id. Only a provider
+   this install has, and not the local password sign-in, which sends no claims.
 3. Sign in as somebody in that directory group. Their membership appears, marked
    as from the directory.
 
@@ -50,4 +51,6 @@ memberships stay.
 
 **Admin → System checks → Directory groups**: `skip` with no mappings, `warn`
 when a provider has mappings but no membership has ever arrived — usually a wrong
-claim name, a missing scope, or a groups claim not enabled at the IdP.
+claim name, a missing scope, or a groups claim not enabled at the IdP. A mapping
+to a provider that has since been removed is named as matching nobody: remove it
+from the group.
