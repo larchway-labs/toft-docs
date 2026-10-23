@@ -15,30 +15,36 @@ updated with every `toft` release.
 
 ## Install them
 
-`toft` carries both skills, matched to the commands that binary has. For Claude
-Code, write each into its skills folder:
+`toft` carries both skills, matched to the commands that binary has. Write each
+into the folder your agent reads skills from:
+
+| Agent | Folder |
+|---|---|
+| Claude Code | `~/.claude/skills` |
+| Codex, Cursor, and other agents that read the Agent Skills format | `~/.agents/skills` |
 
 ```bash
+dir=~/.claude/skills        # or ~/.agents/skills
 for s in toft-cli toft-sdk; do
-  mkdir -p ~/.claude/skills/$s
-  toft skill $s > ~/.claude/skills/$s/SKILL.md
+  mkdir -p $dir/$s
+  toft skill $s > $dir/$s/SKILL.md
 done
 ```
 
-`toft skill` with no name lists them. It needs no sign-in. Run the loop again
-after upgrading `toft`.
+For one project only, use `.claude/skills` or `.agents/skills` in that
+repository instead. `toft skill` with no name lists the skills, and it needs no
+sign-in. Run the loop again after upgrading `toft`.
 
 To fetch them without `toft` installed, download them from the repository:
 
 ```bash
 for s in toft-cli toft-sdk; do
-  mkdir -p ~/.claude/skills/$s
-  curl -fsSL -o ~/.claude/skills/$s/SKILL.md \
+  mkdir -p $dir/$s
+  curl -fsSL -o $dir/$s/SKILL.md \
     https://raw.githubusercontent.com/larchway-labs/toft-cli/main/skills/$s/SKILL.md
 done
 ```
 
-Any other agent that reads markdown instructions can load the same two files.
 A copy from the repository describes the latest release, which may be newer
 than your `toft`; `toft skill` is the copy that matches.
 
