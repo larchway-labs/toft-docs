@@ -11,7 +11,7 @@ attach it yourself unless an administrator made you a delegate of that storage.
 Storage is optional. If your install has none configured, your app has none. Ask your administrator before designing around it.
 :::
 
-Files your app only needs while it works go in [scratch space](../../cli/sdk/files/)
+Files your app only needs while it works go in [scratch space](../../../cli/sdk/files/)
 instead. Scratch is there for every app, and it is wiped on every restart.
 
 ## Which kind to ask for
@@ -60,7 +60,7 @@ for m in toft.mounts():
 ```
 
 A miss raises an error that lists what is attached. The Node, Go and R SDKs have
-the same calls: see [Files and scratch space](../../cli/sdk/files/).
+the same calls: see [Files and scratch space](../../../cli/sdk/files/).
 
 On an install with no cluster an object store is not mounted, so it has no path.
 Your app reaches it with the SDK's `upload`, `download`, `url`, `remove` and

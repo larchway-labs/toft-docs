@@ -1,0 +1,90 @@
+---
+/**
+ * The home page's head, set the way the platform's own landing page sets its
+ * hero: the headline in two tones (the act at full contrast, what it is for a
+ * step quieter), the paragraph and the two ways in beside it, and below them
+ * one ruled card of three numbered steps standing in for an illustration.
+ *
+ * Only the home page has `hero` frontmatter, so this renders nowhere else.
+ */
+const { data } = Astro.locals.starlightRoute.entry;
+const { title = data.title, tagline, actions = [] } = data.hero ?? {};
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+
+const steps = [
+  {
+    n: "01",
+    title: "Install the CLI",
+    command: "curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh",
+    note: "Linux and macOS. Windows has its own download.",
+  },
+  {
+    n: "02",
+    title: "Sign in",
+    command: "toft login https://toft.example.com",
+    note: "Your install’s address. A browser opens to approve this machine.",
+  },
+  {
+    n: "03",
+    title: "Deploy",
+    command: "toft create --yes --link",
+    note: "In your app’s folder: claims an address, deploys the tree, writes toft.toml.",
+  },
+];
+---
+
+<section class="toft-hero">
+  <div class="toft-hero-grid">
+    <div class="toft-hero-title">
+      <p class="toft-eyebrow">Toft documentation</p>
+      <h1 id="_top" set:html={title} />
+    </div>
+    <div class="toft-hero-side">
+      {tagline && <p class="toft-hero-body" set:html={tagline} />}
+      <div class="toft-hero-actions">
+        {
+          actions.map((a, i) => (
+            <a class:list={["toft-button", i === 0 ? "primary" : "outline"]} href={`${base}/${a.link.replace(/^\/+/, "")}`}>
+              {a.text}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <figure class="toft-steps">
+    <figcaption class="sr-only">From nothing to a running app in three commands.</figcaption>
+    {
+      steps.map((s) => (
+        <div class="toft-step">
+          <p class="toft-step-head">
+            <span class="toft-num">{s.n}</span>
+            <span>{s.title}</span>
+          </p>
+          <div class="toft-command">
+            <code>{s.command}</code>
+            <button type="button" class="toft-copy" data-copy={s.command} aria-label={`Copy: ${s.command}`}>
+              Copy
+            </button>
+          </div>
+          <p class="toft-step-note">{s.note}</p>
+        </div>
+      ))
+    }
+  </figure>
+</section>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>(".toft-copy")) {
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy!);
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Select it";
+      }
+      setTimeout(() => (button.textContent = "Copy"), 2000);
+    });
+  }
+</script>

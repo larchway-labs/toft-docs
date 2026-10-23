@@ -1,0 +1,10 @@
+---
+/** Starlight's sidebar, with the guide switcher above it on a phone. */
+import Default from "@astrojs/starlight/components/Sidebar.astro";
+import GuideNav from "./GuideNav.astro";
+---
+
+<div class="toft-sidebar-guides md:sl-hidden">
+  <GuideNav />
+</div>
+<Default><slot /></Default>

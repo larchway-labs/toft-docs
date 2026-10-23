@@ -72,7 +72,7 @@
   --sl-color-gray-5: oklch(0.82 0.005 264);
   --sl-color-gray-6: var(--lp-border);
   --sl-color-gray-7: var(--lp-muted);
-  --sl-color-black: var(--lp-background);
+  --sl-color-black: var(--lp-card);
 
   --sl-color-accent-low: var(--lp-accent);
   --sl-color-accent: var(--lp-primary);
@@ -82,7 +82,9 @@
   --sl-color-text-accent: var(--lp-primary);
   --sl-color-text-invert: var(--lp-primary-foreground);
 
-  --sl-color-bg: var(--lp-background);
+  /* One white surface, as the landing page has: the page, the header and the
+     sidebar are the same paper, told apart by hairlines rather than tints. */
+  --sl-color-bg: var(--lp-card);
   --sl-color-bg-nav: var(--lp-card);
   --sl-color-bg-sidebar: var(--lp-card);
   --sl-color-bg-inline-code: var(--lp-muted);
@@ -129,53 +131,50 @@
   --sl-shadow-md: 0 1px 3px 0 oklch(0.145 0 0 / 0.08), 0 1px 2px -1px oklch(0.145 0 0 / 0.06);
   --sl-shadow-lg: 0 4px 12px -2px oklch(0.145 0 0 / 0.1);
 
-  --sl-content-width: 48rem;
-
-  /* Type scale — the product's, not Starlight's. Toft's page heading is
-     `text-2xl` and its markdown h2 is `text-base` with a rule under it; a docs
-     site gets one step more air than that and no more. The default scale is
-     roughly half again as large at every level, which is what made a Starlight
-     page read as a different product. */
-  --sl-text-h1: 1.5rem;
-  --sl-text-h2: 1.125rem;
-  --sl-text-h3: 1rem;
-  --sl-text-h4: 0.9375rem;
-  --sl-text-h5: 0.875rem;
-  --sl-text-body: 0.9375rem;
+  /* Type scale. Body copy is set at 16px: these pages are read, not scanned
+     like the app's tables, and the product's 15px was a size for dense
+     screens. Headings are a short ladder, so a page's structure shows through
+     its rules and spacing rather than through ever-larger type. */
+  --sl-text-h1: 2rem;
+  --sl-text-h2: 1.375rem;
+  --sl-text-h3: 1.0625rem;
+  --sl-text-h4: 1rem;
+  --sl-text-h5: 0.9375rem;
+  --sl-text-body: 1rem;
   --sl-text-body-sm: 0.875rem;
   --sl-text-code: 0.875rem;
   --sl-text-code-sm: 0.8125rem;
+
+  --sl-content-width: 46rem;
+  --sl-sidebar-width: 17rem;
 }
 
 /* ── Chrome ─────────────────────────────────────────────────────────────────
-   Starlight's header floats over the page; the platform's does not. One rule
-   each, rather than a rewrite: this is a docs site borrowing an identity, not
-   a reimplementation of the app's shell. */
+   One white surface. The header and sidebar are the page's paper with a
+   hairline between them, as the landing page's header is. */
 
-.header {
+/* Starlight's <header class="header"> wraps a <div class="header">; the rule
+   belongs to the outer one only, or the header draws two. */
+header.header {
   border-bottom: 1px solid var(--lp-border);
-  background: var(--lp-card);
+  background: color-mix(in oklch, var(--lp-card) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
   box-shadow: none;
+}
+
+div.header {
+  border: 0;
+  background: none;
 }
 
 #starlight__sidebar {
   border-right: 1px solid var(--lp-border);
 }
 
-/* Starlight hangs a vertical divider off the social icons to separate them
-   from the theme toggle. Both components are overridden away here, so the
-   divider is left ruling off an empty corner of the header. */
-.social-icons:empty {
-  display: none;
-}
-
-/* The wordmark. Starlight makes the site title a large accent-coloured link;
-   the product's is ink-coloured, one line of body text tall, and reads as
-   chrome rather than as the page's first heading. */
 a.site-title {
   font-size: 1rem;
   font-weight: 600;
-  letter-spacing: -0.011em;
+  letter-spacing: -0.02em;
   color: var(--lp-foreground);
   text-decoration: none;
   gap: 0.5rem;
@@ -186,17 +185,112 @@ a.site-title img {
   width: auto;
 }
 
-/* The tagline under the title in the sidebar, where Starlight puts it. */
-.site-title + * {
+/* Search: the product's input, not Starlight's pill. */
+site-search button[data-open-modal] {
+  border-radius: var(--lp-radius);
+  border-color: var(--lp-border);
+  background: var(--lp-card);
   color: var(--lp-muted-foreground);
 }
 
-/* Sidebar links. Active is the accent *surface* with accent ink — the pair the
-   platform's palette carries for exactly this — rather than Starlight's solid
-   fill, which reads as a button. */
+site-search button[data-open-modal]:hover {
+  border-color: oklch(0.82 0.01 264);
+}
+
+/* ── The guide switcher ─────────────────────────────────────────────────────
+   In the header on a desktop, at the top of the menu on a phone. A segmented
+   strip: the current guide is ink on white, the others muted on the tint. */
+
+.social-icons::after {
+  display: none;
+}
+
+.toft-guide-nav {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  background: var(--lp-muted);
+}
+
+.toft-guide-nav a {
+  padding: 0.3125rem 0.75rem;
+  border-radius: calc(var(--lp-radius) - 3px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  color: var(--lp-muted-foreground);
+  text-decoration: none;
+}
+
+.toft-guide-nav a:hover {
+  color: var(--lp-foreground);
+}
+
+.toft-guide-nav a[aria-current] {
+  background: var(--lp-card);
+  color: var(--lp-foreground);
+  box-shadow: 0 1px 2px oklch(0.145 0 0 / 0.08), 0 0 0 1px var(--lp-border);
+}
+
+/* The phone menu's footer would draw it a second time. */
+.mobile-preferences .toft-guide-nav {
+  display: none;
+}
+
+.toft-sidebar-guides {
+  margin-bottom: 1.25rem;
+}
+
+.toft-sidebar-guides .toft-guide-nav a {
+  flex: 1;
+  text-align: center;
+}
+
+/* ── The sidebar ────────────────────────────────────────────────────────────
+   One guide at a time (src/routeData.ts), so each section is a small muted
+   label over its pages — the landing page's column heading — rather than a
+   bold collapsible that competes with the links under it. */
+
+#starlight__sidebar .top-level > li + li {
+  margin-top: 1.25rem;
+}
+
+#starlight__sidebar summary {
+  padding: 0 0 0.375rem 0.5rem;
+  cursor: default;
+}
+
+#starlight__sidebar summary .caret {
+  display: none;
+}
+
+#starlight__sidebar .group-label .large {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--lp-muted-foreground);
+}
+
+#starlight__sidebar ul ul li {
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  border: 0;
+}
+
 #starlight__sidebar a {
+  padding: 0.3125rem 0.5rem;
   font-size: 0.875rem;
+  line-height: 1.35;
+  color: oklch(0.32 0 0);
   border-radius: calc(var(--lp-radius) - 2px);
+}
+
+#starlight__sidebar a:hover {
+  background: var(--lp-muted);
+  color: var(--lp-foreground);
 }
 
 #starlight__sidebar a[aria-current="page"],
@@ -204,48 +298,159 @@ a.site-title img {
 #starlight__sidebar a[aria-current="page"]:focus {
   background: var(--lp-accent);
   color: var(--lp-accent-foreground);
-  font-weight: 500;
+  font-weight: 550;
 }
 
-#starlight__sidebar summary,
-#starlight__sidebar .group-label {
+/* ── The contents rail ──────────────────────────────────────────────────── */
+
+starlight-toc h2,
+mobile-starlight-toc .toggle {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--lp-muted-foreground);
+}
+
+starlight-toc a {
   font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  color: var(--lp-muted-foreground);
+}
+
+starlight-toc a:hover {
   color: var(--lp-foreground);
 }
 
-/* The right-hand contents rail. */
-starlight-toc a {
+starlight-toc a[aria-current="true"] {
+  color: var(--lp-primary);
+  font-weight: 500;
+}
+
+/* ── A page's head ──────────────────────────────────────────────────────────
+   Where it sits in a small accent line, the title, the description as the
+   lede in the landing page's muted second voice, and the Markdown actions. */
+
+.content-panel + .content-panel {
+  border-top: 0;
+  padding-top: 0.5rem;
+}
+
+.toft-page-head {
+  padding-top: 1.25rem;
+}
+
+.toft-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lp-primary);
+}
+
+.toft-eyebrow span {
+  color: var(--lp-border);
+}
+
+.toft-page-head h1 {
+  margin-top: 0.75rem;
+  font-size: var(--sl-text-h1);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--lp-foreground);
+  text-wrap: balance;
+}
+
+.toft-lede {
+  margin-top: 0.75rem;
+  max-width: 40rem;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--lp-muted-foreground);
+  text-wrap: pretty;
+}
+
+.toft-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
   font-size: 0.8125rem;
 }
 
+.toft-page-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3125rem 0.625rem;
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) - 2px);
+  background: var(--lp-card);
+  color: var(--lp-foreground);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.toft-page-actions button:hover {
+  background: var(--lp-muted);
+}
+
+.toft-page-actions a {
+  color: var(--lp-muted-foreground);
+  text-decoration: none;
+}
+
+.toft-page-actions a:hover {
+  color: var(--lp-foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── Prose ──────────────────────────────────────────────────────────────────
-   Tighter than Starlight's default and closer to the product's density. An
-   enterprise reader is scanning for the one paragraph that answers them. */
+   Set for reading: 16px, a generous line, and a rule *above* each h2 rather
+   than under it, so every section opens like one of the landing page's
+   bands. */
 
 .sl-markdown-content {
-  font-size: 0.9375rem;
+  font-size: var(--sl-text-body);
   line-height: 1.7;
+  color: oklch(0.25 0 0);
 }
 
 .sl-markdown-content :is(h2, h3, h4) {
-  letter-spacing: -0.011em;
+  color: var(--lp-foreground);
   font-weight: 600;
+  text-wrap: balance;
 }
 
-/* The rule under an h2 belongs on Starlight's heading *wrapper*, not on the
-   heading. The wrapper is a shrink-wrapped flex box holding the heading and its
-   anchor link, so a border on the h2 stops at the last word and reads as an
-   underline rather than as the section rule the product draws. */
+.sl-markdown-content h2 {
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.sl-markdown-content h3 {
+  letter-spacing: -0.01em;
+}
+
 .sl-markdown-content .sl-heading-wrapper.level-h2 {
   width: 100%;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--lp-border);
+  margin-top: 3rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--lp-border);
 }
 
-/* Heading anchors are a tool, not decoration: muted, and only there on hover
-   or focus, which is how the product treats every secondary affordance. */
+.sl-markdown-content > .sl-heading-wrapper.level-h2:first-child {
+  margin-top: 0.5rem;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h3 {
+  margin-top: 2rem;
+}
+
 .sl-markdown-content .sl-anchor-link {
   color: var(--lp-muted-foreground);
   opacity: 0;
@@ -253,6 +458,7 @@ starlight-toc a {
 }
 
 .sl-markdown-content :is(h1, h2, h3, h4):hover .sl-anchor-link,
+.sl-markdown-content .sl-heading-wrapper:hover .sl-anchor-link,
 .sl-markdown-content .sl-anchor-link:focus {
   opacity: 1;
 }
@@ -262,309 +468,599 @@ starlight-toc a {
   height: 0.75em;
 }
 
-/* Inline code is a thing you copy, so it gets an edge rather than only a tint —
-   the same treatment the product gives a slug or a variable name. */
+.sl-markdown-content a:not(.sl-anchor-link):not(:where(.not-content *)) {
+  color: var(--lp-primary);
+  text-decoration-color: color-mix(in oklch, var(--lp-primary) 35%, transparent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.sl-markdown-content a:not(.sl-anchor-link):not(:where(.not-content *)):hover {
+  text-decoration-color: currentColor;
+}
+
+.sl-markdown-content strong:not(:where(.not-content *)) {
+  font-weight: 600;
+  color: var(--lp-foreground);
+}
+
+.sl-markdown-content :is(ul, ol) li:not(:where(.not-content *)) + li {
+  margin-top: 0.375rem;
+}
+
+.sl-markdown-content ol {
+  padding-inline-start: 1.5rem;
+}
+
+.sl-markdown-content ol > li:not(:where(.not-content *))::marker {
+  color: var(--lp-muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.sl-markdown-content ul > li:not(:where(.not-content *))::marker {
+  color: oklch(0.7 0.01 264);
+}
+
+/* Inline code is a thing you copy: a tint, ink-coloured. No edge — a table
+   of flags would be a grid of little boxes. */
 .sl-markdown-content :not(pre) > code {
-  border: 1px solid var(--lp-border);
+  border: 0;
   border-radius: calc(var(--lp-radius) - 3px);
-  padding: 0.15em 0.35em;
-  font-size: 0.875em;
-  color: var(--lp-accent-foreground);
+  background: var(--lp-muted);
+  padding: 0.1em 0.35em;
+  font-size: 0.85em;
+  color: var(--lp-foreground);
 }
 
-/* Code blocks are read against the terminal surface. */
-.expressive-code .frame pre,
-.sl-markdown-content pre {
-  border-radius: var(--lp-radius);
-  border: 1px solid var(--lp-border);
+.sl-markdown-content hr {
+  border-color: var(--lp-border);
 }
 
-/* Tables — the platform's, which are bordered and quiet rather than zebra. */
+/* ── Code ───────────────────────────────────────────────────────────────────
+   A shell block with no title is a command, not a window: no title strip.
+   A titled one keeps its tab (astro.config.mjs holds the colours). */
+.expressive-code .frame.is-terminal:not(.has-title) .header {
+  display: none;
+}
+
+.expressive-code .frame.is-terminal:not(.has-title) pre {
+  border-top: var(--ec-brdWd) solid var(--ec-brdCol);
+  border-radius: var(--ec-brdRad);
+}
+
+.expressive-code .copy button {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────────
+   The landing page's stack table: no box, hairlines between rows, the header a
+   row of small muted labels. A table reads as part of the page, not as a card
+   dropped on it. */
+
 .sl-markdown-content table {
   display: table;
   width: 100%;
-  border: 1px solid var(--lp-border);
-  border-radius: var(--lp-radius);
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow: hidden;
-  font-size: 0.875rem;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.55;
 }
 
 .sl-markdown-content :is(th, td) {
+  border: 0;
   border-bottom: 1px solid var(--lp-border);
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem 0.75rem 0;
+  vertical-align: top;
+  background: none;
+}
+
+.sl-markdown-content :is(th, td):last-child {
+  padding-right: 0;
 }
 
 .sl-markdown-content thead th {
-  background: var(--lp-muted);
-  font-weight: 600;
+  padding-top: 0;
+  padding-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--lp-muted-foreground);
   text-align: left;
 }
 
-.sl-markdown-content tbody tr:last-child :is(th, td) {
-  border-bottom: 0;
+/* A header row of empty cells (`| | |`) is a key-value table; draw no header. */
+.sl-markdown-content thead:has(th:empty:first-child + th:empty:last-child) {
+  display: none;
 }
 
-/* Below reading width, hand the scroll back. A table that overflows its column
-   is worse than one that scrolls inside it. */
+.sl-markdown-content tbody tr:first-child :is(th, td) {
+  border-top: 1px solid var(--lp-border);
+}
+
+.sl-markdown-content td:first-child {
+  white-space: normal;
+}
+
+.sl-markdown-content td:first-child:has(> strong:only-child, > code:only-child) {
+  white-space: nowrap;
+}
+
 @media (max-width: 50rem) {
   .sl-markdown-content table {
     display: block;
     overflow-x: auto;
   }
+  .sl-markdown-content td:first-child:has(> strong:only-child, > code:only-child) {
+    white-space: normal;
+  }
 }
 
-/* Asides carry the tone border the product puts on a banner. */
+/* ── Asides ─────────────────────────────────────────────────────────────────
+   A hairline box with a coloured bar and a coloured title — the tone shows,
+   the page stays white. */
+
 .sl-markdown-content .starlight-aside {
-  border-radius: var(--lp-radius);
-  border-inline-start-width: 3px;
-}
-
-/* ── The landing page ───────────────────────────────────────────────────────
-   The splash template is built for a marketing page with an illustration next
-   to the words. None of the three guides has one, so every default here is
-   sized for a picture that never arrives: a two-column grid whose second
-   column is empty, a display-sized title wrapping inside the first, and enough
-   padding above and below to push the cards off the fold. */
-
-.hero {
-  grid-template-columns: 1fr;
-  gap: 0;
-  padding-block: 3rem 2.5rem;
-}
-
-.hero .stack {
-  max-width: 44rem;
-  gap: 1.25rem;
-}
-
-/* The product has no display type. This is the page's heading, at the size the
-   platform gives a page heading, not a billboard. */
-.hero h1 {
-  font-size: clamp(2rem, calc(1.25rem + 2vw), 2.5rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-}
-
-.hero .tagline {
-  max-width: 38rem;
-  font-size: 1.0625rem;
-  color: var(--lp-muted-foreground);
-}
-
-/* Actions are buttons, and the platform's buttons are not pills — nor are they
-   twice the height of the text in them. `minimal` is Starlight's word for the
-   quiet one; the platform draws that as an outline, because bare text sitting
-   next to a button reads as a caption rather than as the second choice. The
-   variant is a bare class on the link — `primary`, `minimal` — alongside
-   `sl-link-button`, so these are written against those rather than `.action`,
-   which is the name in the docs and not the name in the DOM. */
-.hero .actions {
-  gap: 0.75rem;
-}
-
-.hero .actions .sl-link-button {
-  margin: 0;
-  border-radius: var(--lp-radius);
-  padding: 0.5rem 0.875rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-}
-
-.hero .actions .sl-link-button.primary {
-  background: var(--lp-primary);
-  border-color: var(--lp-primary);
-  color: var(--lp-primary-foreground);
-}
-
-.hero .actions .sl-link-button.minimal {
-  padding-inline: 0.875rem;
-  border-color: var(--lp-border);
-  background: var(--lp-card);
-  color: var(--lp-foreground);
-}
-
-.hero .actions .sl-link-button.minimal:hover {
-  background: var(--lp-muted);
-}
-
-/* Cards read as the product's cards. Starlight staggers the grid and tints
-   each card's icon a different hue by position — a four-colour rotation the
-   platform's palette does not have and its surfaces do not do. */
-.card-grid {
-  gap: 1rem;
-}
-
-.card-grid.stagger {
-  padding-bottom: 0;
-}
-
-.card-grid.stagger > .card:nth-child(2n) {
-  transform: none;
-}
-
-.card {
-  padding: 1.25rem;
-  gap: 0.5rem;
-  border-radius: var(--lp-radius);
-  border-color: var(--lp-border);
-  background: var(--lp-card);
-}
-
-.card .title {
-  gap: 0.625rem;
-  font-size: 0.9375rem;
-}
-
-.card .icon {
-  border-radius: calc(var(--lp-radius) - 2px);
-  border-color: var(--lp-border);
-  background: var(--lp-muted);
-  color: var(--lp-muted-foreground);
-}
-
-/* Search, which is the reason this stack was chosen — give it the product's
-   input treatment rather than Starlight's pill. */
-site-search button[data-open-modal] {
-  border-radius: var(--lp-radius);
-  border-color: var(--lp-border);
-  background: var(--lp-card);
-}
-
-/* ── The home page ───────────────────────────────────────────────────────────
-   The one page that is a front door rather than a reference: the splash
-   template's hero, a card per guide, and a strip of the pages people open
-   most. Restrained on purpose — the product has no gradients and no
-   illustration, so the page gets air and type, not decoration. */
-
-[data-has-hero] .hero {
-  padding-block: 3.5rem 2.5rem;
-  gap: 1.5rem;
-}
-
-[data-has-hero] .hero h1 {
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  font-weight: 650;
-  max-width: 18ch;
-  color: var(--lp-foreground);
-}
-
-[data-has-hero] .hero .tagline {
-  font-size: 1.125rem;
-  line-height: 1.55;
-  max-width: 46ch;
-  color: var(--lp-muted-foreground);
-}
-
-[data-has-hero] .hero .sl-link-button {
-  border-radius: var(--lp-radius);
-  font-size: 0.9375rem;
-  padding: 0.6rem 1.1rem;
-}
-
-[data-has-hero] .hero .sl-link-button.primary {
-  background: var(--lp-primary);
-  border-color: var(--lp-primary);
-  color: var(--lp-primary-foreground);
-}
-
-/* Cards: the product's raised panel — white, a hairline, a small shadow that
-   lifts on hover. Starlight's cards are tinted by default. */
-.card {
-  background: var(--lp-card);
   border: 1px solid var(--lp-border);
-  border-radius: calc(var(--lp-radius) + 2px);
-  box-shadow: var(--sl-shadow-sm);
-  transition: box-shadow 150ms ease, border-color 150ms ease;
+  border-inline-start: 3px solid var(--sl-color-asides-border);
+  border-radius: calc(var(--lp-radius) - 2px);
+  background: var(--lp-card);
+  padding: 0.875rem 1.125rem;
+  font-size: 0.9375rem;
 }
 
-.card:hover {
-  box-shadow: var(--sl-shadow-lg);
-  border-color: oklch(0.86 0.02 264);
+.sl-markdown-content .starlight-aside__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.4rem;
 }
 
-.card .title {
+.sl-markdown-content .starlight-aside__icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.starlight-aside--note { --sl-color-asides-border: var(--lp-info-fg); }
+.starlight-aside--tip { --sl-color-asides-border: var(--lp-ok-fg); }
+.starlight-aside--caution { --sl-color-asides-border: oklch(0.75 0.15 70); }
+.starlight-aside--danger { --sl-color-asides-border: var(--lp-danger-fg); }
+
+/* ── Previous and next ─────────────────────────────────────────────────────
+   One ruled strip of two cells, no shadows. */
+
+.pagination-links {
+  gap: 0;
+  margin-top: 3rem;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  overflow: hidden;
+}
+
+.pagination-links a {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 1rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--lp-muted-foreground);
+}
+
+.pagination-links a + a {
+  border-inline-start: 1px solid var(--lp-border);
+}
+
+.pagination-links a:hover {
+  background: var(--lp-muted);
+  border-color: var(--lp-border);
+}
+
+.pagination-links a svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--lp-muted-foreground);
+}
+
+.pagination-links .link-title {
   font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lp-foreground);
+}
+
+/* ═══ The home page ═══════════════════════════════════════════════════════
+   The platform's landing page, translated: display type in two tones, the
+   three commands as one ruled card of numbered steps, then a numbered band
+   per guide holding its whole table of contents. Its one decoration is the
+   faint grid the hero sits on — a sheet of drafting paper, fading out before
+   the first band. */
+
+[data-has-hero] .content-panel {
+  padding-inline: 0;
+}
+
+[data-has-hero] .content-panel .sl-container {
+  max-width: 76rem;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 40rem) {
+  [data-has-hero] .content-panel .sl-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+.toft-hero {
+  position: relative;
+  padding-block: 3.5rem 3rem;
+}
+
+.toft-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 -50vw;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--lp-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lp-border) 1px, transparent 1px);
+  background-size: 2.5rem 2.5rem;
+  background-position: center top;
+  opacity: 0.55;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+  pointer-events: none;
+}
+
+.toft-hero-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 64rem) {
+  .toft-hero {
+    padding-block: 5.5rem 4rem;
+  }
+  .toft-hero-grid {
+    grid-template-columns: 7fr 5fr;
+    align-items: end;
+    gap: 3rem;
+  }
+}
+
+.toft-hero h1 {
+  margin-top: 1.25rem;
+  font-size: clamp(2.25rem, 1.25rem + 3vw, 3.75rem);
+  line-height: 1.04;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  color: var(--lp-foreground);
+  text-wrap: balance;
+}
+
+.toft-hero h1 span {
+  color: var(--lp-muted-foreground);
+}
+
+@media (min-width: 40rem) {
+  .toft-hero h1 span {
+    display: block;
+  }
+}
+
+.toft-hero-body {
+  max-width: 28rem;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--lp-muted-foreground);
+  text-wrap: pretty;
+}
+
+.toft-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.toft-button {
+  display: inline-flex;
+  align-items: center;
+  height: 2.75rem;
+  padding-inline: 1.375rem;
+  border: 1px solid transparent;
+  border-radius: var(--lp-radius);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.toft-button.primary {
+  background: var(--lp-primary);
+  color: var(--lp-primary-foreground);
+}
+
+.toft-button.primary::after {
+  content: "→";
+  margin-inline-start: 0.5rem;
+  transition: transform 0.15s;
+}
+
+.toft-button.primary:hover {
+  background: oklch(0.43 0.18 264);
+}
+
+.toft-button.primary:hover::after {
+  transform: translateX(2px);
+}
+
+.toft-button.outline {
+  border-color: var(--lp-border);
+  background: var(--lp-card);
+  color: var(--lp-foreground);
+}
+
+.toft-button.outline:hover {
+  background: var(--lp-muted);
+}
+
+/* The three commands: one card, three ruled columns, each a numbered step. */
+.toft-steps {
+  display: grid;
+  margin: 3.5rem 0 0;
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) + 4px);
+  background: var(--lp-card);
+  box-shadow: 0 1px 2px oklch(0.145 0 0 / 0.04), 0 12px 32px -16px oklch(0.3 0.08 264 / 0.18);
+}
+
+@media (min-width: 56rem) {
+  .toft-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 5rem;
+  }
+}
+
+.toft-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 0;
+  padding: 1.25rem;
+}
+
+.toft-step + .toft-step {
+  border-top: 1px solid var(--lp-border);
+}
+
+@media (min-width: 56rem) {
+  .toft-step + .toft-step {
+    border-top: 0;
+    border-inline-start: 1px solid var(--lp-border);
+  }
+}
+
+.toft-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.card .icon {
+.toft-num {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--lp-primary);
-  background: var(--lp-accent);
+}
+
+.toft-command {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+  border: 1px solid var(--lp-border);
   border-radius: calc(var(--lp-radius) - 2px);
-  padding: 0.35rem;
+  background: var(--lp-background);
 }
 
-.card .body {
+.toft-command code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--lp-foreground);
+}
+
+.toft-command code::before {
+  content: "$ ";
   color: var(--lp-muted-foreground);
-  font-size: 0.9375rem;
 }
 
-a.toft-card-link {
-  display: inline-block;
+.toft-copy {
+  flex-shrink: 0;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) - 4px);
+  background: var(--lp-card);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--lp-muted-foreground);
+  cursor: pointer;
+}
+
+.toft-copy:hover {
+  color: var(--lp-foreground);
+}
+
+.toft-step-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--lp-muted-foreground);
+}
+
+/* The bands: a rule, the number, the heading and who the guide is for on the
+   left (sticky beside a long band), hairline rows on the right. */
+.toft-map {
+  margin-top: 0;
+}
+
+.toft-band {
+  display: grid;
+  gap: 2rem;
+  padding-block: 3.5rem;
+  border-top: 1px solid var(--lp-border);
+}
+
+@media (min-width: 64rem) {
+  .toft-band {
+    grid-template-columns: 4fr 8fr;
+    gap: 3rem;
+    padding-block: 5rem;
+  }
+  .toft-band-label {
+    position: sticky;
+    top: calc(var(--sl-nav-height) + 2rem);
+    align-self: start;
+  }
+}
+
+.toft-band-label h2 {
   margin-top: 0.75rem;
-  font-weight: 550;
-  font-size: 0.875rem;
-  color: var(--lp-primary);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--lp-foreground);
+}
+
+.toft-band-label h2 a {
+  color: inherit;
   text-decoration: none;
 }
 
-a.toft-card-link:hover {
+.toft-band-label h2 a::after {
+  content: " →";
+  color: var(--lp-muted-foreground);
+  font-weight: 400;
+  transition: color 0.15s;
+}
+
+.toft-band-label h2 a:hover::after {
+  color: var(--lp-primary);
+}
+
+.toft-band-label > p:last-child {
+  margin-top: 0.75rem;
+  max-width: 24rem;
+  line-height: 1.6;
+  color: var(--lp-muted-foreground);
+  text-wrap: pretty;
+}
+
+.toft-band-label a:not(h2 a) {
+  color: var(--lp-primary);
+  text-underline-offset: 3px;
+}
+
+.toft-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid var(--lp-border);
+}
+
+.toft-rows > li {
+  display: grid;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding-block: 1rem;
+}
+
+.toft-rows > li + li {
+  border-top: 1px solid var(--lp-border);
+}
+
+@media (min-width: 40rem) {
+  .toft-rows > li {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+}
+
+.toft-row-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lp-foreground);
+}
+
+.toft-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toft-links li {
+  margin: 0;
+}
+
+.toft-links a,
+.toft-rows p {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.toft-links a {
+  color: oklch(0.38 0 0);
+  text-decoration: none;
+}
+
+.toft-links a:hover {
+  color: var(--lp-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* Link cards in the "Popular" strip: the same panel, one line of title and
-   one of description. */
-.sl-link-card {
-  background: var(--lp-card);
-  border: 1px solid var(--lp-border);
-  border-radius: calc(var(--lp-radius) + 2px);
-  box-shadow: var(--sl-shadow-sm);
-}
-
-.sl-link-card:hover {
-  border-color: var(--lp-primary);
-  box-shadow: var(--sl-shadow-md);
-}
-
-.sl-link-card .title {
-  font-weight: 600;
-  font-size: 0.9375rem;
-}
-
-.sl-link-card .description {
+.toft-rows p {
+  margin: 0.25rem 0 0;
   color: var(--lp-muted-foreground);
-  font-size: 0.875rem;
 }
 
-/* The three guides sit in one row once there is room for three. */
-@media (min-width: 72rem) {
-  .toft-guides .card-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+a.toft-path {
+  font-family: var(--sl-font-mono);
+  font-size: 0.8125rem;
+  color: var(--lp-primary);
+  text-decoration: none;
+}
+
+a.toft-path:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toft-hero-grid,
+  .toft-steps {
+    animation: toft-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .toft-steps {
+    animation-duration: 1s;
   }
 }
 
-.card .icon {
-  width: 2rem;
-  height: 2rem;
-  padding: 0.4rem;
-  font-size: 1.2rem;
-}
-
-[data-has-hero] .hero .sl-link-button.secondary {
-  background: var(--lp-card);
-  border: 1px solid var(--lp-border);
-  color: var(--lp-foreground);
-}
-
-[data-has-hero] .hero .sl-link-button.secondary:hover {
-  border-color: var(--lp-primary);
-  color: var(--lp-primary);
+/* A rise, never a fade: a capture taken mid-animation still has a hero. */
+@keyframes toft-rise {
+  from {
+    transform: translateY(0.75rem);
+  }
 }
