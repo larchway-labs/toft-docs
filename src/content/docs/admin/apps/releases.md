@@ -46,3 +46,11 @@ files in a running app's directory does not survive a restart.
 Deployments live under `APPS_DIR` by default. If the disk does not survive
 replacement, or you run isolated mode, configure an
 [artifact store](../artifact-store/).
+
+## A deleted app leaves nothing behind
+
+Deleting an app removes its directories under `APPS_DIR` and `JOB_RUN_DIR`. Every
+five minutes Toft also removes any directory there that no app owns and that has
+been untouched for an hour — left by a crash, or by a build still running when its
+app was deleted. **Admin → System checks** shows the last one it removed under
+*Release disk*.
