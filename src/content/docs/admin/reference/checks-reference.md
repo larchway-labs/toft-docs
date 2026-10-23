@@ -31,7 +31,7 @@ its own id.
 | `stuck_work` | Stuck work | Automation | Job runs past their deadline and still claimed: a worker that died between claiming the work and finishing it. |
 | `scheduled_jobs` | Scheduled jobs | Automation | `warn` when a job's schedule is more than 10 minutes past due and has not been dispatched, naming the app and job. That is the scheduler, not the app: a failed run is recorded on the app. `skip` when no app has an enabled schedule. |
 | `telemetry` | Telemetry | Platform | Exporters, and whether they are working. |
-| `db_pool` | Database pool | Platform | `warn` at 90% of connections in use, or on accumulated wait. |
+| `db_pool` | Database pool | Platform | `warn` at 90% of connections in use, or when requests have waited more than a second in total over the last 15 minutes. A busy spell that has passed clears by itself. |
 | `runner_images` | Runner images | Execution | `warn` for a language with no image, or an image on `latest` or no tag. |
 | `dev_switches` | Development switches | Security | `warn` when `DEV_PASSWORD` or `DEV_INSECURE_COOKIES` is set. `skip` on a loopback-only install. |
 | `trusted_proxy` | Trusted proxy | Security | `warn` when the request asking carried `X-Forwarded-For` from outside `TRUSTED_PROXY_CIDRS`. |
