@@ -125,6 +125,7 @@ runs as root under PM2.
 | `BLOCK_AWS_METADATA` | off | Stops apps reaching instance and task IAM credentials. Set it on AWS. |
 | `SHARED_STORAGE_ROOTS` | — | Storage for shared-mode apps: `name=/path[:ro]`, comma-separated. You mount; Toft mounts nothing. |
 | `SHARED_STORAGE_GID_RANGE` | `62000-62999` | Group numbers for storage, as `low-high`. The numbers are kept in the database, so they survive a container replacement. Change it only if the host uses that range. |
+| `APP_ACCOUNT_ID_RANGE` | `100000-1999999` | The numbers each app's own account takes — its user id and its group id — when Toft creates the accounts (`APP_USER_AUTOCREATE`). Kept in the database, so an app's files keep belonging to it across a container or host replacement; a deleted app's number is never reused. Must not overlap the storage range. Change it only if the host uses that range. |
 
 ## Artifact store
 
