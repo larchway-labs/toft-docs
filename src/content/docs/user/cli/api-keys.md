@@ -1,6 +1,6 @@
 ---
 title: API keys
-description: Personal, app and deploy keys — what each one is, and which to use.
+description: Personal and deploy keys — what each one is, and which to use.
 ---
 
 Pick a key by **who it belongs to**. The prefix tells you which kind you hold.
@@ -8,7 +8,6 @@ Pick a key by **who it belongs to**. The prefix tells you which kind you hold.
 | Prefix | Kind | Belongs to | Use it for |
 |---|---|---|---|
 | `toftu_` | Personal key | You | `toft`, and scripts that act as you |
-| `toft_` | App key | One app | A script or integration that calls one app |
 | `toftd_` | Deploy key | Nobody | CI pipelines |
 
 ## Personal keys
@@ -24,9 +23,9 @@ A personal key acts as you, on every app you can reach — treat it like a passw
 
 Scope is fixed at creation; to change it, create a new key and revoke the old one. `toft login` always creates a full key — a read key used with `toft` fails every deploy with exit 3.
 
-## App keys
+## A script or integration that calls one app
 
-Created on the app and valid only there. Use one to call the app from a script, or to give a security scanner access without lending it a person. An app key can carry a viewer or editor role, which can only narrow what the app allows.
+Give it an account of its own from your identity provider, ask the app's owner to grant that account on the app, and use that account's personal key. It reaches only what the account is granted, and it stops when the account is removed. App keys (`toft_`) no longer exist; one still in use is refused with a message saying so.
 
 ## Deploy keys
 

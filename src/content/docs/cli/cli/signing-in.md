@@ -38,7 +38,6 @@ Toft has four kinds of credential. The prefix tells you which one you hold.
 |---|---|---|---|
 | `toftu_` | Personal API key | `toft login`, or **Your account → Credentials** | Acting as you, from `toft` or a script. |
 | `toftd_` | Deploy key | **Admin → Deploy keys** | CI. Belongs to nobody, so it survives people leaving. |
-| `toft_` | App key | The app's **Sharing** tab | A program calling one app through the apps gateway. |
 | `tofta_` | App token | Injected as `TOFT_APP_TOKEN` | The app's own credential for calling the platform. You never handle it. |
 
 `toft` accepts the first two.

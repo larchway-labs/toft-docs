@@ -32,7 +32,7 @@ offboarding nobody did. Settings on **Admin → Settings**:
 
 "Last used" is the latest of four dates: account creation, last sign-in, last use
 of any personal API key, and last unlock. Someone whose personal key deploys
-nightly is not dormant. App keys do not count.
+nightly is not dormant.
 
 The sweep never locks:
 

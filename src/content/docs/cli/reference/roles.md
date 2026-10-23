@@ -13,7 +13,7 @@ may do**, not who they are.
 | `editor` | May change. |
 | `owner` | Owns this app. |
 | `system` | Toft itself, such as a job's schedule starting it. A job reads it as its trigger role. |
-| `app` | An app credential: an app key at the gateway, or a job the app started. |
+| `app` | A job the app started, acting as the app. |
 | `unknown` | Not sent by the platform. The SDK's answer for a missing, invalid or expired role. |
 
 ## Comparing roles
@@ -26,8 +26,8 @@ if (!toft.caller(req.headers).atLeast(toft.ROLE_EDITOR)) return res.status(403).
 `system`, `app` and `unknown` are not on it, so every check against them is
 false.
 
-A rung doesn't guarantee a human. An app key can carry `viewer` or `editor`, and
-satisfies checks exactly as a person with that role does.
+A rung doesn't guarantee a human. A script calling the app is an account granted
+on it, and satisfies checks exactly as a person with that grant does.
 
 ## Things that surprise people
 
