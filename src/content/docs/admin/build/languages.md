@@ -59,12 +59,12 @@ toolchain on `PATH` before trying the module proxy, so it works with no egress.
 Every build records the version it resolved, and both launchers start the
 workload under that version — a restart keeps it.
 
-- **Admin → Languages** — the estate, counting the **serving** deployment, patch folded away.
+- **Admin → System info → Apps by language** — the estate, counting the **serving** deployment, patch folded away.
 - **The app's Runtime section** — one app, with the patch.
 
 ## Retiring a version
 
-1. Check **Admin → Languages** for apps on it.
+1. Check **Admin → System info → Apps by language** for apps on it.
 2. Tell their owners, with a date.
 3. Remove the interpreter.
 

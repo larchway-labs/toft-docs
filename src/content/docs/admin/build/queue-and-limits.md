@@ -3,7 +3,7 @@ title: The build queue and its limits
 description: How many builds run at once, the timeouts, and what to check when the queue stops moving.
 ---
 
-**Admin → Queue** shows what is building, what is waiting, and what each build is
+**Admin → Processes → Build queue** shows what is building, what is waiting, and what each build is
 doing.
 
 ## Limits
@@ -25,7 +25,7 @@ The [build cache](../cache/) is shared across builds.
 
 ## When the queue is not moving
 
-1. **Admin → Queue** — is anything building at all?
+1. **Admin → Processes → Build queue** — is anything building at all?
 2. **Builds at once** — is it lower than you think?
 3. **The machine** — memory, and disk under `CACHE_DIR` and `APPS_DIR`.
 4. **Admin → System checks** — `stuck_work` finds work claimed and abandoned;

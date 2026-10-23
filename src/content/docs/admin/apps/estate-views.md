@@ -6,10 +6,10 @@ description: The admin pages that answer questions about every app at once.
 | View | Answers | Where |
 |---|---|---|
 | **Usage** | Which apps are used, what they consume, which are [quiet](../quiet/) | Admin → Usage |
-| **Languages** | Which interpreter each app is serving on | Admin → Languages |
+| **Languages** | Which interpreter each app is serving on | Admin → System info → Apps by language |
 | **Scan targets** | Which addresses a scanner should be pointed at | Admin → Scan targets |
 | **Processes** | What is running now, and where | Admin → Processes |
-| **Queue** | What is building and waiting | Admin → Queue |
+| **Queue** | What is building and waiting | Admin → Processes → Build queue |
 | **Automation** | Every schedule and every run | Admin → Automation |
 | **Dependencies** | What the estate installs, and what policy says | Admin → Dependencies |
 | **Reach** | What each app has been [given](../reach/) | Admin → Reach |
