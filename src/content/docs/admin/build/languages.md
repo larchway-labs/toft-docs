@@ -50,7 +50,7 @@ toolchain on `PATH` before trying the module proxy, so it works with no egress.
 | Topic | Behavior |
 |---|---|
 | Package repository | **`TOFT_R_REPOS`**, default Posit Package Manager `latest` for Debian trixie. The largest lever on R build time; pin a dated snapshot if your estate needs reproducibility. |
-| renv cache | Off — its links would dangle in every pod. |
+| renv cache | On, under `CACHE_DIR/renv`, and packages are **copied** out of it into the release rather than linked, so a release still travels. A package compiled from source is compiled once per version rather than on every deploy. Source compiles use every CPU unless the app sets `MAKEFLAGS`. |
 | Library stamp | A library records the R series it was built for; restoring a 4.5 library into 4.6 is refused. |
 | System libraries | pandoc and whatever your packages link against come from the machine or image. |
 

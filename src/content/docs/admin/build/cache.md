@@ -3,8 +3,8 @@ title: The build cache
 description: The shared package caches under CACHE_DIR — how big they are and how to empty them.
 ---
 
-`CACHE_DIR` holds the package caches every build shares: npm, uv, and Go's module
-and build caches. It is what makes a rebuild warm, and on a busy install it is
+`CACHE_DIR` holds the package caches every build shares: npm, uv, Go's module
+and build caches, and renv's cache of installed R packages. It is what makes a rebuild warm, and on a busy install it is
 the largest thing on disk after releases.
 
 ## Size
@@ -18,6 +18,9 @@ not as zero.
 **Admin → System checks → Reclaim** (API: `POST /api/v1/system/build-cache/reclaim`).
 
 - Each tool clears its own cache rather than having files deleted underneath it.
+  The R package cache is the exception: it is removed, since no release refers
+  to it. It and Go's module cache are only cleared when clearing npm and uv
+  freed less than a quarter of the cache.
 - A reclaim waits for running builds to finish; new builds wait for the reclaim.
 - The bytes freed are recorded in the audit log.
 - A second reclaim while one runs is refused with `409`.
