@@ -446,9 +446,10 @@ characters is enough. Each of these exits 2 with a code:
 `toft delete <slug> --yes` deletes an app: every deployment, its environment
 variables, schedules, grants and data. There is no undo.
 
-The slug must be typed out. It is never taken from `toft.toml`, `.toft.toml` or
-`TOFT_APP`, because a directory being linked to an app is no reason to delete
-it. Without a terminal, `--yes` is required.
+The slug must be typed out, as `toft delete <slug>` or with `--app <slug>`. It
+is never taken from `toft.toml`, `.toft.toml` or `TOFT_APP`, because a directory
+being linked to an app is no reason to delete it. Without a terminal, `--yes` is
+required.
 
 ## `toft job`
 

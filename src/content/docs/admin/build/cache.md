@@ -3,15 +3,21 @@ title: The build cache
 description: The shared package caches under CACHE_DIR — how big they are and how to empty them.
 ---
 
-`CACHE_DIR` holds the package caches every build shares: npm, uv, Go's module
-and build caches, and renv's cache of installed R packages. It is what makes a rebuild warm, and on a busy install it is
-the largest thing on disk after releases.
+`CACHE_DIR` holds the package caches builds use: npm, uv, Go's module and
+build caches, and renv's cache of installed R packages. It is what makes a
+rebuild warm, and on a busy install it is the largest thing on disk after
+releases.
+
+When apps run under accounts of their own, each app's builds get their own
+caches under `CACHE_DIR/accounts/`, so one app can never change a package
+another app installs. An app's caches are removed when the app is deleted, so
+an app created again with the same name builds from scratch.
 
 ## Size
 
-Shown on **Admin → System checks** as the **build cache directory** row. It is
-measured on a timer, never on a request. A size not yet measured shows as absent,
-not as zero.
+Shown on **Admin → System checks** on the **Build cache** card, with how full
+the disk under it is. The size is measured on a timer, never on a request. A
+size not yet measured shows as absent, not as zero.
 
 ## Reclaiming it
 

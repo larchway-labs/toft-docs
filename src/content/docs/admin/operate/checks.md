@@ -61,9 +61,13 @@ install every optional subsystem is a skip, and that is healthy.
 | Public reachability | `warn`, never `fail`; `skip` when nothing is published or no verdict has arrived |
 | Stuck work, Scheduled jobs | Job runs past their deadline and still claimed; a job schedule more than 10 minutes past due and never dispatched — the scheduler, not the app |
 
-## Build cache and report
+## Disks, build cache and report
 
-- The **build cache** card above the checks shows its size and a **Reclaim**
-  button. See [The build cache](../../build/cache/).
+- **Disks** shows each disk the install writes to as how full it is, with the
+  folders on it: app releases, job runs, the build cache, logs and every
+  storage drive. It is measured when the page loads, never in the background. A
+  network filesystem has no fixed size and shows no bar.
+- The **build cache** card shows its size, how full its disk is, and a
+  **Reclaim** button. See [The build cache](../../build/cache/).
 - **Copy report** puts a plain-text header and one line per row on the clipboard,
   for pasting into a ticket.
