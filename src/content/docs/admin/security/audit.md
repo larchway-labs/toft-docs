@@ -57,6 +57,14 @@ The filter is part of the address, so a narrowed feed can be sent as a link.
 An app's history reaches back to when this version was installed. Older entries
 appear only when the app was what they changed, and the page says from when.
 
+## App output
+
+What a shared app prints reaches the platform's own log as one `kind=app` record per line, with the app, its release, the stream and the time. Collect the platform's log with your log agent and app output is collected with it: Toft keeps no copy beyond a few megabytes of each app's file, rotated as it fills. Each app may send 100 lines a second, with bursts of up to 3,000. Lines over that are not sent, and a `kind=app_dropped` record says how many and when. **Copy every line of app output** on Admin → Settings removes the limit; the app's own **Logs** tab keeps every line either way.
+
+An isolated app's output is its own pod's log. Only your cluster's log agent keeps it; without one it is gone at every redeploy. Pods carry `toft.dev/app-id` and `toft.dev/app-slug` labels to tag lines with.
+
+Where apps run as accounts of their own, an app can't read or change its log files. **Admin → Info** says when that isn't so on this install.
+
 Client addresses are only as good as your
 [trusted proxy list](../../config/listeners-and-origins/). If every row shows the
 load balancer's address, fix that first.
