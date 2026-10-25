@@ -25,9 +25,27 @@ supplies the identity. Manage them in **Admin → Integrations**.
 | Destinations | A kind either lists destinations or (when welded) answers 404 — not an empty list |
 | Broken destination | The send fails; it never falls back somewhere else |
 | URLs you type | Checked at save **and** at every send; private addresses refused both times |
+| Description | Optional, and editable at any time. Use it for what the connection is for and who to ask about it |
 
 What a connection can reach is decided on the far side — the channel it was
 invited to, the folder it was given. **Teams is the exception**, and its form says so.
+
+### Teams
+
+A Teams connection is a Workflows webhook, not a bot. In the channel, open
+**Workflows** and add the template **Send webhook alerts to a channel**, then paste
+its URL into the connection. Don't use the *from specific people* or *from people
+in an org* templates: they expect a sign-in that Toft does not send, so every post
+is refused.
+
+Anyone who has the URL can post to that channel. Toft stores the part that grants
+this encrypted and never shows it again; the connection is listed by its workflow
+ID, the one Power Automate shows. Posts go through as long as the workflow exists
+and is on, so write in the **description** which team and channel it posts to and
+who owns the workflow. Until you do, the connection says that nobody is named.
+
+Teams takes messages only, not files. To put a file where a channel can see it,
+use SharePoint: each channel's Files tab is a SharePoint folder.
 
 ## What apps can do
 
