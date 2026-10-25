@@ -47,6 +47,32 @@ who owns the workflow. Until you do, the connection says that nobody is named.
 Teams takes messages only, not files. To put a file where a channel can see it,
 use SharePoint: each channel's Files tab is a SharePoint folder.
 
+### Teams bot
+
+The bot is the governed way into Teams. It can post only to teams and group chats
+where your organization installed the Toft app, and Teams admins can see and remove
+those installations. It also carries Toft's own notices, such as a failed deploy.
+
+1. **Register a bot.** In the Teams Developer Portal (dev.teams.microsoft.com), open
+   **Tools › Bot management**, create a bot and add a client secret. No Azure
+   subscription is needed. The bot must be single-tenant.
+2. **Connect it.** In Toft, connect **Microsoft Teams (bot)** with the bot's
+   application ID, your directory (tenant) ID and the secret.
+3. **Install the Toft app.** On the connection, click **Download Teams app**. Upload
+   the file in the Teams admin center (**Teams apps › Manage apps › Upload**), then
+   add the app to the teams and chats Toft may post to.
+4. **Add the places.** Paste a team's link (on the team, **⋯ › Get link to team**) or
+   a chat's link (**⋯ › Copy link**). Toft saves it only if the app is installed
+   there. A channel's link won't work; once the team is added, all of its channels
+   are offered.
+5. **Choose channels.** Pick a default channel on the connection, which Toft's
+   notices for administrators need, and give each app its own channel on the app's
+   Integrations tab. An app posts only to the channel it was given.
+
+If someone removes the app from a team, the team shows **Not installed** and sends
+to it fail. Toft never sends them somewhere else. Download the app again whenever
+you need to: it is the same app every time.
+
 ## What apps can do
 
 - Send only. No integration route reads — an app cannot read Slack or list a folder.
