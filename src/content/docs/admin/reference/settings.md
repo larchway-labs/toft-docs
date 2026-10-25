@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 96 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 97 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **96**. Settings for one app are on that app's own pages
+renders it. There are **97**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -38,6 +38,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. | 10–86,400 seconds, or 0 |
 | `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. | — |
 | `log_level` | Platform log level | How much the platform logs about itself. | — |
+| `app_log_copy_uncapped` | Copy every line of app output | Lifts the 100-lines-a-second cap on each shared app's output reaching the platform's log. Off by default. When on, one app's volume can slow every app's requests. | — |
 | `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. | 60–3,600 seconds |
 | `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. | 60–3,600 seconds |
 | `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |

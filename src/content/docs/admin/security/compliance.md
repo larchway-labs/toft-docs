@@ -53,7 +53,7 @@ Parameters the install does not hold are shown as **unbound** and counted.
 
 ## Evidence outcomes
 
-All 38 evidence items always produce a row:
+All 39 evidence items always produce a row:
 
 | | |
 |---|---|

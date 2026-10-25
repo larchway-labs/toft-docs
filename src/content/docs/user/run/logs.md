@@ -37,7 +37,7 @@ source.
 
 ## What to print
 
-Write to stdout and stderr. Don't write log files into your app's directory to read later: a deploy replaces it. ANSI color is rendered on the Logs tab and in a terminal; `toft logs` removes it when its output is piped or saved to a file.
+Write to stdout and stderr. Don't write log files into your app's directory to read later: a deploy replaces it. Your administrator's log collector receives the same lines, so a line that matters can be found there after the tab has moved on. The **Logs** tab hides Toft's own credentials if your app prints them (`tofta_`, `toftu_`, `toftd_` tokens and signed storage links), and so does the copy; anything else you print is shown as printed. ANSI color is rendered on the Logs tab and in a terminal; `toft logs` removes it when its output is piped or saved to a file.
 
 :::caution
 Logs are not kept forever. Anything you need to keep, such as an audit trail or a report, belongs in storage, not the log.
