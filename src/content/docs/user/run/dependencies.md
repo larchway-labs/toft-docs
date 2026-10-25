@@ -29,6 +29,8 @@ The app page shows **Your last deploy was refused**; the build log names the pac
 
 Each successful deployment has **Download SBOM** in its **⋯** menu on the **Deployments** tab: a CycloneDX 1.6 file listing the packages that release installed. Where Toft could not read everything, the file says **incomplete** or **unknown** rather than complete. That happens, for example, with an app locked with pnpm or Yarn, an app with no lockfile, or vendored code. The deploy's warnings name what was missed. Downloading the same release twice gives the same file.
 
+API: `GET /api/v1/apps/{id}/deployments/{deploymentID}/sbom`. A personal API key or a deploy key can read it.
+
 ## When there's no verdict
 
 | Message | Means |
@@ -37,3 +39,4 @@ Each successful deployment has **Download SBOM** in its **⋯** menu on the **De
 | **This app's packages cannot be listed** | An R app with no `renv.lock`. Commit one (`renv::snapshot()`). |
 | **This deployment's packages haven't been recorded** | The next deploy will record them. |
 | **Nothing found, but coverage is thin** | CRAN advisory data is sparse, so silence means little. |
+| **Nothing has been checked yet** | No advisory data has loaded on this install, so an empty list is not a clean result. The deploy's warnings say so too. Ask your administrator to refresh it. |

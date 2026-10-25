@@ -72,7 +72,15 @@ file alone** (it covers its own timestamp). File it wherever you keep evidence.
 
 ## One app's audit file
 
-Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and never sees more than they could elsewhere. A personal API key can read it; deploy keys cannot. Its export uses the same digest rule as this report's.
+Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and never sees more than they could elsewhere. A personal API key can read it; deploy keys cannot.
+
+| | API |
+|---|---|
+| The reading the tab shows | `GET /api/v1/apps/{id}/audit-file` |
+| The export, with its digest | `GET /api/v1/apps/{id}/audit-file/export` |
+| One release's SBOM | `GET /api/v1/apps/{id}/deployments/{deploymentID}/sbom` |
+
+Only the export carries a digest: a `sha256` beside the `report` member, under the same rule as this report's. The reading is the live page and has none.
 
 It lists access. Reviewing that access is the organization's job, not Toft's.
 
