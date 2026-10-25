@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 94 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 95 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **94**. Settings for one app are on that app's own pages
+renders it. There are **95**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -27,6 +27,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `security_txt_expires` | Good until | When the published contact expires. Required when there is a contact. | — |
 | `security_txt_policy` | Disclosure policy | An https:// page on how you want problems reported. Optional. | — |
 | `security_txt_languages` | Preferred languages | Languages a report can be written in, separated by commas. Optional. | — |
+| `app_security_headers` | Baseline headers on apps | Adds nosniff and a referrer policy to an app's pages where the app sends neither. On by default. An app's own header is kept, and HTTPS-only (HSTS) is sent over https whatever this says. | — |
 | `isolated_execution_enabled` | Isolated execution | Lets an app run as its own workload, with its own network and resource limits. | — |
 | `default_execution_mode` | New apps are born | The mode a new app starts in when its creator doesn’t choose. | — |
 | `background_jobs_enabled` | Background jobs | Lets apps run scheduled and on-demand work as a process of its own. | — |
