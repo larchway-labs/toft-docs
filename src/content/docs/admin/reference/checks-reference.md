@@ -1,10 +1,10 @@
 ---
 title: Checks reference
-description: All 26 system checks in report order, with their category and what moves each one off pass.
+description: All 27 system checks in report order, with their category and what moves each one off pass.
 ---
 
 Every check on **Admin → System checks**, in the order the report runs them.
-There are **26**, in nine categories. A test walks this registry, so a check
+There are **27**, in nine categories. A test walks this registry, so a check
 cannot silently stop running. Some checks emit more than one row; each row keeps
 its own id.
 
@@ -35,6 +35,7 @@ its own id.
 | `runner_images` | Runner images | Execution | `warn` for a language with no image, or an image on `latest` or no tag. |
 | `dev_switches` | Development switches | Security | `warn` when `DEV_PASSWORD` or `DEV_INSECURE_COOKIES` is set. `skip` on a loopback-only install. |
 | `trusted_proxy` | Trusted proxy | Security | `warn` when the request asking carried `X-Forwarded-For` from outside `TRUSTED_PROXY_CIDRS`. |
+| `hsts` | HTTPS only (HSTS) | Security | `pass` when every address is https. `warn` when one origin is http, or when one host serves the platform and the apps under different schemes, where the header is withheld. `skip` on an http install. |
 | `migrations` | Schema migrations | Platform | `warn` with a count when the schema moved under a running process. A pending migration at boot stops startup instead. |
 
 ## Statuses

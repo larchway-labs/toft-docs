@@ -27,6 +27,12 @@ If your install checks reachability from outside and two checks in a row fail, t
 
 **Access → Embedding** lists the other sites that may show your app in an `<iframe>`. An empty list means no other site can embed it. Add an origin as scheme and host, for example `https://intranet.example.com`; a leading wildcard is allowed.
 
+## Headers Toft adds to your app's pages
+
+Over https, every response from your app carries Toft's `Strict-Transport-Security` header, and any of your own is replaced. Unless your administrator has turned it off, Toft also adds `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin` where your app sends neither. If your app sends either header itself, with any value, Toft leaves yours as it is. Toft adds no `Content-Security-Policy` beyond the embedding rule above.
+
+With `nosniff`, a browser refuses a script or stylesheet served under the wrong `Content-Type`. If a page goes blank after an upgrade, fix the type your app serves, or send `X-Content-Type-Options` yourself.
+
 ## What visibility does not do
 
 Visibility controls who reaches your app, not what they can do inside it. If your app has an admin screen, protect it yourself: see [What your app learns about a viewer](../viewer/).
