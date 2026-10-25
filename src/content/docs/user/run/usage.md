@@ -15,7 +15,7 @@ The **Usage** tab shows traffic and consumption over the last **7d**, **30d** or
 
 A daily chart sits below the figures. A batch app shows only CPU time and peak memory.
 
-The list of individual viewers is shown only to people who manage the app's sharing.
+The list of individual viewers is shown only to people who manage the app's sharing. They can also download it, one line per person per day, over any range of dates: choose **From** and **To** and select **Download CSV**. A year is the default. If your install keeps visits for a shorter time, the file starts at the oldest day it keeps.
 
 ## What doesn't count
 
