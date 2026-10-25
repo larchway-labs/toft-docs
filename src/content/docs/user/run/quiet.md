@@ -8,6 +8,7 @@ Toft tracks how long it has been since anybody showed evidence of wanting your a
 - **No visitor in 214 days**: the last visit was that long ago.
 - **Never opened since it was deployed 90 days ago**: deployed, never visited.
 - **Never opened, and no successful deploy**: created and never used.
+- **Not opened in the 365 days of visits this install keeps**: your administrator keeps visits for a set time, and none from before then survive.
 
 ## What counts
 
