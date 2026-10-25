@@ -75,8 +75,8 @@ you need to: it is the same app every time.
 
 ## What apps can do
 
-- Send only. No integration route reads — an app cannot read Slack or list a folder
-  through Toft. To let an app read and write a folder, see
+- Toft only sends. It never reads Slack or lists a folder for an app. To let an
+  app read and write a folder itself, see
   [Reading and writing a folder](#reading-and-writing-a-folder).
 - Every send passes the same four gates, each with its own error code, re-checked
   before transport.
@@ -104,10 +104,42 @@ the only destination offered.
 
 Toft's integrations only send. When an app has to **read** files people keep in
 SharePoint, OneDrive or Google Drive, or replace a file there, it uses the
-provider's own SDK with a credential you hold for it. Microsoft or Google enforces
-the folder boundary, and you can remove the access without touching the app.
+provider's own SDK. There are two ways to give it access.
 
-### SharePoint or OneDrive
+### With an access token from the connection
+
+The simplest: turn on **Let apps get access tokens** on the SharePoint, OneDrive or
+Google Drive connection in **Admin → Integrations**. Apps attached to it can then
+ask Toft for the connection's own short-lived token and call Graph or Drive with
+it (see the CLI & SDK guide, *Access tokens*). The secret stays in Toft, a token
+stops working within about an hour, and rotating the secret is one edit here.
+
+Before you turn it on:
+
+- **A token reaches everything the connection was granted**, not only the folder
+  you picked for each app. For a `Sites.Selected` grant that is the whole site, and
+  every app on the connection can reach every other app's folder. To limit an app
+  to one folder, give it a connection of its own whose Entra app is granted only
+  that folder (see [SharePoint with a folder grant](#sharepoint-with-a-folder-grant)).
+- **Toft refuses a token whose Entra app holds other permissions.** Every
+  permission must be one of `Sites.Selected`, `Files.SelectedOperations.Selected`,
+  `ListItems.SelectedOperations.Selected` or `Lists.SelectedOperations.Selected`.
+  Toft checks every token it hands out, so a permission added in Entra later is
+  caught too, and the connection's card says which one.
+- **Turning it off, or detaching an app, stops the next token, not the last one.**
+  A token already handed out works until it expires, up to about an hour. Removing
+  the grant in Microsoft 365 or the service account from the shared drive takes
+  effect at once.
+- Each token request is a row in the integration log. What the app then reads or
+  writes is in Microsoft's or Google's audit log, not Toft's.
+
+### With a credential you hold for the app
+
+For an app that can't use Toft's SDKs, or one that needs a folder grant of its
+own, register a separate app with the provider and hold its secret in a Toft
+credential.
+
+#### SharePoint or OneDrive
 
 1. **Register an app.** In Entra, create an app registration and give it the
    application permission **`Files.SelectedOperations.Selected`**, then grant admin
@@ -159,7 +191,7 @@ the folder boundary, and you can remove the access without touching the app.
 
    R, Node and Go have Microsoft libraries that read the same three variables.
 
-### Google Drive
+#### Google Drive
 
 Create a service account and add its address to the **shared drive** that holds
 the folder: as **Viewer** to read, or **Content manager** to also replace and
@@ -168,7 +200,7 @@ delete files. Put its JSON key in a Toft credential (for example
 API with the `https://www.googleapis.com/auth/drive` scope. Use one service account
 per folder, because the key reaches everything that is shared with that account.
 
-### What you give up
+#### What you give up
 
 What Toft's integrations record, this route doesn't:
 
@@ -182,7 +214,8 @@ What Toft's integrations record, this route doesn't:
 ## The integration log
 
 Every send, with recipients in full, per app and install-wide in **Admin →
-Integration log**.
+Integration log** — and every access token an app was given, which **Access tokens
+only** narrows to.
 
 | Setting | Default |
 |---|---|

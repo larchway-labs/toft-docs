@@ -256,6 +256,7 @@ export const sidebar = [
           { label: "App data", slug: "cli/sdk/data" },
           { label: "Files and scratch space", slug: "cli/sdk/files" },
           { label: "Notifications", slug: "cli/sdk/notify" },
+          { label: "Access tokens", slug: "cli/sdk/access-tokens" },
           { label: "Jobs", slug: "cli/sdk/jobs" },
           { label: "Who is asking", slug: "cli/sdk/viewer" },
           { label: "When the platform says no", slug: "cli/sdk/errors" },
