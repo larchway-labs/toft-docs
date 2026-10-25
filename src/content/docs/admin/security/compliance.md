@@ -70,6 +70,14 @@ The report is computed per request and never stored. The JSON export names the
 install, the date and the collector, and carries a **digest recomputable from the
 file alone** (it covers its own timestamp). File it wherever you keep evidence.
 
+The digest is the SHA-256 of the `report` member in [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) canonical JSON, and the file says so in `sha256_rule`. Any RFC 8785 library recomputes it. So does Python's standard library, since these documents use plain keys and whole numbers:
+
+```sh
+python3 -c 'import json,sys,hashlib; d=json.load(open(sys.argv[1])); b=json.dumps(d["report"],sort_keys=True,separators=(",",":"),ensure_ascii=False); print(hashlib.sha256(b.encode()).hexdigest()==d["sha256"])' export.json
+```
+
+It prints `True` for an unaltered file.
+
 ## One app's audit file
 
 Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and never sees more than they could elsewhere. A personal API key can read it; deploy keys cannot.
@@ -80,7 +88,7 @@ Each app also has an **Audit** tab, read by its editors. It shows the app's own 
 | The export, with its digest | `GET /api/v1/apps/{id}/audit-file/export` |
 | One release's SBOM | `GET /api/v1/apps/{id}/deployments/{deploymentID}/sbom` |
 
-Only the export carries a digest: a `sha256` beside the `report` member, under the same rule as this report's. The reading is the live page and has none.
+Only the export carries a digest, a `sha256` beside the `report` member under the same rule as this report's, and the command above checks it too. The reading is the live page and has none.
 
 It lists access. Reviewing that access is the organization's job, not Toft's.
 
