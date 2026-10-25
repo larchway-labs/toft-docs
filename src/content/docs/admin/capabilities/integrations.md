@@ -75,12 +75,109 @@ you need to: it is the same app every time.
 
 ## What apps can do
 
-- Send only. No integration route reads — an app cannot read Slack or list a folder.
+- Send only. No integration route reads — an app cannot read Slack or list a folder
+  through Toft. To let an app read and write a folder, see
+  [Reading and writing a folder](#reading-and-writing-a-folder).
 - Every send passes the same four gates, each with its own error code, re-checked
   before transport.
 - Files are added, never replaced. A file name that is really a path is refused.
 - An app can look up only the sends it triggered.
 - Jobs can send through their app's attachments; see [Automation](../../operate/automation/#sending-from-a-job).
+
+### Google Drive
+
+Put the folder in a **shared drive**, and add the service account's address
+(`…@….iam.gserviceaccount.com`) to that shared drive as **Contributor** or above.
+A folder in someone's My Drive won't work: a service account owns no storage, so
+Google refuses every file it tries to add there. Use the service account for this
+connection only, because Toft can reach anything that is shared with it.
+
+### SharePoint with a folder grant
+
+A SharePoint connection is normally granted the whole site (`Sites.Selected`). If
+apps only need one folder, grant the Entra app `Files.SelectedOperations.Selected`
+on that folder instead, with the `write` role. Connect it with the site's address
+as usual. Microsoft then refuses anything outside the folder, and the folder is
+the only destination offered.
+
+## Reading and writing a folder
+
+Toft's integrations only send. When an app has to **read** files people keep in
+SharePoint, OneDrive or Google Drive, or replace a file there, it uses the
+provider's own SDK with a credential you hold for it. Microsoft or Google enforces
+the folder boundary, and you can remove the access without touching the app.
+
+### SharePoint or OneDrive
+
+1. **Register an app.** In Entra, create an app registration and give it the
+   application permission **`Files.SelectedOperations.Selected`**, then grant admin
+   consent. On its own, this permission reaches nothing.
+2. **Grant it one folder.** Use [Graph Explorer](https://developer.microsoft.com/graph/graph-explorer),
+   signed in as a SharePoint administrator with `Sites.FullControl.All` consented.
+   Find the folder, then grant the app a role on it:
+
+   ```http
+   GET https://graph.microsoft.com/v1.0/sites/contoso.sharepoint.com:/sites/finance:/drive
+   GET https://graph.microsoft.com/v1.0/drives/{drive-id}/root:/Month-end
+   POST https://graph.microsoft.com/v1.0/drives/{drive-id}/items/{folder-id}/permissions
+   { "roles": ["read"], "grantedToV2": { "application": { "id": "{app's client id}" } } }
+   ```
+
+   Use `read` to let the app list and read files, or `write` to also add, replace and
+   delete them. The role covers everything below the folder. Sibling folders stay
+   invisible to the app, and so does the rest of the site. To remove the access,
+   `DELETE` the same permission.
+3. **Hold the secret in Toft.** In **Admin → Credentials**, create a credential with
+   the keys `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`, and
+   attach it to the app. Those are the names Microsoft's `azure-identity` library
+   reads, so the app needs no extra configuration. The app's owner never sees the
+   values.
+4. **Call Graph from the app.** In Python, for example:
+
+   ```python
+   import requests
+   from azure.identity import EnvironmentCredential
+
+   GRAPH = "https://graph.microsoft.com/v1.0"
+   token = EnvironmentCredential().get_token("https://graph.microsoft.com/.default").token
+   h = {"Authorization": f"Bearer {token}"}
+
+   drive = requests.get(f"{GRAPH}/sites/contoso.sharepoint.com:/sites/finance:/drive",
+                        headers=h).json()["id"]
+   folder = f"{GRAPH}/drives/{drive}/root:/Month-end"
+
+   for item in requests.get(f"{folder}:/children", headers=h).json()["value"]:
+       print(item["name"], item.get("size"))
+
+   r = requests.get(f"{folder}/input.csv:/content", headers=h)
+   r.raise_for_status()
+   data = r.content
+
+   # Replaces output.csv if it exists. SharePoint keeps the previous version.
+   requests.put(f"{folder}/output.csv:/content", headers=h, data=b"a,b\n1,2\n").raise_for_status()
+   ```
+
+   R, Node and Go have Microsoft libraries that read the same three variables.
+
+### Google Drive
+
+Create a service account and add its address to the **shared drive** that holds
+the folder: as **Viewer** to read, or **Content manager** to also replace and
+delete files. Put its JSON key in a Toft credential (for example
+`GOOGLE_SERVICE_ACCOUNT_JSON`) and attach it to the app. The app calls the Drive
+API with the `https://www.googleapis.com/auth/drive` scope. Use one service account
+per folder, because the key reaches everything that is shared with that account.
+
+### What you give up
+
+What Toft's integrations record, this route doesn't:
+
+- Reads and writes don't appear in Toft's integration log. Microsoft 365's audit
+  log and Google's Drive audit log record them under the app's or service
+  account's name.
+- The secret is in the app's environment, so a compromised app can copy it.
+  Removing the folder grant, or rotating the credential, stops that copy working.
+  Detaching the credential alone does not.
 
 ## The integration log
 
