@@ -25,6 +25,10 @@ The app page shows **Your last deploy was refused**; the build log names the pac
 2. **Ask for a waiver.** Only an administrator grants one, and it expires.
 3. **Argue it doesn't apply**, if you don't use the vulnerable code. Take it to your administrator.
 
+## SBOM
+
+Each successful deployment has **Download SBOM** in its **⋯** menu on the **Deployments** tab: a CycloneDX 1.6 file listing the packages that release installed. Where Toft could not read everything, the file says **incomplete** or **unknown** rather than complete. That happens, for example, with an app locked with pnpm or Yarn, an app with no lockfile, or vendored code. The deploy's warnings name what was missed. Downloading the same release twice gives the same file.
+
 ## When there's no verdict
 
 | Message | Means |

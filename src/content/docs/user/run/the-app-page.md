@@ -15,6 +15,7 @@ Everything about one app lives on its page. You see only the tabs your role and 
 | **Dependencies** | Packages and policy findings, when the install has a policy | Editors |
 | **Integrations** | What the app may send, and where | Editors |
 | **Reach** | Everything the app has been given | Editors |
+| **Audit** | The app's audit file, for an assessor | Editors |
 | **Access** | Visibility, sharing, access requests | Whoever may share |
 | **Settings** | Name, source, runtime, variables, deletion | Editors |
 
@@ -35,6 +36,14 @@ The deploy date is when the app was last deployed, not proof it matches your rep
 ## Reach
 
 One list of what the app has been given: who may open it, the credentials and variables it holds, the storage attached to it, what it may send, and the keys that act as it. It shows names, never secret values, and what the app *can* do rather than what it did. The line at the top says what Reach can't see, such as outbound network access.
+
+## Audit
+
+The app's **audit file**: what to hand an assessor about this one app. It covers who may open it and who gave each person access, where its code comes from, every deploy and who started it, its packages, what it can reach, how old its credentials are, where its output goes, who opened it, what deleting it would remove and what Toft can't see.
+
+A section you aren't allowed to read is shown as **Refused** with the reason, rather than left out. For example, the history of changes to the app is for administrators only. **Export** downloads the same reading as a JSON file with a digest anyone can recheck, and Toft keeps no copy.
+
+It lists who has access. Deciding whether each person should keep it is your organization's access review.
 
 ## Deleting an app
 

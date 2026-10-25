@@ -70,6 +70,12 @@ The report is computed per request and never stored. The JSON export names the
 install, the date and the collector, and carries a **digest recomputable from the
 file alone** (it covers its own timestamp). File it wherever you keep evidence.
 
+## One app's audit file
+
+Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and never sees more than they could elsewhere. A personal API key can read it; deploy keys cannot. Its export uses the same digest rule as this report's.
+
+It lists access. Reviewing that access is the organization's job, not Toft's.
+
 ## Who can read it
 
 **Administrators in a browser only.** All five routes return 404 to
