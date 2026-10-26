@@ -3,12 +3,13 @@
 # again into site/latest, and the two root pages beside them.
 #
 #   scripts/build-site.sh            what the Pages workflow runs
-#   DOCS_PREFIX=/docs scripts/...    a different path, for a mirror or a domain
+#   DOCS_PREFIX=/docs scripts/...    under a path, for a mirror without a domain of its own
 #
 # Each minor is built from its own branch with its own base, so a version's
 # links, assets and Pagefind index all stay inside its folder.
 set -euo pipefail
-PREFIX=${DOCS_PREFIX:-/toft-docs}
+# Published at the root of docs.gettoft.com, so the prefix is empty by default.
+PREFIX=${DOCS_PREFIX-}
 root=$(pwd)
 out=$root/site
 rm -rf "$out"

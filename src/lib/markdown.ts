@@ -14,7 +14,7 @@ import { readingOrder } from "../sidebar.mjs";
 
 type Doc = CollectionEntry<"docs">;
 
-/** The site's base, without its trailing slash: `/toft-docs/0.9`. */
+/** The site's base, without its trailing slash: `/0.9`. */
 export const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
 /** Where the Markdown copy of a page is served. */
