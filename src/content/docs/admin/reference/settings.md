@@ -186,7 +186,7 @@ accepted; what 0 means is in the row.
 | **Blank turns `.env.<tag>` defaults off.** 1–32 lowercase letters, digits, dashes or underscores. | `environment_tag` |
 
 :::note[Not settings]
-`log_format` is reported read-only beside `effective_log_level`. `job_placement` (`cluster` or `this machine`) and `job_memory_enforcement` (`cgroup` or `watchdog`) are reported read-only under **Jobs**, as **Where runs go** and **Memory limits**. The settings API
+`log_format` is reported read-only beside `effective_log_level`. `job_placement` (`cluster` or `this machine`) is reported read-only under **Jobs** as **Where runs go**, and `shared_containment` — how this machine holds shared apps and jobs (`process`, `cgroup` or `namespace`, with the reason the next level up is unavailable) — as **Memory limits** there and as **Shared containment** on **Admin → Info**. The settings API
 refuses `docs_url`, `gallery_catalog_url`, `gallery_catalog_source` and
 `gallery_sync`: set `DOCS_URL` and `GALLERY_CATALOG_URL` in the
 [environment](../environment/) instead.

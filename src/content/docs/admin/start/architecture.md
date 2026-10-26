@@ -19,7 +19,7 @@ Toft links to all three for your version.
 | **The binary** | Platform API, web interface, build pipeline, scheduler, app proxy. |
 | **Postgres 17** | Everything Toft knows. The binary migrates the schema at startup. |
 | **A filesystem** | Releases, logs, build caches. |
-| **PM2** | Runs apps as processes (shared mode). Bundled in the image. |
+| **The agent** | Runs shared-mode apps and jobs as processes. Part of the binary (`toft agent`), started by Toft itself. |
 | **A cluster** | Optional — only for isolated execution. |
 
 No app registry, build service or CI is required.

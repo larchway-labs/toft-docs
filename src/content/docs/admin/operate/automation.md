@@ -22,7 +22,7 @@ run goes; an app's own execution mode is not consulted.
 | Install | A run is | Memory limit |
 |---|---|---|
 | Isolated execution available | A pod in the cluster | Enforced by the cluster |
-| No cluster | A process group on the platform's machine, started by `toft runner` under the app's OS account, with a scratch directory removed when it ends (not PM2) | Enforced by the kernel through a cgroup where the machine allows it; otherwise a sampled watchdog |
+| No cluster | A process group on the platform's machine, started by `toft runner` under the app's OS account, with a scratch directory removed when it ends | Enforced by the kernel through a cgroup where the machine allows it; otherwise a sampled watchdog |
 
 **Admin → Settings → Jobs** shows both facts read-only: **Where runs go** (*Jobs
 run on the cluster* or *Jobs run on this machine*) and, on this machine,
@@ -31,11 +31,11 @@ run records the mode it ran in.
 
 The kernel holds the limit when the platform can write to a cgroup v2
 hierarchy: running as root in a container, as a systemd service with
-`Delegate=yes`, or under a parent you name in `JOB_CGROUP_PARENT`. The run is
+`Delegate=yes`, or under a parent you name in `AGENT_CGROUP_PARENT`. The run is
 placed in its cgroup before it starts, so there is no moment it runs unlimited.
 
 :::caution[Without a cgroup the memory limit is a watchdog]
-The platform samples the run's process tree every 250 ms and stops it past the
+The agent samples the run's process tree every 100 ms and stops it past the
 limit, recording `out_of_memory`. Between samples a run can overshoot, and on a
 machine with no headroom the kernel may kill the platform instead. A run that
 outlives a platform restart continues unwatched until its deadline. For a

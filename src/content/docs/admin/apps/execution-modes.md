@@ -8,9 +8,9 @@ it is an implementation detail.
 
 | | Shared | Isolated |
 |---|---|---|
-| Runs as | A PM2-managed process on the Toft machine, bound to `127.0.0.1`, reached only through the proxy | One container per app, with its own network policy |
-| App-to-app isolation | **No** — an accepted risk | Yes |
-| Resource limits | Not a hard boundary | Enforced per app |
+| Runs as | A process on the Toft machine, placed and restarted by Toft's agent, bound to `127.0.0.1`, reached only through the proxy | One container per app, with its own network policy |
+| App-to-app isolation | **No** on most installs — an accepted risk. Where the machine allows it, each app gets its own network, files and processes (see [isolation](../../security/isolation/)) | Yes |
+| Resource limits | Held by the kernel where the machine allows it, otherwise sampled | Enforced per app |
 | Cost | No cluster, images or registry; fast sleep and wake | A cluster, [runner images](../../build/runner-images/), an [artifact store](../artifact-store/) |
 
 An isolated workload that keeps crashing is restarted a bounded number of times, then reported as no longer restarted.
@@ -32,7 +32,7 @@ the platform database and other apps' secrets.
 | `APP_USER_AUTOCREATE` | Toft creates those accounts |
 | `APP_USER_GROUP` | The primary group, which egress rules act on |
 
-Toft must run as root, because PM2 setuids to the app account. The posture is
+Toft must run as root, because it starts each app as its own account. The posture is
 derived from the platform's own uid: an install running as an ordinary user
 reports `platform` at startup rather than pretending to isolate.
 

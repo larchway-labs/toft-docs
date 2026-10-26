@@ -9,7 +9,7 @@ no `latest` tag.
 
 | | One box (Docker Compose) | Cluster (Helm chart) |
 |---|---|---|
-| **Apps run** | In **shared mode**: processes under PM2, each as its own OS account | In **isolated mode**: one container per app, with its own network policy |
+| **Apps run** | In **shared mode**: processes run by Toft's agent, each as its own OS account | In **isolated mode**: one container per app, with its own network policy |
 | **Choose it for** | A team, a department, a first install | App-to-app isolation, mixed resource profiles, an existing Kubernetes |
 | **Jobs run** | As processes on the machine, under their app's account | In their own pods |
 | **Not available** | Isolated execution, the artifact store, telemetry export | — |
