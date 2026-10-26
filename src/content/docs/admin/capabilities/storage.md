@@ -234,4 +234,6 @@ one partitioned share is the way to give many apps their own folder.
 | Audit | Records each upload or download link Toft issues. On a host mount, also the file arriving |
 | Administrators | **Have no automatic access** to a resource's files. Grant yourself if you need to look; it is audited |
 | Deleting an app | Detaches its storage. **The data is kept** |
-| Deleting a resource | Refused while any app uses it. On a cluster the data is kept. Under a host mount it **deletes the directory and every file in it**, after you type its name |
+| Deleting a resource | Refused while any app uses it. Otherwise it **deletes every file in it**, after you type its name, wherever the drive can: a host mount always, a cluster drive when its storage driver is set up to remove files (the delete dialog tells you which). Where it can't, the files stay and Toft says where |
+| A name just deleted on a cluster | Stays reserved until the cluster has finished removing the files, usually minutes and at most an hour. Admin → Storage lists it under **Being deleted**, and creating a resource with that name is refused until then |
+| Object stores | Deleting one never deletes anything in the bucket |
