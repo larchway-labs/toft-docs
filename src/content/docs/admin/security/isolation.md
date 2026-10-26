@@ -46,17 +46,30 @@ Set `BLOCK_AWS_METADATA=1` so apps cannot reach the instance or task metadata
 endpoints that hand out IAM credentials. Do **not** use an IMDS hop limit of 1
 instead — it blocks Toft's own pod too.
 
+## How shared apps are held
+
+**Admin → Info → Shared containment** says which of three levels this machine
+gives shared-mode apps, and why it is not the next one up:
+
+| Level | What each app gets | What it needs |
+|---|---|---|
+| **Processes** | Its own OS account and directory; memory limits sampled | Nothing beyond root |
+| **cgroups** | That, plus a memory limit the kernel enforces and a cap of 4,096 processes; CPU shared fairly | A cgroup v2 hierarchy Toft may write (root on a host, or a container allowed to write its cgroups) |
+| **Namespaces** | That, plus its own network address, its own view of the files (no other app's tree, a private `/tmp`) and its own process list; no app can reach another | `CAP_SYS_ADMIN` and `CAP_NET_ADMIN`, `iptables` and `ip`, and Toft listening on every interface |
+
+Most container installs run at **Processes**: a container usually may not write
+its cgroups. The level is detected when Toft starts its agent.
+
 ## What is not isolated
 
 :::caution[Shared mode]
 In [shared mode](../../apps/execution-modes/) apps are processes on one machine.
-App-to-app isolation is an **accepted risk**: per-app OS accounts narrow it but do
-not close it. Origin isolation is about browsers, not processes. If you need
+Below the namespaces level, app-to-app isolation is an **accepted risk**:
+per-app OS accounts narrow it but do not close it. Origin isolation is about browsers, not processes. If you need
 app-to-app isolation, use isolated mode.
 :::
 
 Other accepted risks:
 
 - Builds are not sandboxed.
-- PM2's dump file exists on a shared-mode install.
 - Build logs are held in memory while a build runs.
