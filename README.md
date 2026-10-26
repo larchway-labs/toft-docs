@@ -1,10 +1,10 @@
 # Toft documentation
 
 The user guide, the admin guide and the CLI & SDK guide, as one site:
-**https://larchway-labs.github.io/toft-docs/**
+**https://docs.gettoft.com/**
 
 Every Toft install links here, to the folder for the minor version it runs —
-an install on 0.7.3 links to `/toft-docs/0.7/`. Nothing in the product fetches
+an install on 0.7.3 links to `/0.7/`. Nothing in the product fetches
 this site; a link is only ever followed by a reader's browser.
 
 ## Layout
@@ -46,13 +46,13 @@ its line in `llms.txt` and its lede under the title, so every page needs one.
 ## Versions
 
 - **One branch per published minor: `release/0.7`, `release/0.8`.** Each is
-  built into `/toft-docs/<minor>/`, and the newest is built again into
-  `/toft-docs/latest/`.
+  built into `/<minor>/`, and the newest is built again into
+  `/latest/`.
 - **`main` is the next minor** and is not published. Write documentation for
   unreleased behaviour there.
 - **A Toft release cuts its branch before the image ships**: `git branch
   release/0.8 main && git push origin release/0.8`, then wait for the Publish
-  workflow and check `https://larchway-labs.github.io/toft-docs/0.8/user/`
+  workflow and check `https://docs.gettoft.com/0.9/user/`
   answers. An install links to its minor the moment it runs, so a missing
   folder is a broken Documentation page.
 - **A correction to a published version** is a commit on its `release/X.Y`
@@ -65,7 +65,7 @@ Every push to `main` or a `release/*` branch republishes the whole site.
 
 ## Writing
 
-- `npm run dev` serves the site at `http://localhost:4321/toft-docs/dev/`.
+- `npm run dev` serves the site at `http://localhost:4321/dev/`.
 - A page goes in `src/sidebar.mjs` as well as in `src/content/docs/`; one that
   is not listed there has no place in the sidebar, the home page or `llms.txt`.
 - After changing `expressiveCode` in `astro.config.mjs`, delete

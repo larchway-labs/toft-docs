@@ -6,7 +6,7 @@ import { sidebar } from "./src/sidebar.mjs";
 /**
  * Toft's documentation: the user, admin and CLI & SDK guides as one site.
  *
- * Published to GitHub Pages one folder per Toft minor (`/toft-docs/0.7/`), so
+ * Published to GitHub Pages at docs.gettoft.com, one folder per Toft minor (`/0.9/`), so
  * `base` comes from the build — the workflow sets DOCS_BASE per release branch —
  * and an install links to the folder for the minor it runs (ADR, *The manual*).
  * The default is for `npm run dev`.
@@ -15,7 +15,7 @@ import { sidebar } from "./src/sidebar.mjs";
  * search is per version, works on GitHub Pages, and works on a mirror copied
  * whole onto a network with no route out.
  */
-const base = (process.env.DOCS_BASE ?? "/toft-docs/dev").replace(/\/+$/, "");
+const base = (process.env.DOCS_BASE ?? "/dev").replace(/\/+$/, "");
 
 export default defineConfig({
   base,

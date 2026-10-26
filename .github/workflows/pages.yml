@@ -1,8 +1,8 @@
 name: Publish
 
 # Every push to a release branch republishes the whole site, because Pages
-# serves one artifact: each release/X.Y becomes /toft-docs/X.Y/, and the newest
-# also becomes /toft-docs/latest/. main is the next minor and is not published.
+# serves one artifact: each release/X.Y becomes docs.gettoft.com/X.Y/, and the
+# newest also becomes /latest/. main is the next minor and is not published.
 on:
   push:
     branches: ["release/**", "main"]

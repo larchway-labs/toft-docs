@@ -26,6 +26,14 @@
   // version was asked for and offer the same page in the newest one. No timed
   // redirect: the reader chooses.
   (function () {
+    // The site moved from larchway-labs.github.io/toft-docs/ to the root of
+    // docs.gettoft.com. GitHub forwards the old host here with the old path
+    // kept, so a link from a binary built before the move arrives as
+    // /toft-docs/0.9/…: send it to the same page without the prefix.
+    if (location.pathname.indexOf("/toft-docs/") === 0) {
+      location.replace(location.pathname.slice("/toft-docs".length) + location.search + location.hash);
+      return;
+    }
     var prefix = "@PREFIX@", latest = "@LATEST@";
     var rest = location.pathname.indexOf(prefix + "/") === 0 ? location.pathname.slice(prefix.length + 1) : "";
     var parts = rest.split("/");

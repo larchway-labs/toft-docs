@@ -13,7 +13,7 @@ The **Documentation** page, in the header for everyone, lists the three guides
 set one.
 
 Each link points at the folder for the minor version the install runs, such as
-`/toft-docs/0.7/admin/`. Someone on 0.7 keeps reading the 0.7 guides after 0.8
+`/0.7/admin/`. Someone on 0.7 keeps reading the 0.7 guides after 0.8
 ships. There is nothing to install, update or choose.
 
 Toft never fetches, checks or caches the site. Only a reader's browser follows
