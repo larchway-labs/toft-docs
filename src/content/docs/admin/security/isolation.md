@@ -60,6 +60,16 @@ gives shared-mode apps, and why it is not the next one up:
 Most container installs run at **Processes**: a container usually may not write
 its cgroups. The level is detected when Toft starts its agent.
 
+**Admin → System checks** has three rows about this:
+
+- **Shared containment** states the level and why it is not the next one up.
+  It never warns: **Processes** is the expected answer in most containers.
+- **Workload cgroups**, at the cgroups level and above, warns with the name of
+  each running app that could not get a cgroup of its own. That app's memory
+  limit is sampled, not enforced by the kernel. Restarting the app tries again.
+- **Agent** warns when the agent is leaking: a finished job still holding its
+  log open, or file descriptors at 80% of the agent's limit.
+
 ## What is not isolated
 
 :::caution[Shared mode]
