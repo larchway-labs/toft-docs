@@ -67,7 +67,7 @@ These exit 2 because nothing was attempted:
 | `run_still_open` | `toft job rerun` of a run still queued or running. `toft job wait` it first. |
 | `deployment_protected` | `toft deployments delete` of the serving deployment. Roll back or deploy first. |
 | `already_current` | The deployment you asked to make current is already serving. |
-| `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `overwrite`. |
+| `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `full`. |
 
 Any refusal of this kind, where the app's state rather than your credential says
 no, has `"kind": "refused"` under `--json`, with the install's `code`.
