@@ -1,10 +1,10 @@
 ---
 title: Checks reference
-description: All 27 system checks in report order, with their category and what moves each one off pass.
+description: All 28 system checks in report order, with their category and what moves each one off pass.
 ---
 
 Every check on **Admin → System checks**, in the order the report runs them.
-There are **27**, in nine categories. A test walks this registry, so a check
+There are **28**, in nine categories. A test walks this registry, so a check
 cannot silently stop running. Some checks emit more than one row; each row keeps
 its own id.
 
@@ -14,6 +14,7 @@ its own id.
 | `storage` | Storage | Storage | `apps_dir`, `logs_dir`, `cache_dir`, `artifact_store` and shared storage roots. A root `fail`s when it is no longer declared, is gone or has turned read-only, or a resource's directory under it is missing; it `warn`s when nothing is mounted there, which is what a file system that didn't come back after a reboot looks like. A `host_data_plane` row says whether people can reach host storage, and what is missing when they cannot. |
 | `host` | Host | Platform | CPU, memory, disk. |
 | `execution` | Execution backends | Execution | Two rows: `shared_backend` and `isolated_backend`. |
+| `agent` | Shared-mode agent | Execution | Three rows. `shared_containment` states how this machine holds shared apps and jobs — process, cgroup or namespace — and why not the next level up; it never warns. `agent_cgroups` `warn`s for a running workload above the process level that fell back to the agent's memory watchdog. `agent_figures` `warn`s when finished runs still hold their logs or file descriptors at 80% of the agent's limit. `skip` where shared workloads are not run by the agent. |
 | `toolchains` | Toolchains | Execution | Node, Python, Go and R. An absent family is re-probed; a present one shows the age of its reading. |
 | `estate` | App health | Apps | App health. Locked, suspended and withheld apps are counted without raising the verdict. |
 | `notifications` | Notifications | Notifications | Mail and channels. |

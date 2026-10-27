@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 97 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 98 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **97**. Settings for one app are on that app's own pages
+renders it. There are **98**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -75,6 +75,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | Setting | Label | What it does |
 |---|---|---|
 | `api_keys_enabled` | Personal API keys | Lets people hold long-lived keys so a script can act as them. |
+| `api_key_max_lifetime_days` | Longest a personal key may last | The most days a new personal key may last, 1–3,650. 0 means no limit. A limit applies to keys created from then on. |
 
 ## Admin → Dependencies
 
