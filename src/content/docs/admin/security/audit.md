@@ -50,8 +50,9 @@ that says so.
 | **Access** | Who was given what — grants, roles, keys, locks, credentials |
 | **Settings** | What changed on the install or an app's configuration, and when |
 | **Deploys** | What was deployed, started, stopped or removed |
-| **App**, picked beside the chips | Everything done to one app, including access requests about it and what the app did itself |
-| Search for a person, an IP or a request ID | Everything that happened to it |
+| **App**, picked beside the search | Everything done to one app, including access requests about it and what the app did itself |
+| Search for a person, an app, an IP or a request ID | Everything that happened to it — by whoever did it or whatever it was done to, a deleted app or storage resource included, by the name its deletion recorded |
+| **How far back**, beside the search | Only the last hour, 24 hours, 7 days or 30 days; **All** for the whole retained record |
 
 The filter is part of the address, so a narrowed feed can be sent as a link.
 An app's history reaches back to when this version was installed. Older entries
