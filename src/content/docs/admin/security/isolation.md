@@ -60,10 +60,26 @@ gives shared-mode apps, and why it is not the next one up:
 Most container installs run at **Processes**: a container usually may not write
 its cgroups. The level is detected when Toft starts its agent.
 
+At every level, **an app's run ends when the app exits**, and anything the app
+started is stopped with it — given a few seconds to exit, then killed. An app
+that starts a helper in the background and exits loses the helper. Run a helper
+in the foreground instead.
+
+At the **Namespaces** level, apps resolve names whatever this machine's resolver
+is. When the machine's `/etc/resolv.conf` names only a resolver on its own
+loopback — `127.0.0.53` on Ubuntu, `127.0.0.11` in Docker — Toft gives apps the
+real upstream servers instead, or, where there are none to name, relays their
+queries to the machine's resolver itself. Toft reads the machine's resolver
+settings when its agent starts, so restart the agent after changing them.
+
 **Admin → System checks** has three rows about this:
 
-- **Shared containment** states the level and why it is not the next one up.
-  It never warns: **Processes** is the expected answer in most containers.
+- **Shared containment** states the level and why it is not the next one up,
+  and at the **Namespaces** level how apps resolve names. It warns in one case
+  only: names may not resolve inside apps, because the machine's resolver is on
+  its own loopback and Toft could not listen on port 53 of its bridge address to
+  relay to it. Free that port and restart the agent. **Processes** is never a
+  warning: it is the expected answer in most containers.
 - **Workload cgroups**, at the cgroups level and above, warns with the name of
   each running app that could not get a cgroup of its own. That app's memory
   limit is sampled, not enforced by the kernel. Restarting the app tries again.
