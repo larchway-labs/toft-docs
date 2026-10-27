@@ -122,8 +122,8 @@ for. A resource attached read only can't be written to, whatever the code does.
 | Kind | Levels |
 |---|---|
 | Volume | **Read only** · **Read & write** |
-| Object store | **Read only** · **Can add** · **Can replace** · **Can delete** |
-| Object store on Azure Blob | **Read only** · **Can delete** |
+| Object store | **Read only** · **Can add** · **Read & write** |
+| Object store on Azure Blob | **Read only** · **Read & write** |
 
 **What a person can be given**, on any resource people can browse, volumes
 included:
@@ -132,15 +132,20 @@ included:
 |---|---|---|
 | **Read only** | List and download | `read` |
 | **Can add** | Also upload new files. Replacing one is refused | `write` |
-| **Can replace** | Also replace existing files | `overwrite` |
-| **Can delete** | Also delete | `full` |
+| **Read & write** | Also replace and delete | `full` |
 
 - Each level includes the ones above it.
 - **Can add** is the safe default for a dataset an app or a person contributes
   to: nothing already there can be changed.
-- **Azure Blob can't be attached at Can add or Can replace.** Its driver mounts
-  read-only or read-write, nothing between, so those two are refused when you
-  attach. Both still work for people.
+- **Azure Blob can't be attached at Can add.** Its driver mounts read-only or
+  read-write, nothing between, so Can add is refused when you attach. It still
+  works for people.
+- **Can replace was merged into Read & write.** It stopped a name being deleted
+  but not its contents being replaced, so it protected nothing. On upgrading,
+  anything at Can replace moved to Read & write, with one entry per change on
+  Admin → Activity. Set one back to Can add if it should only add.
+- Within a volume, people granted **Can add** can only add, even though an app
+  attached to the same volume at **Read & write** can change anything.
 - A resource under a read-only host mount (`:ro`) is **Read only** for everyone.
 
 ## Folders

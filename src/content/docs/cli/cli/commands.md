@@ -535,8 +535,7 @@ is attached yet; an upload anywhere else is refused (exit 3).
 |---|---|
 | `read` | Download and list. |
 | `write` | Upload new files; never replace. |
-| `overwrite` | Also replace existing files. |
-| `full` | Also delete. |
+| `full` | Also replace and delete. |
 
 `rm` looks the store and the file up before it asks for confirmation, so a store
 you cannot reach or a file that isn't there exits 2 (`not_found`), and a folder

@@ -34,7 +34,7 @@ code does.
 | Kind | Levels |
 |---|---|
 | Volume | **Read only** · **Read & write** |
-| Object store | **Read only** · **Can add** (new files only) · **Can replace** (also overwrite) · **Can delete** (also delete) |
+| Object store | **Read only** · **Can add** (new files only) · **Read & write** (also replace and delete) |
 
 Some object stores can't be attached at every level. Those levels aren't offered
 when attaching.

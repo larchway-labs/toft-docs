@@ -49,8 +49,7 @@ line into the next command.
 |---|---|---|
 | **Read only** | List and download | `read` |
 | **Can add** | Also upload new files. Replacing an existing file is refused | `write` |
-| **Can replace** | Also replace existing files | `overwrite` |
-| **Can delete** | Also delete | `full` |
+| **Read & write** | Also replace and delete | `full` |
 
 Two grants add up: a grant on `reports` and one on `reports/2026` give you the
 wider of the two inside `reports/2026`.
