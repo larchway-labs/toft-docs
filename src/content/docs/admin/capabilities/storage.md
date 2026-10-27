@@ -199,8 +199,10 @@ SHARED_STORAGE_ROOTS=reports=/srv/toft/reports,archive=/srv/toft/archive:ro
 ```
 
 Each root is a place volumes can be created. A resource is a directory under
-it, and only apps attached to that resource can open it. If you declare one
-root, the form uses it without asking. The **Storage** check fails when a
+it, and only apps attached to that resource can open it. Toft creates that
+directory itself and deletes it with the resource, so a name whose directory
+already exists on the root is refused: choose another name, or move the
+directory aside first. If you declare one root, the form uses it without asking. The **Storage** check fails when a
 root's mount is gone or has turned read-only.
 
 **Object stores work without a cluster too**, but they are never mounted. Set
