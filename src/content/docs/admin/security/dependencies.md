@@ -43,6 +43,17 @@ Node is read from `package-lock.json` only. An app locked with `pnpm-lock.yaml` 
 `yarn.lock` still deploys, but its versions resolve fresh from `package.json`, and
 the build log says so.
 
+Python is listed without building any package, because building runs its code.
+When a dependency publishes no wheel for this install's Python, that listing
+would quietly settle on an older release than the build installs. Toft notices,
+and judges nothing it cannot list truly: under `block` the deploy is refused,
+naming the package without a wheel, and the way forward is to pin the version
+the scan could list or wait for that package to publish a wheel; under `warn` it
+deploys **not scanned**.
+
+**Findings follow the release that is serving.** After a rollback, the
+dependencies, the audit file and its SBOM name the release rolled back to.
+
 ## What it never does
 
 - **A restart is not a deploy.** The verdict made for a deployment stands; a new

@@ -55,7 +55,9 @@ to out of the count.
 
 To clear space yourself, delete one deployment, or select **Delete old deployments** to
 remove everything but the serving deployment. A pending rollback's target is
-never deleted.
+never deleted, and neither is a deployment a job run that has not finished will
+start from: deleting that one is refused with what to do instead — wait for the
+run to finish, or cancel it.
 
 ## Download a deployment
 

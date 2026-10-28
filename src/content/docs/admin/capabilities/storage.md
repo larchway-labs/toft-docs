@@ -188,7 +188,10 @@ permission change in Toft that restarts a running app.
 ## When changes take effect
 
 - **Attaching or detaching takes effect when the app next deploys or
-  restarts**, never under a running app.
+  restarts**, never under a running app. A job picks the change up at its next
+  run, without a deploy — each run is described when it starts.
+- **A static app takes no storage** (`static_app`): it has no process to
+  attach it to.
 - **Grants take effect at once.**
 - **A name never changes.** To fix a wrong one, create a new resource, move the
   attachments and delete the old one. **Edit description…** is the only edit.
