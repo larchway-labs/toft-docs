@@ -22,6 +22,7 @@ supplies the identity. Manage them in **Admin → Integrations**.
 | A connection offered to apps **is** the switch | No separate toggle; an app has no integration of a kind until you attach one |
 | A connection is welded to its scope | To use a different channel or folder, create another connection — existing users keep their meaning |
 | One attachment per (app, kind) | A second is refused, not swapped |
+| Static apps | Refused (`static_app`): a folder of files has no process to send from, as it has none to attach storage to |
 | Destinations | A kind either lists destinations or (when welded) answers 404 — not an empty list |
 | Broken destination | The send fails; it never falls back somewhere else |
 | URLs you type | Checked at save **and** at every send; private addresses refused both times |

@@ -40,7 +40,7 @@ help     = "Which region to report on"
 | `command` | Run with the deployment's own interpreter. |
 | `args` | Instead of `command`, in a Go app: arguments to the one binary the build produced, `./toft-app`. `args = ["job", "reconcile"]`. |
 | `schedule`, `timezone` | Five cron fields, read in `timezone` (an IANA name) or UTC. A zoned schedule fires once per wall-clock time through daylight saving changes. Without a schedule the job runs only when started. |
-| `overlap` | A scheduled firing while the last run is still going: `queue` waits, `skip` records a `skipped` run. |
+| `overlap` | A scheduled firing while the job's last scheduled run is still going: `queue` waits behind it, `skip` records a `skipped` run. A start from your code or a person is never held. |
 | `notify` | Email the app's owners on `failures` or `always`. Default `none`. |
 | `timeout` | A duration (`"45m"`) or seconds. Without it, the install's default. |
 | `memory`, `cpu` | MB and millicores. |
@@ -101,8 +101,11 @@ minute, returns that run with `deduplicated` set. Pass an idempotency key to
 widen that to 24 hours.
 
 A full queue raises `QueueFull` (Python, Node; `*toft.QueueFullError` in Go;
-code `queue_full` in R), retryable. `viewer()` with nobody signed in raises
-`no_viewer`.
+code `queue_full` in R), retryable. `viewer()` on a request with no viewer
+header — an API key, a health check, a local server — raises `no_viewer`. An
+anonymous visitor to a public app does carry one, which names nobody: the start
+is refused `viewer_anonymous`, with a hint to start the job as the app instead
+(`toft.jobs.start`).
 
 ### Respond, don't wait
 
@@ -202,7 +205,10 @@ variables](../../reference/environment/#inside-a-job).
 - **A job can send notifications** through the app's integrations, and reach
   the stores its app is attached to with the SDK's `upload`, `download`, `url`,
   `remove` and `list` calls. App data, viewer identity and starting another job
-  are refused with `job_send_only`.
+  are refused with `job_send_only`, by design: the refusal names the job and
+  the run, and its hint gives the two ways round — do it from the app's own
+  process, or write the result with `run.write_output_json(...)` and let an
+  endpoint read it back.
 
 ### The instant a run is for
 

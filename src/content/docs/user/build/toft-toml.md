@@ -73,7 +73,7 @@ is defined; every deploy makes the app's jobs match it.
 | `args` | Go apps only: arguments to the binary the build produced, instead of `command`. `["job", "extract"]`. |
 | `schedule` | Cron expression. UTC unless `timezone` is set. Leave it out for an on-demand job. |
 | `timezone` | IANA zone for `schedule`, e.g. `Europe/London`. |
-| `overlap` | `queue` (default) or `skip`: what a scheduled firing does while the last run is still going. |
+| `overlap` | `queue` (default) or `skip`: what a scheduled firing does while the job's last scheduled run is still going — wait behind it, or record a skipped run. |
 | `notify` | `none` (default), `failures` or `always`: when to email the app's owners about a run. |
 | `expect_within` | Report the job overdue after this long without a success: `26h`, `7d` (1 hour to 31 days). |
 | `timeout` | How long a run may take: `"45m"`, or seconds. Your install's default without it. |

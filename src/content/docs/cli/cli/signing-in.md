@@ -138,8 +138,10 @@ to make authenticated calls instead.
 ## Expiry
 
 When a key is within 14 days of `expires_at`, every command prints one dimmed
-line on stderr, never on stdout. A key stored with `--token-stdin` has no known
-expiry.
+line on stderr, never on stdout. It names both ways to replace it: `toft login
+<url>` in a browser, or, unattended, a new key piped to `toft login
+--token-stdin` — for a deploy key, only the second. A key stored with
+`--token-stdin` has no known expiry.
 
 `toft` never decides on its own that a key has expired. The install answers
 `401 key_expired`, `toft` exits 3, and the fix is `toft login`.

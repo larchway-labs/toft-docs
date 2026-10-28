@@ -55,8 +55,10 @@ fix: `return toft.jobs.respond(run)`.
   allows your app to start it; whether a given person may press the button is
   your code's decision, for example with their [role](../../share/viewer/).
 - **Your app never claims who the viewer is.** `toft.viewer(headers)` relays a
-  token Toft signed. If nobody is signed in, it raises `no_viewer` rather than
-  starting the run as nobody.
+  token Toft signed. On a request with no viewer on it (an API key, a health
+  check), it raises `no_viewer` rather than starting the run as nobody, and a
+  start for an anonymous visitor to a public app is refused `viewer_anonymous`,
+  with a hint to start the job as the app instead.
 - **A repeated start is not a second run.** A start matching a run already in
   flight, or one that finished in the last minute, returns that run with
   `deduplicated` set. This keeps a Streamlit rerun or a double click from

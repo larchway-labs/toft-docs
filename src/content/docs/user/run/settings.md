@@ -20,6 +20,8 @@ Set them under **Runtime → Environment variables**. They are stored encrypted 
 
 Saving doesn't restart the app. A **Saved, but not running yet** notice offers **Restart to apply**.
 
+A rendered document — a notebook, Quarto or R Markdown app — reads its variables when it is rendered, at deploy, so a change reaches its page at the next deploy, not a restart. A job reads them at its next run.
+
 :::caution[Your app gets only three things]
 Your variables, the ones Toft supplies (`PORT`, `BASE_PATH`, `TOFT_*`), and [credentials an administrator attached](../credentials/). Never your shell's environment.
 :::

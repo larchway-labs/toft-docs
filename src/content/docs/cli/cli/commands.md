@@ -188,7 +188,10 @@ It reports:
   `removed_key`.
 
 It exits 0 when a deploy would get past these decisions and 1 when it would be
-refused. The dependency policy, the build and the start are not checked: only a
+refused. `toft deploy` and `toft create` refuse the same tree at the upload,
+with the same code, before anything is built — and a refused `toft create`
+leaves no app and claims no name. (A tree Toft does not recognize at all is the
+exception: the build's detect step reports it.) The dependency policy, the build and the start are not checked: only a
 deploy answers those, and the result lists them under `not_checked`. `--json`
 returns the install's answer as it sent it.
 
@@ -334,7 +337,10 @@ toft deps --json | jq '.refused.findings[] | {package, version, fixed_in, path}'
 ## `toft restart`, `start`, `stop`
 
 `restart` and `start` are the same call: the platform starts a stopped app or
-restarts a running one.
+restarts a running one, and the answer says which — `started` or `restarted`
+(`action` under `--json`). A notebook, Quarto or R Markdown app serves the same
+rendered pages after a restart, and the answer carries a note saying so: a
+changed variable reaches the page at the next deploy.
 
 | Flag | |
 |---|---|
@@ -379,11 +385,16 @@ Both refusals exit 2 before anything is sent (`invalid_env_name`,
 
 The app reads its environment when it starts, so a change applies at the next restart; `--restart` does that
 for you, and no redeploy is needed. Without it, `--json` says
-`"restart_needed": true`.
+`"restart_needed": true`. A notebook, Quarto or R Markdown app is the
+exception: it reads its environment when it is rendered, at deploy, so `toft
+env set` says the next deploy (`toft redeploy`) applies the change to the page,
+`--json` says `"redeploy_needed": true`, and a job sees it at its next start.
 
 A variable stays sensitive once it is marked so, even when you set it again
 without `--sensitive`. Setting a sensitive variable to an empty value keeps the
-stored one.
+stored one, and `toft env set` says it was kept rather than set (`"kept"` under
+`--json`); `toft env unset` removes it. A command that changed nothing says so
+and promises no restart.
 
 Under `--json`, `list` gives each row's `value` whenever it is shown, `""` for
 an empty one, and `"sensitive": true` with no value for a sensitive one.
@@ -414,7 +425,7 @@ which. `--json` returns `app`, `visibility` and `changed`.
 | Subcommand | |
 |---|---|
 | `list` | Newest first. `*` marks the one serving. |
-| `prune` | Delete every deployment except the serving one. Asks first. |
+| `prune` | Delete every deployment except the serving one and those still needed. Asks first, and names each one it kept with the reason. |
 | `delete <id>` | Delete one. Asks first. |
 
 ```bash
@@ -422,9 +433,12 @@ toft deployments delete 4f1a2b --yes   # a unique prefix is enough
 ```
 
 A deleted deployment can no longer be rolled back to. The serving deployment, a
-build still running and the deployment a rollback is returning to are never
-deleted: `prune` skips them, and `delete <id>` on one of them is refused with
-the reason; the serving one is exit 3 (`deployment_protected`). An id that names
+build still running, the deployment a rollback is returning to and one a job run
+that has not finished will start from are never deleted: `prune` skips them and
+prints a `kept <id>: <reason> — <remedy>` line for each (`kept` under `--json`),
+and `delete <id>` on one of them is refused with the reason and what to do about
+it — for a job's release, wait for the run or cancel it (`toft job wait`, `toft
+job cancel`); the serving one is exit 3 (`deployment_protected`). An id that names
 nothing exits 2. `list --json` returns the install's answer, with
 `step_timings` as an object rather than a string holding one. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
@@ -458,7 +472,7 @@ eight characters `toft job runs` prints.
 
 | Subcommand | |
 |---|---|
-| `list` | The jobs this app declares: schedule and zone, parameters, effective limits with their source, whether the schedule is paused, and where runs go. |
+| `list` | The jobs this app declares: schedule and zone, parameters, effective limits with their source, whether the schedule is paused, and where runs go. While the app is locked, each schedule reads *held by the app's lock* instead of a next firing (`held_by_lock` under `--json`). On a static app it says a static app runs no jobs. |
 | `run` | With no job named: the jobs and their parameters, and how to run one. |
 | `run <job>` | Start one and wait. The run's outcome is the exit code. |
 | `rerun <runID>` | Run a finished run again, with the same parameters and the same instant it was for. Waits like `run`. A run still queued or running is refused with `run_still_open`. |
@@ -616,7 +630,7 @@ Install 0.9.6.
 
 It shows the credential's kind (`api_key` for a personal key, `deploy_key`, or
 `session`), its name, scope and expiry; whether you can create
-apps; whether the install takes uploaded bundles, allows public apps and can run
+apps (a read-scoped key never can, and says `create apps no`); whether the install takes uploaded bundles, allows public apps and can run
 jobs; and the language versions a new app is checked against. A deploy key can
 run it. `--json` returns the install's answer under `capabilities`, beside
 `install_url` and, for a person's credential, `user`.

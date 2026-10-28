@@ -90,8 +90,15 @@ in `toft.toml`, never inferred. Node, Python, Go and R only; `[batch]` beside
 - The zone database is compiled into the binary, so zones resolve the same on
   any image.
 - A missed firing (the platform was down) is skipped, never fired late.
-- `overlap` decides what a firing does while the last run is still going:
-  `queue` (the default) waits, `skip` records a `skipped` run with its reason.
+- `overlap` decides what a firing does while the job's last scheduled run is
+  still going: `queue` (the default) waits behind it and starts when it ends,
+  `skip` records a `skipped` run with its reason. A run a person or the app
+  starts is never held behind a scheduled one.
+- Each tick is one run. A deploy that leaves a schedule unchanged keeps its next
+  firing where it was, so deploying just after a firing time neither drops nor
+  repeats it.
+- A firing the app's full queue turns away is a `skipped` run too, its reason
+  *the app's queue was full*, and raises `job_schedule_skipped`.
 - A schedule does not keep an app awake.
 
 A paused schedule stays paused until the app's next deploy, which re-applies
@@ -115,7 +122,7 @@ A run ends once, in one of six states, with its reason in words.
 | `timed_out` | Stopped at its timeout. |
 | `out_of_memory` | Stopped at its memory limit. |
 | `cancelled` | Cancelled by a person, the app, or a lock. |
-| `skipped` | A scheduled firing `overlap = "skip"` stood down. |
+| `skipped` | A scheduled firing `overlap = "skip"` stood down, or a full queue turned away. |
 
 **Nothing is retried automatically.** A failure is one run, shown once. Running
 it again is a deliberate act — **Run again**, `toft job rerun`, or the app
@@ -161,7 +168,7 @@ and stores attached to its app.
 
 | Call | Result |
 |---|---|
-| Any other app route | `403 job_send_only` |
+| Any other app route | `403 job_send_only` — the refusal names the job and the run, says it is deliberate rather than a broken deploy, and its hint gives the two ways round: do it from the app's own process, or write the result as the run's output for an endpoint to read |
 | After the run ends | `401 run_not_in_flight` |
 
 Jobs cannot start jobs.

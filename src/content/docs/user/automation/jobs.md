@@ -41,7 +41,7 @@ help     = "Which region to report on"
 | `args` | Instead of `command`, for a Go app: arguments to the one binary your build produced. `args = ["job", "nightly-report"]` runs it as `./toft-app job nightly-report`. |
 | `schedule` | Five cron fields. Leave it out and the job runs only when something starts it. |
 | `timezone` | An IANA zone such as `Europe/London`. The schedule follows the local clock through daylight saving changes and fires once per local time. |
-| `overlap` | What a scheduled firing does if the last run is still going: `queue` waits its turn (the default), `skip` records a **skipped** run instead. |
+| `overlap` | What a scheduled firing does if the job's last scheduled run is still going: `queue` waits its turn and starts when that run ends (the default), `skip` records a **skipped** run instead. A run someone starts by hand is never held back. |
 | `notify` | Email the app's owners on `failures` (when a run fails) or `always` (after every run). `none` by default. |
 | `timeout` | `"45m"`, `"2h"`, or a number of seconds. Your administrator sets the default and the most a job may ask for. |
 | `memory` | In MB. Your administrator sets the most a job may ask for. |
@@ -146,7 +146,7 @@ original's time.
 | **Timed out** | It reached its timeout and was stopped. |
 | **Out of memory** | It went over its memory limit and was stopped. |
 | **Cancelled** | Someone cancelled it, or the app was locked. |
-| **Skipped** | A scheduled firing that `overlap = "skip"` stood down. |
+| **Skipped** | A scheduled firing that did not start: `overlap = "skip"` stood it down, or the app's queue was full. |
 
 Every run that did not succeed says why in words, such as `exit 3: connection
 refused`, `timed out after 45m` or `stopped at 1024 MB`. What it printed up to

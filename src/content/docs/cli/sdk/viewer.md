@@ -100,7 +100,12 @@ viewer_jobs(req) |> job_start("reconcile", params = list(month = month))
 ```
 
 Work started through `viewer()` is recorded in that person's name. It raises
-`no_viewer` when no one is signed in, rather than silently acting as the app.
+`no_viewer` when the request carries no viewer at all (an API key, a health
+check), rather than silently acting as the app. An anonymous visitor to a
+public app carries a viewer that names nobody: the start is refused
+`viewer_anonymous`, `retryable` false, with a hint to start it as the app
+(`toft.jobs.start`, `toft.Jobs.Start`, `job_start` without a viewer) — catch it,
+or check the caller's role is not `anonymous` first.
 Toft adds no role check of its own: declaring the job allows your app to start
 it, and whether this person may press the button is your app's rule. Answer
 the request with `toft.jobs.respond(run)`; see [Jobs](../jobs/#respond-dont-wait).
