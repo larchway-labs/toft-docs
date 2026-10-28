@@ -24,6 +24,7 @@ Every command accepts these.
 | `-q`, `--quiet` | No narration. The answer still goes to stdout, and the reason an item of a `store` copy failed still goes to stderr. |
 | `--yes` | Answer confirmations. Required when nothing can be asked. |
 | `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
+| `--plain` | Behave as if piped: plain lines, no color, and every question refused with the flag that answers it. `TOFT_PLAIN=1` does the same; `--plain=false` undoes it for one command. |
 | `--session` | Act through the administrator session `toft login --password-stdin` stored, instead of the key. Never falls back to the key. See [The administrator's session](../signing-in/#the-administrators-session). |
 
 In a terminal, `toft` draws its output for a person: tables have a header row,
@@ -31,6 +32,17 @@ statuses are colored badges (`● running`, `○ sleeping`, `✕ failed`), a dep
 ends in a summary box and an error starts with `✗`. Piped, redirected or in CI,
 the same commands print plain lines with no color codes and errors start with
 `toft:`. Scripts should read `--json` rather than either.
+
+When both stdout and stderr are a terminal, a few things stay live: the deploy
+steps tick over as they run (with `--logs`, the build log scrolls above them), a
+running job shows one line that keeps its place and progress, and `toft logs -f`
+keeps a status line under the stream. Questions are asked only when stdin is a
+terminal too: a confirmation is a Yes/No with No selected, a missing required
+job parameter is asked for, and in a directory with no app linked, `status`,
+`logs`, `events`, `deps`, `restart`, `start`, `stop`, `redeploy`, `rollback` and
+`job` offer a list of your apps to pick from for that one run. `toft deploy` and
+`toft check` never offer the list. Under `CI`, `--yes`, `TOFT_PLAIN` or with any
+stream piped, none of this happens and you get the plain behaviour.
 
 ## All commands
 
@@ -46,6 +58,7 @@ the same commands print plain lines with no color codes and errors start with
 | [`status`](#toft-status) | What is serving, since when, and from what. |
 | [`fetch`](#toft-fetch) | Request a path on the deployed app, as you. |
 | [`apps`](#toft-apps) | The apps you can see. |
+| [`top`](#toft-top) | The apps you can see, kept current in a terminal. |
 | [`logs`](#toft-logs) | The app's runtime log, or one build's. |
 | [`events`](#toft-events) | What has gone wrong with this app. |
 | [`deps`](#toft-deps) | What the dependency policy says about the app. |
@@ -294,6 +307,13 @@ request as a signed-in browser, so that code sees a name.
 ## `toft apps`
 
 The apps you can see. `--mine` lists only the ones you own.
+
+## `toft top`
+
+`toft apps`, kept current: the apps and their status, read again every two
+seconds, and with an app linked or `--app`, that app's last five job runs
+beneath. Press `q` or Ctrl-C to stop; the last screen stays. Piped, or with
+`--json`, it prints exactly what `toft apps` prints.
 
 ## `toft logs`
 

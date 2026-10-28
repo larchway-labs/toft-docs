@@ -61,6 +61,10 @@ Use a personal key (`toftu_`, **Your account → Credentials**) for an agent
 working on your behalf, or a deploy key (`toftd_`, **Admin → Deploy keys**) for
 one running unattended. See [Signing in](../signing-in/).
 
+Have the agent `export TOFT_PLAIN=1`. An agent driving `toft` through a
+terminal looks like a person to it, and would get live displays and questions
+it cannot answer; with `TOFT_PLAIN` set every command answers as it does piped.
+
 Have the agent run `toft whoami` first. It says what the key may do and what the
 install allows, so the agent learns its limits before trying a deploy.
 
