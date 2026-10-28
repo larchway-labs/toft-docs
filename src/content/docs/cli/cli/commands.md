@@ -312,8 +312,9 @@ The apps you can see. `--mine` lists only the ones that are yours: apps you own,
 
 `toft apps`, kept current: the apps and their status, read again every two
 seconds, and with an app linked or `--app`, that app's last five job runs
-beneath. Press `q` or Ctrl-C to stop; the last screen stays. Piped, or with
-`--json`, it prints exactly what `toft apps` prints.
+beneath. `--mine` narrows it to your apps, as it does `toft apps`. Press `q` or
+Ctrl-C to stop; the last screen stays. Piped, or with `--json`, it prints
+exactly what `toft apps` prints.
 
 ## `toft logs`
 
