@@ -306,7 +306,7 @@ request as a signed-in browser, so that code sees a name.
 
 ## `toft apps`
 
-The apps you can see. `--mine` lists only the ones you own.
+The apps you can see. `--mine` lists only the ones that are yours: apps you own, apps a group you belong to owns, and apps you were granted — the same split as **Mine** in the web console.
 
 ## `toft top`
 
