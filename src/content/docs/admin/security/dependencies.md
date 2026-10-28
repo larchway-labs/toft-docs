@@ -43,8 +43,9 @@ Node is read from `package-lock.json` only. An app locked with `pnpm-lock.yaml` 
 `yarn.lock` still deploys, but its versions resolve fresh from `package.json`, and
 the build log says so.
 
-Python is listed without building any package, because building runs its code.
-When a dependency publishes no wheel for this install's Python, that listing
+Python is listed without building any package, because building runs its code,
+and for the Python version the app's release builds with. When a dependency
+publishes no wheel for that version, the listing
 would quietly settle on an older release than the build installs. Toft notices,
 and judges nothing it cannot list truly: under `block` the deploy is refused,
 naming the package without a wheel, and the way forward is to pin the version
