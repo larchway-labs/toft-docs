@@ -41,6 +41,8 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft api GET apps` | Call any API route with your stored credential |
 | `toft skill` | Print the instructions for a coding agent |
 
+A restart is not a deploy. On an install that runs apps in shared mode, `toft restart` replaces the app's process in place, so visitors see a "not responding" page for as long as your app takes to start — a few seconds for most apps. A deploy has no such gap: the new release starts beside the old one and takes over once it answers. To apply an environment change to a busy app without the gap, use `toft redeploy`.
+
 Every command takes `--help` and `--json`. Flags can go before or after positional arguments. Full reference: [Commands](../../../cli/cli/commands/) in the CLI & SDK guide.
 
 ## In a pipeline
