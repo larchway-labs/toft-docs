@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 98 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 99 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **98**. Settings for one app are on that app's own pages
+renders it. There are **99**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -40,6 +40,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `log_level` | Platform log level | How much the platform logs about itself. | — |
 | `app_log_copy_uncapped` | Copy every line of app output | Lifts the 100-lines-a-second cap on each shared app's output reaching the platform's log. Off by default. When on, one app's volume can slow every app's requests. | — |
 | `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. | 60–3,600 seconds |
+| `report_delivery_min_interval_minutes` | Email one report at most every | The shortest gap between two deliveries of one report. 0 removes the floor. | — |
 | `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. | 60–3,600 seconds |
 | `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |
 | `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
