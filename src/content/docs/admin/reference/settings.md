@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 99 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 100 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **99**. Settings for one app are on that app's own pages
+renders it. There are **100**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
