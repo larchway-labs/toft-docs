@@ -18,7 +18,8 @@ description: What is recorded, what never is, and how to read it during an incid
   least a year. Every pass that removes records adds an entry saying what it
   removed and from what date nothing older remains. Shortening an old install's
   record can take a few hours. The per-request access lines are your log
-  collector's to keep.
+  collector's to keep. Successful health checks from a load balancer or
+  Kubernetes are left out of them unless the log level is `debug`.
 - **Sign-ins are their own family**, `session.*` (`session.signin`,
   `session.signin_failed`, `session.signout`), never mixed with authorization
   events.
