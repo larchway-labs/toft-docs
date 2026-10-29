@@ -41,7 +41,8 @@ changes neither.
 | `no_viewer` | `viewer(headers)` on a request with no viewer header — an API key, a health check, a local server — or `jobs.mine()` on the app acting as itself. The hint names starting the job as the app instead. (An anonymous visitor to a public app does carry one; a start in their name is refused by the platform, `viewer_anonymous`.) |
 | `would_outlive_request` | `wait()` while serving a request, with no timeout or one past the request's deadline. The hint is `return toft.jobs.respond(run)`. |
 | `wait_timeout` | `wait()` ran out of time before the run finished. Retryable: the run is still going. |
-| `bad_request` | An argument the SDK rejects before sending: an email with no recipient, blank text, an empty send or session id, app data that is not an object; in R also `store_put()` or a store call given no store, or a local file that is not there. |
+| `no_recipient` | An email that names nobody: pass an address in `to` (or `cc`, `bcc`). An email has no default recipient. |
+| `bad_request` | An argument the SDK rejects before sending: blank text, an empty send or session id, app data that is not an object; in R also `store_put()` or a store call given no store, or a local file that is not there. |
 | `no_output` | `write_output` in a run that has no output location. |
 | `no_run` | An in-job call (R's `run_progress()`, `run_write_output()`) outside a job. |
 | `off_platform` | A variable the platform injects is missing — the code is running outside Toft. |
