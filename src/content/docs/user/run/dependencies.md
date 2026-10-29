@@ -15,7 +15,9 @@ The top line shows the mode (**Blocking** or **Warning only**), the advisory dat
 
 In blocking mode, a policy refuses a **deploy** above a severity (optionally only when a fix exists) and, separately, for malicious packages. A restart is not a deploy, and stale advisory data never blocks.
 
-One setting, off by default, goes further: a background check **locks and stops** an app whose serving deployment has a malicious package, or a critical or high advisory if set that way. Waived findings never lock, and **Check again** never locks. An unlock alone is undone by the next check; the way out is a fixed deploy or a waiver. See [When an app is locked](../locked/).
+One setting, off by default, goes further: a background check **locks and stops** an app whose serving deployment has a malicious package, or a critical or high advisory if set that way. Waived findings never lock, and **Check again** never locks. An unlock alone is undone by the next check; the way out is a fixed deploy or a waiver. A locked app still accepts a deploy, and one without the package unlocks it. See [When an app is locked](../locked/).
+
+An R app's list shows every package its build installed, marked **installed** (yours), **platform** (Toft puts it in every R app) or **runtime** (your app installed it while running, found on shared installs). Commit `renv.lock` (`renv::snapshot()`) to pin your own.
 
 ## When your deploy is refused
 
@@ -36,7 +38,7 @@ API: `GET /api/v1/apps/{id}/deployments/{deploymentID}/sbom`. A personal API key
 | Message | Means |
 |---|---|
 | **This app declares no dependencies** | A static site with no manifest. |
-| **This app's packages cannot be listed** | An R app with no `renv.lock`. Commit one (`renv::snapshot()`). |
+| **This app's packages cannot be listed** | An R app whose deployment recorded no packages — built before Toft read R libraries, or never served. Deploy again. |
 | **This deployment's packages haven't been recorded** | The next deploy will record them. |
 | **Nothing found, but coverage is thin** | CRAN advisory data is sparse, so silence means little. |
 | **Nothing has been checked yet** | No advisory data has loaded on this install, so an empty list is not a clean result. The deploy's warnings say so too. Ask your administrator to refresh it. |
