@@ -23,7 +23,7 @@ list is never sent anywhere.
 | `dependency_scan_interval_hours` | How often that sweep runs. |
 | `dependency_scan_history_kept` | Readings kept **per app** (a count, not days). |
 | `dependency_waiver_max_days` | Longest a waiver may last. There are no permanent waivers. |
-| `dependency_lock_on` | `off` (default), `malware`, `critical` or `high`. See below. |
+| `dependency_lock_on` | `off`, `malware` (default), `critical` or `high`. See below. |
 | `dependency_feed_endpoint`, `_interval_hours`, `_max_age_hours`, `_credential` | The feed: where, how often, when it counts as stale, and a mirror's credential. |
 
 **Preview a policy change before saving.** It lists the apps that would be refused.
@@ -65,9 +65,10 @@ dependencies, the audit file and its SBOM name the release rolled back to.
 
 ## The automatic lock
 
-With `dependency_lock_on` set, a **scheduled** sweep [locks](../../apps/locking/)
-and stops an app whose **serving** deployment has an **unwaived** finding at or above
-that level.
+With the policy on, a **scheduled** sweep [locks](../../apps/locking/) and stops an
+app whose **serving** deployment has an **unwaived** finding at or above
+`dependency_lock_on` — by default, a package reported as malicious. Set it to `off`
+to never stop a running app.
 
 - A manual re-check records a reading and never locks.
 - It never overwrites an administrator's lock; locks are attributed `admin` or
