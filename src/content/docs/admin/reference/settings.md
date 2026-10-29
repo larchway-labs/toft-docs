@@ -85,16 +85,16 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 |---|---|---|
 | `dependency_policy` | Dependency policy | Checks the packages each app installs against published advisories. |
 | `dependency_block_malware` | Refuse malicious packages | Refuses a deploy that installs a known malicious package, whatever its score. |
-| `dependency_block_severity` | Refuse vulnerabilities at or above | A deploy is refused when a vulnerability is at or above this severity. |
+| `dependency_block_severity` | Threshold | Findings at or above this severity count against an app, and under Refuse refuse its deploy. |
 | `dependency_block_only_fixable` | Only refuse when a fix has been published | Refuses only findings with a published fix. The rest are recorded. |
-| `dependency_scan_on_deploy` | Resolve dependencies at deploy | Records the package names and versions each build installs. |
-| `dependency_watch_enabled` | Re-check serving apps in the background | Re-checks serving apps against new advisories and reports what it finds. |
-| `dependency_scan_interval_hours` | Re-check every | How often serving apps are re-checked against the advisory data already here. |
+| `dependency_scan_on_deploy` | Record packages at deploy | Records the package names and versions each build installs. |
+| `dependency_watch_enabled` | Check serving apps in the background | Checks serving apps against new advisories and reports what it finds. |
+| `dependency_scan_interval_hours` | Check apps every | How often serving apps are checked against the advisory data already here. |
 | `dependency_scan_history_kept` | Keep the last | How many readings each app keeps. A count, not days. |
 | `dependency_lock_on` | Lock a serving app when it installs | Takes a serving app offline by itself when a match is found. Malware by default. |
 | `dependency_feed_endpoint` | Feed address | Where advisory data comes from. Use an internal mirror if outbound access is closed. |
-| `dependency_feed_interval_hours` | Refresh every | How often the advisory data is refreshed. |
-| `dependency_feed_max_age_hours` | Call it stale after | Past this the data is marked stale. Stale data never blocks a deploy. |
+| `dependency_feed_interval_hours` | Refresh advisory data every | How often the advisory data is refreshed. |
+| `dependency_feed_max_age_hours` | Call it stale after | Past this the data is marked stale. Stale data never refuses a deploy. |
 | `dependency_feed_credential` | Mirror credential | For a mirror that needs one. Write-only. |
 | `dependency_waiver_max_days` | Waivers may run for | The longest a waiver may last. There are no permanent waivers. |
 
