@@ -62,6 +62,29 @@ detection only. The [Toft SDK](../../cli/sdk/) is installed for you.
 Pin your versions. An unpinned `requirements.txt` resolves differently over
 time.
 
+### Locking your dependencies
+
+Pinning the packages you name doesn't pin the packages they depend on — those
+are picked again on every build. To lock the whole set, generate a
+`requirements.txt` that pins and hashes every package:
+
+```bash
+# list what you need in requirements.in, then:
+uv pip compile --generate-hashes requirements.in -o requirements.txt
+```
+
+`pip-compile --generate-hashes` writes the same kind of file. When every package
+in `requirements.txt` has an exact `==` version and a `--hash`, Toft installs
+exactly those packages and nothing else, and the build log says so. The app's
+software bill of materials then lists its Python dependencies as complete.
+
+If a dependency is missing from the file, the build fails rather than installing
+it unchecked. Run the compile command again and redeploy — it lists every
+dependency.
+
+A file that hashes only some lines, or that includes another file (`-r`) or
+names its own package index, isn't treated as locked; it installs as before.
+
 ## Version
 
 ```toml
