@@ -25,6 +25,7 @@ Every event has a time, a kind and a severity, and you can filter on each. An ev
 | **Crashed** | The workload went down. |
 | **Restart loop** | It restarted repeatedly in a short period. |
 | **Memory limit** / **Out of memory** | It was killed for memory, or stopped after repeated kills. |
+| **Held at CPU limit** | It spent more than a quarter of the last hour held at its CPU limit, so requests were slow. Clears once it stays under a tenth for an hour. Owners and editors are emailed at most once every six hours. An administrator can raise the limit in the app's Runtime settings. |
 | **Not restarting** | Toft stopped trying to restart it. |
 | **Job run failed** / **Scheduled job failed** | A run exited with an error. |
 

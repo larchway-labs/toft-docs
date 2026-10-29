@@ -5,7 +5,7 @@ description: Jobs on every app — where runs execute, their limits, schedules, 
 
 Toft has one kind of automation: the **job**. A job is a command an app
 declares in its `toft.toml`, run as a process of its own with its own timeout
-and memory limit. Scheduled work is a job with a schedule; work an app starts
+and its own memory and CPU limits. Scheduled work is a job with a schedule; work an app starts
 for a person is a job too. Each start is a **run**.
 
 **Admin → Automation** lists every schedule on the install, read-only, with its
@@ -19,10 +19,10 @@ run a finished run again, and cancel.
 Jobs are on by default (`background_jobs_enabled`). The install decides where a
 run goes; an app's own execution mode is not consulted.
 
-| Install | A run is | Memory limit |
-|---|---|---|
-| Isolated execution available | A pod in the cluster | Enforced by the cluster |
-| No cluster | A process group on the platform's machine, started by `toft runner` under the app's OS account, with a scratch directory removed when it ends | Enforced by the kernel through a cgroup where the machine allows it; otherwise a sampled watchdog |
+| Install | A run is | Memory limit | CPU limit |
+|---|---|---|---|
+| Isolated execution available | A pod in the cluster | Enforced by the cluster | Enforced by the cluster |
+| No cluster | A process group on the platform's machine, started by `toft runner` under the app's OS account, with a scratch directory removed when it ends | Enforced by the kernel through a cgroup where the machine allows it; otherwise a sampled watchdog | Enforced by the kernel through the same cgroup, where the machine gives Toft its `cpu` controller; otherwise not enforced |
 
 **Admin → Settings → Jobs** shows both facts read-only: **Where runs go** (*Jobs
 run on the cluster* or *Jobs run on this machine*) and, on this machine,
@@ -49,23 +49,43 @@ reference](../../reference/environment/).
 
 ## Limits
 
-You set the default and the ceilings; the developer declares what a job needs
-in `toft.toml`.
+A job's **timeout** is the developer's: they declare it in `toft.toml`, and you
+set its default and its ceiling. A job's **memory and CPU** are yours alone: a
+`memory` or `cpu` key in `toft.toml` is refused at `toft check` and at deploy
+with *an administrator sets a job's limits; remove this key*. Every job gets the
+install's job defaults unless you give it an override. An app's own memory and
+CPU limits never reach its jobs.
 
 | Setting | Controls | Range, default |
 |---|---|---|
 | `default_job_timeout_seconds` | **Stop a job after** — the timeout of a job that declares none | 60–604,800 s, 3,600 |
 | `max_job_timeout_seconds` | **Longest a job may run** | 60–604,800 s, 86,400 |
-| `max_job_memory_mb` | **Most memory a job may have** | 128–262,144 MB, 8,192 |
+| `job_memory_limit_mb` / `_gb` | **Memory per job run** — `JOB_MEMORY_LIMIT_MB` / `_GB` in the environment; 0 uses it | 64–1,048,576 MB, 1,024 |
+| `job_cpu_limit_millicores` / `_cores` | **CPU per job run** — the most CPU time a run may use, 1,000 m being one core; `JOB_CPU_LIMIT_MILLICORES` / `_CORES` in the environment; 0 uses it | 50–64,000 m, 2,000 |
 | `job_concurrency_per_app` | **Concurrent runs per app** — runs of one app executing at once; the rest wait | 1–100 |
 | `max_queued_runs_per_app` | **Runs waiting per app** — a start past this is refused with `queue_full` until one finishes | 1–10,000, 50 |
 
-A **new or changed** declaration above a ceiling is refused at `toft check` and
+A **new or changed** timeout above the ceiling is refused at `toft check` and
 at deploy with `limit_exceeds_ceiling`, so a developer never believes they have
-more than they get. If you **lower** a ceiling below jobs already deployed,
+more than they get. If you **lower** the ceiling below jobs already deployed,
 those jobs are capped rather than broken: each is recorded as `limit_clamped`,
-and the next check and deploy say so. Every surface shows a job's effective
-limit with its source: `declared`, `install default`, `app limit` or `clamped`.
+and the next check and deploy say so.
+
+**Overriding one job.** On the app's **Automation** tab, set the job's memory or
+CPU; or call `PATCH /api/v1/apps/{appID}/jobs/{jobID}` with `memory_limit_mb`
+(or `memory_limit_gb`) and `cpu_limit_millicores` (or `cpu_limit_cores`).
+`null` or `0` clears an override back to the install default. Only an
+administrator may set these — anyone else gets 403 and nothing changes, though
+an owner can still pause the job's schedule with the same call. Each change is
+audited as `job.resources.change`. **An override survives every redeploy**; it
+goes only when the job is removed from `toft.toml`.
+
+Every surface — the Automation tab, `toft job list`, `toft check` — shows each
+of a job's limits with its source (`declared`, `install default`, `override` or
+`clamped` for the timeout; `install default` or `override` for memory and CPU)
+and, for memory and CPU, how it is held: `enforced` by the kernel, `sampled` by
+the watchdog, or `not_enforced`. A run records the time it spent held at its CPU
+limit (`cpu_throttled_seconds`), shown beside its peak memory.
 
 ## Batch apps
 

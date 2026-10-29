@@ -50,10 +50,12 @@ deploy. A refused create writes nothing.
 ## Jobs and batch apps
 
 [Jobs](../../operate/automation/) always run in their own process with their own
-memory limit, never in the app's process. Where is the install's choice: a pod
-when isolated execution is available, otherwise a process group on the platform
-machine under the app's OS account, where the memory limit is a sampled watchdog
-rather than a boundary.
+memory and CPU limits, never in the app's process, and never with the app's
+limits — a job takes the install's job defaults or an administrator's override
+for that job. Where is the install's choice: a pod when isolated execution is
+available, otherwise a process group on the platform machine under the app's OS
+account, where the limits are held by a cgroup if the machine allows it, and
+otherwise memory is a sampled watchdog and CPU is not enforced.
 
 A [batch app](../../operate/automation/) (`[batch]`) has no
 long-running workload; it is `ready` rather than `running`.

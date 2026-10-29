@@ -57,7 +57,7 @@ R has a smaller surface than the other three. See
   `code`, a `retryable` flag and often a `hint`. See
   [When the platform says no](../errors/).
 - **Background work is a job.** `jobs.start` runs a command declared in
-  `toft.toml`, from the same deployment, as its own process with a memory limit and
+  `toft.toml`, from the same deployment, as its own process with memory and CPU limits and
   a deadline.
 
 ## As the app, or as a person

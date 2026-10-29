@@ -100,9 +100,16 @@ Operating dials. Each has two spellings; set only one.
 |---|---|
 | `APP_MEMORY_LIMIT_MB` / `APP_MEMORY_LIMIT_GB` | 512 MB |
 | `APP_CPU_REQUEST_MILLICORES` / `APP_CPU_REQUEST_CORES` | 100m |
-| `APP_CPU_LIMIT_MILLICORES` / `APP_CPU_LIMIT_CORES` | off |
+| `APP_CPU_LIMIT_MILLICORES` / `APP_CPU_LIMIT_CORES` | 1000m (one core) |
+| `JOB_MEMORY_LIMIT_MB` / `JOB_MEMORY_LIMIT_GB` | 1024 MB, for every job run |
+| `JOB_CPU_LIMIT_MILLICORES` / `JOB_CPU_LIMIT_CORES` | 2000m (two cores), for every job run |
 
 Over the memory limit an app is killed; over a CPU limit it is only throttled.
+The CPU limit applies to shared apps too, held by the kernel where the machine
+gives Toft a cgroup with the `cpu` controller. A limit below
+`APP_CPU_REQUEST_MILLICORES` stops the platform at startup. An app's limits do
+not apply to its jobs, which take the `JOB_` figures unless an administrator
+overrides one job; see [the operating dials](../../config/operating-dials/).
 
 ### Toolchain passthrough
 

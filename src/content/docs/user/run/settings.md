@@ -37,7 +37,7 @@ They are separate. The slug is the end of the address, so changing it breaks the
 
 ## Source and runtime
 
-Source is the repository, branch, optional folder and auto-deploy; see [From a git repository](../../deploy/from-git/). Runtime shows the exact language version the serving deployment resolved. Execution mode, **Never sleep** and the memory limit are visible but only an administrator can change them.
+Source is the repository, branch, optional folder and auto-deploy; see [From a git repository](../../deploy/from-git/). Runtime shows the exact language version the serving deployment resolved. Execution mode, **Never sleep**, the memory limit and the CPU limit are visible but only an administrator can change them. Each limit says how it is held on this install — enforced, sampled by a watchdog, or not enforced — and the CPU limit shows how much of the last hour the app spent held at it. A CPU limit is an amount of CPU time, not a set of cores: an app over it is slowed, not restarted. The app's limits don't apply to its jobs; see [Schedule work with jobs](../../automation/jobs/).
 
 ## Tags and ownership
 

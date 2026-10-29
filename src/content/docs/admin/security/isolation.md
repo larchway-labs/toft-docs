@@ -53,8 +53,8 @@ gives shared-mode apps, and why it is not the next one up:
 
 | Level | What each app gets | What it needs |
 |---|---|---|
-| **Processes** | Its own OS account and directory; memory limits sampled | Nothing beyond root |
-| **cgroups** | That, plus a memory limit the kernel enforces and a cap of 4,096 processes; CPU shared fairly | A cgroup v2 hierarchy Toft may write (root on a host, or a container allowed to write its cgroups) |
+| **Processes** | Its own OS account and directory; memory limits sampled, CPU limits not enforced | Nothing beyond root |
+| **cgroups** | That, plus memory and CPU limits the kernel enforces (CPU where the hierarchy delegates the `cpu` controller) and a cap of 4,096 processes | A cgroup v2 hierarchy Toft may write (root on a host, or a container allowed to write its cgroups) |
 | **Namespaces** | That, plus its own network address, its own view of the files (no other app's tree, a private `/tmp`) and its own process list; no app can reach another | `CAP_SYS_ADMIN` and `CAP_NET_ADMIN`, `iptables` and `ip`, and Toft listening on every interface |
 
 Most container installs run at **Processes**: a container usually may not write
