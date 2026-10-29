@@ -4,7 +4,7 @@ description: Declare jobs in toft.toml, put them on a schedule, run them from To
 ---
 
 A **job** is a command from your app's deployment that runs as its own process,
-with its own timeout and memory limit. It is how you do anything on a schedule —
+with its own timeout and its own memory and CPU limits. It is how you do anything on a schedule —
 a nightly report, an hourly sync — and anything too long for a web request, such
 as an export a person asks for.
 
@@ -44,13 +44,20 @@ help     = "Which region to report on"
 | `overlap` | What a scheduled firing does if the job's last scheduled run is still going: `queue` waits its turn and starts when that run ends (the default), `skip` records a **skipped** run instead. A run someone starts by hand is never held back. |
 | `notify` | Email the app's owners on `failures` (when a run fails) or `always` (after every run). `none` by default. |
 | `timeout` | `"45m"`, `"2h"`, or a number of seconds. Your administrator sets the default and the most a job may ask for. |
-| `memory` | In MB. Your administrator sets the most a job may ask for. |
 | `expect_within` | `1h` to `31d`. If the job goes this long without a successful run, its owners are told once. A paused job is never overdue. |
 
-A job may not ask for more time or memory than your install allows. A deploy
-that does is refused with `limit_exceeds_ceiling`, and the message says what
-you may ask for. Run `toft check` before you deploy to see each job's limits
-and where they came from.
+A job's **memory and CPU** are set by your administrator, not in `toft.toml`:
+every job gets the install's job defaults (1 GB and two cores unless they
+changed them) unless an administrator gives that job an override, which stays
+in place across deploys. Your app's own memory and CPU limits do not apply to its
+jobs. A `memory` or `cpu` key is refused with *an administrator sets a job's
+limits; remove this key* — if a job needs more, ask an administrator.
+
+A job may not ask for more time than your install allows. A deploy that does is
+refused with `limit_exceeds_ceiling`, and the message says what you may ask
+for. Run `toft check` before you deploy to see each job's timeout, memory and
+CPU and where they came from (`declared`, `install default` or `override`); the
+app's **Automation** tab shows the same.
 
 Older keys are refused with `removed_key` and a hint naming what replaced them:
 `retries`, `viewer_runnable`, `enabled`, and any `[tasks]` table.

@@ -77,14 +77,15 @@ is defined; every deploy makes the app's jobs match it.
 | `notify` | `none` (default), `failures` or `always`: when to email the app's owners about a run. |
 | `expect_within` | Report the job overdue after this long without a success: `26h`, `7d` (1 hour to 31 days). |
 | `timeout` | How long a run may take: `"45m"`, or seconds. Your install's default without it. |
-| `memory` | Memory limit in MB. |
-| `cpu` | CPU limit in millicores (50–32000). |
 
 Declare parameters as `[jobs.<name>.params.<param>]` with `type` (`string`,
 `int`, `float` or `bool`), `required` or `default`, `choices` and `help`.
 
-A `timeout` or `memory` above what your administrator allows fails the deploy
-with `limit_exceeds_ceiling`. `retries`, `viewer_runnable`, `enabled` and a
+A job's memory and CPU are not declared here: your administrator sets them, as
+the install's job defaults or an override on one job. A `memory` or `cpu` key
+fails `toft check` and the deploy with *an administrator sets a job's limits;
+remove this key*. A `timeout` above what your administrator allows fails the
+deploy with `limit_exceeds_ceiling`. `retries`, `viewer_runnable`, `enabled` and a
 `[tasks]` table are no longer read; a deploy refuses them with `removed_key`
 and says what replaced each.
 

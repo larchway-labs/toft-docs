@@ -183,9 +183,11 @@ It reports:
 
 - what the app is: the framework and entry point;
 - the language version it would get, and where the pin came from;
-- how it would run, and the jobs `toft.toml` declares, each with the timeout
-  and memory a run of it will get and where each came from (`declared`,
-  `install default`, `app limit` or `clamped`);
+- how it would run, and the jobs `toft.toml` declares, each with the timeout,
+  memory and CPU a run of it will get, where each came from (`declared`,
+  `install default`, `override` or `clamped`), and whether this install holds
+  it (`sampled rather than held by the kernel`, `not enforced on this install`);
+  a job's `memory` or `cpu` key is refused — an administrator sets those;
 - anything in `toft.toml` that nothing reads;
 - files that look like secrets, such as `.env`, which the bundle would carry,
   as a deploy warns about them;
@@ -493,7 +495,7 @@ eight characters `toft job runs` prints.
 
 | Subcommand | |
 |---|---|
-| `list` | The jobs this app declares: schedule and zone, parameters, effective limits with their source, whether the schedule is paused, and where runs go. While the app is locked, each schedule reads *held by the app's lock* instead of a next firing (`held_by_lock` under `--json`). On a static app it says a static app runs no jobs. |
+| `list` | The jobs this app declares: schedule and zone, parameters, effective timeout, memory and CPU with their source and how each is held, whether the schedule is paused, and where runs go. While the app is locked, each schedule reads *held by the app's lock* instead of a next firing (`held_by_lock` under `--json`). On a static app it says a static app runs no jobs. |
 | `run` | With no job named: the jobs and their parameters, and how to run one. |
 | `run <job>` | Start one and wait. The run's outcome is the exit code. |
 | `rerun <runID>` | Run a finished run again, with the same parameters and the same instant it was for. Waits like `run`. A run still queued or running is refused with `run_still_open`. |

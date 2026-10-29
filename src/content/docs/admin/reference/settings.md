@@ -33,7 +33,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `background_jobs_enabled` | Background jobs | Lets apps run scheduled and on-demand work as a process of its own. | — |
 | `app_memory_limit_mb` | Memory limit per app | Memory one app may use before it is restarted, in MB or GB. 0 uses the install default. | 64–1,048,576 MB, or 0 |
 | `app_cpu_request_millicores` | CPU reserved per app | CPU each isolated app reserves, in millicores. 0 uses the install default. | 1–64,000 m, or 0 |
-| `app_cpu_limit_millicores` | CPU ceiling per app | The most CPU one isolated app may use, in millicores. 0 uses the install default. | 1–64,000 m, or 0 |
+| `app_cpu_limit_millicores` | CPU limit per app | The most CPU time one app may use, in millicores (1000 = one core). 0 uses the install default (`APP_CPU_LIMIT_MILLICORES`, one core as shipped). Applies to shared and isolated apps. An amount of time, not a set of cores: over it an app is slowed, not restarted, and its owners are told when that lasts. It can't be lower than the reservation above. | 50–64,000 m, or 0 |
 | `max_concurrent_builds` | Builds at once | How many deploys may build at the same time. 0 uses the install default. | 1–64 builds, or 0 |
 | `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. | 10–86,400 seconds, or 0 |
 | `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. | — |
@@ -46,8 +46,9 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
 | `max_queued_runs_per_app` | Runs waiting per app | How many of one app’s runs may wait. A start past this is refused until one finishes. | 1–10,000 runs |
 | `default_job_timeout_seconds` | Stop a job after | The timeout for a job whose toft.toml declares none. | 60–604,800 seconds |
-| `max_job_timeout_seconds` | Longest a job may run | The ceiling on any job’s timeout. | 60–604,800 seconds |
-| `max_job_memory_mb` | Most memory a job may have | The ceiling on any job’s memory. | 128–262,144 MB |
+| `max_job_timeout_seconds` | Longest a job may run | The ceiling on any job’s timeout. A longer one in toft.toml is refused at check and deploy. | 60–604,800 seconds |
+| `job_memory_limit_mb` | Memory per job run | Memory a job run may use. 0 uses the install default (`JOB_MEMORY_LIMIT_MB`, 1,024 MB as shipped). Override it on one job from its app’s Automation tab. | 64–1,048,576 MB, or 0 |
+| `job_cpu_limit_millicores` | CPU per job run | The most CPU time a job run may use, in millicores (1000 = one core). 0 uses the install default (`JOB_CPU_LIMIT_MILLICORES`, 2,000 m as shipped). | 50–64,000 m, or 0 |
 | `gallery_deploy_mode` | Gallery | What the gallery offers: nothing, extensions only, or extensions and examples. | — |
 | `job_log_retention_days` | Keep job logs for | A background job’s log lines. | 1–365 days |
 | `job_run_retention_days` | Keep job runs for | Job runs and their output files. | 1–3,650 days |
@@ -179,12 +180,13 @@ accepted; what 0 means is in the row.
 
 | Rule | Applies to |
 |---|---|
-| **0 or blank means "use the environment's value"**, never "off". The memory and CPU values can be sent in either unit (`app_memory_limit_gb`, `app_cpu_request_cores`, `app_cpu_limit_cores`), but not both in one save. | The operating dials: `app_memory_limit_mb`, `app_cpu_request_millicores`, `app_cpu_limit_millicores`, `max_concurrent_builds`, `auto_deploy_poll_seconds`, `r_package_repository`, `log_level` |
+| **0 or blank means "use the environment's value"**, never "off". The memory and CPU values can be sent in either unit (`app_memory_limit_gb`, `app_cpu_request_cores`, `app_cpu_limit_cores`, `job_memory_limit_gb`, `job_cpu_limit_cores`), but not both in one save. | The operating dials: `app_memory_limit_mb`, `app_cpu_request_millicores`, `app_cpu_limit_millicores`, `job_memory_limit_mb`, `job_cpu_limit_millicores`, `max_concurrent_builds`, `auto_deploy_poll_seconds`, `r_package_repository`, `log_level` |
 | **Default on, and an absent row reads as on.** Turning one off takes a capability away. | `public_apps_enabled`, `apps_listable_to_authenticated`, `background_jobs_enabled` |
 | **Write-only.** Never returned to a browser; leaving the field blank keeps the stored value. | `email_password`, `email_api_key`, `telemetry_headers`, `dependency_feed_credential` |
 | **Required together.** An expiry is required whenever there is a contact; a date in the past is refused. | `security_txt_contact`, `security_txt_expires` |
 | **Floored at 30 days.** | `integrations_retention_days` |
-| **A ceiling refuses new declarations and caps old ones.** A job whose `toft.toml` asks for more is refused at `toft check` and deploy with `limit_exceeds_ceiling`; a job already deployed above a ceiling you lower is capped and marked `clamped`. | `max_job_timeout_seconds`, `max_job_memory_mb` |
+| **A ceiling refuses new declarations and caps old ones.** A job whose `toft.toml` asks for a longer timeout is refused at `toft check` and deploy with `limit_exceeds_ceiling`; a job already deployed above a ceiling you lower is capped and marked `clamped`. | `max_job_timeout_seconds` |
+| **Defaults, not ceilings.** A job's memory and CPU are never declared in `toft.toml` (the key is refused); every job gets these unless an administrator overrides that one job, and the override survives redeploys. | `job_memory_limit_mb`, `job_cpu_limit_millicores` |
 | **Blank turns `.env.<tag>` defaults off.** 1–32 lowercase letters, digits, dashes or underscores. | `environment_tag` |
 
 :::note[Not settings]

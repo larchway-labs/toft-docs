@@ -23,6 +23,7 @@ and a metric a backend cannot measure is **absent, never zero**.
 | Workload exits (isolated mode) | Restarted a bounded number of times, then reported as no longer being restarted |
 | Restart loop (either mode) | **5 restarts within 15 minutes** raises a flapping event. The window matches the kubelet's backoff; an app restarting every ten minutes never trips it |
 | Repeatedly killed at its memory cap | After 3 memory-attributed restarts on one deployment, the workload is stopped and the app marked crashed |
+| Held at its CPU limit | When an app spends more than 25% of the last hour throttled at its CPU limit, an `app_cpu_throttled` warning is raised and its owners and editors are emailed (and told on Slack or Teams where set up), at most once every 6 hours. It clears after a full hour under 10%. Nothing is stopped: raise the app's CPU limit on its Runtime settings, or leave it. Shared apps without the cgroup `cpu` controller report no throttling |
 | Never becomes ready | After **5 minutes** *starting*, the app is marked crashed with the backend's reason — e.g. a pod no node can schedule |
 
 A pull the kubelet is still retrying is not counted as a failed deploy. The

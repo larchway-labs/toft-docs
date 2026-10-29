@@ -4,7 +4,7 @@ description: Declare jobs in toft.toml, start them from your app, answer the req
 ---
 
 A job runs a command from your app's deployment as **its own process**, with
-its own timeout, memory limit and run record. It is Toft's one kind of
+its own timeout, memory and CPU limits and run record. It is Toft's one kind of
 automation: scheduled work is a job with a `schedule`, and work too long for a
 web request is a job your app starts.
 
@@ -18,7 +18,6 @@ jobs exactly what the file says, and a rollback takes them back with the code.
 [jobs.reconcile]
 command = "python jobs/reconcile.py"
 timeout = "15m"
-memory  = 2048                       # MB
 
 [jobs.nightly-report]
 command       = "python -m reports.nightly"
@@ -43,11 +42,17 @@ help     = "Which region to report on"
 | `overlap` | A scheduled firing while the job's last scheduled run is still going: `queue` waits behind it, `skip` records a `skipped` run. A start from your code or a person is never held. |
 | `notify` | Email the app's owners on `failures` or `always`. Default `none`. |
 | `timeout` | A duration (`"45m"`) or seconds. Without it, the install's default. |
-| `memory`, `cpu` | MB and millicores. |
 | `expect_within` | `1h` to `31d`. Owners are told once if the job goes this long without succeeding. |
 | `params.<name>` | `type` (`string`, `int`, `float`, `bool`), `required` or `default` (not both), `choices`, `help`. |
 
-A `timeout` or `memory` above the administrator's ceiling fails `toft check`
+A job's memory and CPU are an administrator's to set, not yours: every job
+gets the install's job defaults (1,024 MB and 2,000 millicores as shipped)
+unless an administrator overrides that one job, and an override survives every
+deploy. Your app's own limits do not reach its jobs. A `memory` or `cpu` key in
+`[jobs.<name>]` fails `toft check` and the deploy with *an administrator sets a
+job's limits; remove this key*.
+
+A `timeout` above the administrator's ceiling fails `toft check`
 and the deploy with `limit_exceeds_ceiling`; nothing is silently reduced. If an
 administrator later lowers a ceiling below a job already deployed, that job is
 capped, and `toft check`, the deploy and `toft job list` say `clamped`.
@@ -60,8 +65,17 @@ is named in the build log.
 
 On an install with a cluster, each run gets its own container. On one without,
 it runs on the install's machine as your app's user, in its own process group,
-held to its memory limit by the kernel where the machine allows it and by a
-watchdog that samples it otherwise. `toft job list` says where runs go.
+held to its memory and CPU limits by the kernel where the machine allows it;
+otherwise memory is held by a watchdog that samples it and CPU is not limited.
+`toft job list` says where runs go, and each limit says how it is held: nothing
+added when it is enforced, *sampled rather than held by the kernel* or *not
+enforced on this install* when it is not.
+
+A CPU limit is an amount of CPU time, not a set of cores. So that your
+program's thread pools fit it, the run's environment sets `GOMAXPROCS`,
+`OMP_NUM_THREADS` and `MC_CORES` to the limit rounded up to whole cores, and
+`UV_THREADPOOL_SIZE` to that or 4, whichever is larger — unless your app's own
+environment sets them. A run records how long it was held at its CPU limit.
 
 ## Start one from your app
 
