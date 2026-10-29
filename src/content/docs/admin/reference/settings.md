@@ -91,7 +91,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `dependency_watch_enabled` | Re-check serving apps in the background | Re-checks serving apps against new advisories and reports what it finds. |
 | `dependency_scan_interval_hours` | Re-check every | How often serving apps are re-checked against the advisory data already here. |
 | `dependency_scan_history_kept` | Keep the last | How many readings each app keeps. A count, not days. |
-| `dependency_lock_on` | Lock a serving app when it installs | Takes a serving app offline by itself when a match is found. Off by default. |
+| `dependency_lock_on` | Lock a serving app when it installs | Takes a serving app offline by itself when a match is found. Malware by default. |
 | `dependency_feed_endpoint` | Feed address | Where advisory data comes from. Use an internal mirror if outbound access is closed. |
 | `dependency_feed_interval_hours` | Refresh every | How often the advisory data is refreshed. |
 | `dependency_feed_max_age_hours` | Call it stale after | Past this the data is marked stale. Stale data never blocks a deploy. |
