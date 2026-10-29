@@ -160,6 +160,7 @@ export const sidebar = [
           { label: "Ownership and grants", slug: "admin/apps/ownership-and-grants" },
           { label: "Listing and access requests", slug: "admin/apps/listing" },
           { label: "Locking and retirement", slug: "admin/apps/locking" },
+          { label: "An app on its own hostname", slug: "admin/apps/hostnames" },
           { label: "Quiet apps", slug: "admin/apps/quiet" },
           { label: "Tags", slug: "admin/apps/tags" },
           { label: "Deployments and retention", slug: "admin/apps/releases" },

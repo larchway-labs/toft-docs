@@ -65,6 +65,7 @@ stream piped, none of this happens and you get the plain behaviour.
 | [`restart`, `start`, `stop`](#toft-restart-start-stop) | Lifecycle. |
 | [`env`](#toft-env) | The app's environment variables. |
 | [`visibility`](#toft-visibility) | Who may open the app. |
+| [`hostname`](#toft-hostname) | The app's own hostname (administrators). |
 | [`deployments`](#toft-deployments) | The app's deployment history, and pruning it. |
 | [`delete`](#toft-delete) | Delete an app. |
 | [`job`](#toft-job) | Jobs: run, rerun, wait for and read the work your app declares in `toft.toml`. |
@@ -442,6 +443,19 @@ toft visibility authenticated      # change it
 
 An install can refuse public apps, and so can its license; the refusal says
 which. `--json` returns `app`, `visibility` and `changed`.
+
+## `toft hostname`
+
+```bash
+toft hostname                          # print the name, whether it is on, and the address
+toft hostname reports.example.com      # record a name; not served until switched on
+toft hostname --on                     # serve it; --off stops; --clear forgets it
+```
+
+Administrators only. Switching on or off rebuilds the running code at its new
+address; the old address serves until that finishes, then redirects. `--json`
+returns `app`, `hostname`, `hostname_enabled`, `public_url` and `changed`. See
+[An app on its own hostname](../../../admin/apps/hostnames/).
 
 ## `toft deployments`
 
