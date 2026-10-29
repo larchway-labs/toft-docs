@@ -14,19 +14,30 @@ list is never sent anywhere.
 
 | Setting | What it does |
 |---|---|
-| `dependency_policy` | `off`, `warn` or `block`. `warn` refuses only a malicious package; `block` also refuses vulnerabilities at the threshold. Run `warn` for a couple of weeks before `block`. |
+| `dependency_policy` | `off`, `warn` or `block` (labelled **Refuse** on the page). `warn` refuses only a malicious package; `block` also refuses vulnerabilities at or above the threshold. Run `warn` for a couple of weeks before `block`. |
 | `dependency_scan_on_deploy` | Resolve packages as a build installs them. |
 | `dependency_block_severity` | Minimum severity that refuses a deploy, or `off`. |
 | `dependency_block_only_fixable` | Refuse only findings with a fix; record the rest. |
 | `dependency_block_malware` | Refuse known-malicious packages — a separate switch, not a severity. |
-| `dependency_watch_enabled` | Re-check serving apps in the background. |
+| `dependency_watch_enabled` | Check serving apps in the background. |
 | `dependency_scan_interval_hours` | How often that sweep runs. |
 | `dependency_scan_history_kept` | Readings kept **per app** (a count, not days). |
 | `dependency_waiver_max_days` | Longest a waiver may last. There are no permanent waivers. |
 | `dependency_lock_on` | `off`, `malware` (default), `critical` or `high`. See below. |
 | `dependency_feed_endpoint`, `_interval_hours`, `_max_age_hours`, `_credential` | The feed: where, how often, when it counts as stale, and a mirror's credential. |
 
-**Preview a policy change before saving.** It lists the apps that would be refused.
+Malware, the threshold and the automatic lock are on the page; the rest are under
+**Advanced**. Each control saves as you change it, and the line under them says how
+many serving apps' next deploy the policy refuses today.
+
+## Needs a decision
+
+The page opens on one list: every unwaived finding at or above the threshold on an
+app that is serving, or that the policy locked. Each row ends one of three ways:
+the owner upgrades (the fixed version is on the row), you **waive** it, or you
+**lock** the app. When the list is empty, nothing is waiting on you. Below it are
+the search box (*which of our apps has this?*), the estate by advisory or by app,
+and the live waivers.
 
 ## Coverage
 
