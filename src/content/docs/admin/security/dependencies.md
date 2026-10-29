@@ -39,6 +39,18 @@ list is never sent anywhere.
 R is matched against CRAN but reported **not scanned**: findings are shown and
 enforced, but no findings is not a clean bill.
 
+An R app is checked twice: `renv.lock` before the build, then every package the
+build actually installed, before the release goes live. Each R package is marked
+**installed** (the app's), **platform** (Toft installs it into every R app: renv,
+the Toft SDK and its dependencies) or **runtime**. A refusal over a platform
+package says so; the way forward is a waiver or a Toft release, not a change to
+the app.
+
+**Runtime** packages are the ones an app installs itself while it runs
+(`install.packages()`). On a shared install the sweep, and **Check again**, read
+each running R app's library and add them, so a malicious one locks the app like
+any other. Isolated apps are not read.
+
 Node is read from `package-lock.json` only. An app locked with `pnpm-lock.yaml` or
 `yarn.lock` still deploys, but its versions resolve fresh from `package.json`, and
 the build log says so.
@@ -85,6 +97,10 @@ to never stop a running app.
   advisory, package and threshold.
 - Unlocking does not stick: if the finding still matches, the next sweep locks it
   again. **Grant a waiver** to mean "leave it alone".
+- **The owner can deploy their way out.** A locked app still accepts a deploy
+  (and an upload). If the new release no longer has the package, the lock lifts
+  as it goes live, recorded in the audit log as `app.unlock_dependency`. If it
+  still has it, the deploy fails and the lock stays. Rollback stays refused.
 - You cannot set it while `dependency_watch_enabled` is off.
 
 ## Readings

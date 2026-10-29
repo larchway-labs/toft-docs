@@ -40,7 +40,8 @@ a visitor at the app's URL. **Admin → Messages → Locked app message**
 
 The sweep never overwrites a person's lock. An app the sweep locked and you
 unlock is **locked again on the next pass** if the finding still matches — use a
-waiver instead.
+waiver instead. The owner can also lift a `dependency` lock themselves by
+deploying a release without the package; nothing but you lifts an `admin` lock.
 
 ## Retirement is a lock
 
