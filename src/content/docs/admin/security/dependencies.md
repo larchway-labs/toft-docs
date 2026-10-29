@@ -14,7 +14,7 @@ list is never sent anywhere.
 
 | Setting | What it does |
 |---|---|
-| `dependency_policy` | `off`, `warn` or `block`. Run `warn` for a couple of weeks before `block`. |
+| `dependency_policy` | `off`, `warn` or `block`. `warn` refuses only a malicious package; `block` also refuses vulnerabilities at the threshold. Run `warn` for a couple of weeks before `block`. |
 | `dependency_scan_on_deploy` | Resolve packages as a build installs them. |
 | `dependency_block_severity` | Minimum severity that refuses a deploy, or `off`. |
 | `dependency_block_only_fixable` | Refuse only findings with a fix; record the rest. |
@@ -62,6 +62,14 @@ dependencies, the audit file and its SBOM name the release rolled back to.
 - **Policy gates deploys, not serving apps.** Only `dependency_lock_on` reaches a
   running app.
 - **A stale feed never blocks.** Deploys continue and the checks page warns.
+
+## What owners see
+
+An app with a finding this install counts — malware, or anything at or above
+the threshold — shows one glyph beside its name on the app list: **red** for
+malware or a critical advisory, **amber** for anything else. Its label says the
+most urgent thing: a malicious package serving, then a refused next deploy, then
+the worst severity. The app's own page says what the policy will do about it.
 
 ## The automatic lock
 
