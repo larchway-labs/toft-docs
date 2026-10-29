@@ -50,8 +50,8 @@ A job's **memory and CPU** are set by your administrator, not in `toft.toml`:
 every job gets the install's job defaults (1 GB and two cores unless they
 changed them) unless an administrator gives that job an override, which stays
 in place across deploys. Your app's own memory and CPU limits do not apply to its
-jobs. A `memory` or `cpu` key is refused with *an administrator sets a job's
-limits; remove this key* — if a job needs more, ask an administrator.
+jobs. A `memory` or `cpu` key is refused with `removed_key` — remove it, and if a
+job needs more, ask an administrator.
 
 A job may not ask for more time than your install allows. A deploy that does is
 refused with `limit_exceeds_ceiling`, and the message says what you may ask

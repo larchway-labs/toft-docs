@@ -49,8 +49,8 @@ A job's memory and CPU are an administrator's to set, not yours: every job
 gets the install's job defaults (1,024 MB and 2,000 millicores as shipped)
 unless an administrator overrides that one job, and an override survives every
 deploy. Your app's own limits do not reach its jobs. A `memory` or `cpu` key in
-`[jobs.<name>]` fails `toft check` and the deploy with *an administrator sets a
-job's limits; remove this key*.
+`[jobs.<name>]` fails `toft check` and the deploy with `removed_key`, its hint
+naming the administrator's override on the app's Automation tab.
 
 A `timeout` above the administrator's ceiling fails `toft check`
 and the deploy with `limit_exceeds_ceiling`; nothing is silently reduced. If an

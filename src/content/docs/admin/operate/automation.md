@@ -52,7 +52,7 @@ reference](../../reference/environment/).
 A job's **timeout** is the developer's: they declare it in `toft.toml`, and you
 set its default and its ceiling. A job's **memory and CPU** are yours alone: a
 `memory` or `cpu` key in `toft.toml` is refused at `toft check` and at deploy
-with *an administrator sets a job's limits; remove this key*. Every job gets the
+with `removed_key`, its hint pointing at the override on the app's Automation tab. Every job gets the
 install's job defaults unless you give it an override. An app's own memory and
 CPU limits never reach its jobs.
 

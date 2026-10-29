@@ -83,8 +83,8 @@ Declare parameters as `[jobs.<name>.params.<param>]` with `type` (`string`,
 
 A job's memory and CPU are not declared here: your administrator sets them, as
 the install's job defaults or an override on one job. A `memory` or `cpu` key
-fails `toft check` and the deploy with *an administrator sets a job's limits;
-remove this key*. A `timeout` above what your administrator allows fails the
+fails `toft check` and the deploy with `removed_key`, and the hint says an
+administrator sets it on the app's Automation tab. A `timeout` above what your administrator allows fails the
 deploy with `limit_exceeds_ceiling`. `retries`, `viewer_runnable`, `enabled` and a
 `[tasks]` table are no longer read; a deploy refuses them with `removed_key`
 and says what replaced each.
