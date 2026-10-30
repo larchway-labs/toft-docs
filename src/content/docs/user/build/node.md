@@ -36,7 +36,7 @@ Read them from `process.env`. `toft deploy` doesn't upload `.env` or any
 `dotenv` find none on the install. Set the values on the app instead, with the
 Settings tab or `toft env set --from-file .env.production`. `dotenv` never
 overrides a variable that is already set, so code that loads a `.env` locally
-keeps working unchanged. To make sure every install asks for the names your
+keeps working unchanged. To make sure every install asks for the variables your
 app needs, list them under [`[env]` in `toft.toml`](../toft-toml/#env).
 
 ## Dependencies

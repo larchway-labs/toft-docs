@@ -64,33 +64,37 @@ See [Schedule work with jobs](../../automation/jobs/).
 
 ## `[env]`
 
-The names of the environment variables your app needs — names only, never
-values.
+The environment variables your app needs, one key each. You decide which are
+secrets.
 
 ```toml
 [env]
-names = ["DB_PASSWORD", "API_TOKEN", "DB_HOST"]
+DB_HOST     = "db.internal"          # visible, with a default
+API_URL     = {}                     # visible, no default
+LOG_LEVEL   = { default = "info" }   # visible, with a default
+DB_PASSWORD = { sensitive = true }   # sensitive, never a default
 ```
 
-Each deploy adds any name the app doesn't have yet as an empty, sensitive
-variable, which shows as **not set** on the app's Settings tab until someone
-fills it in. A variable that already exists is never changed, and a name you
-take off the list is never deleted. A name an attached credential supplies is
-skipped. The build log says what was added:
-`==> toft.toml [env]: added DB_HOST, API_TOKEN (3 declared, 1 already set)`.
+A string or `{ default = "…" }` is a visible variable with that default, `{}`
+a visible one with none, and `{ sensitive = true }` a secret. Each deploy adds
+any variable the app doesn't have yet, with its default and its flag. A secret
+shows as **not set** on the app's Settings tab until someone fills it in. A
+variable that already exists is never changed, and one you take out of the
+file is never deleted. A name an attached credential supplies is skipped. The
+build log says what was added:
+`==> toft.toml [env]: added API_URL, DB_PASSWORD (4 declared, 2 already set)`.
 
-Values go to each install separately, with the Settings tab or
-`toft env set --from-file .env`. A default that is the same everywhere belongs
-in your code, such as `os.getenv("LOG_LEVEL", "info")`.
+A secret's value goes to each install separately, with the Settings tab or
+`toft env set --from-file .env`.
 
 `toft check` and the deploy refuse:
 
 | Code | When |
 |---|---|
-| `env_values_not_read` | Anything under `[env]` other than `names`, such as `LOG_LEVEL = "info"` or an `[env.prod]` table |
+| `sensitive_default` | A sensitive variable with a default, such as `DB_PASSWORD = { sensitive = true, default = "x" }`. Send its value with `toft env set --from-file` |
+| `env_entry_invalid` | Any other entry that isn't a string or a table of `default` (a string) and `sensitive` (true or false), such as a number or an unknown key |
 | `invalid_env_name` | A name that isn't letters, digits and underscores, or starts with a digit |
 | `reserved_env_name` | A name Toft sets itself, such as `PORT`, `HOST` or `BASE_PATH` |
-| `env_names_not_list` | `names` that isn't a list of strings |
 
 See [Settings and environment variables](../../run/settings/).
 
@@ -131,6 +135,6 @@ command line, so it's safe to let other people supply them.
 A malformed `toft.toml` fails the deploy and names the problem. Unknown tables
 are ignored, so a newer manifest still deploys on an older install.
 
-Environment variable values belong on the app's **Settings** tab, not here;
-`[env]` only names them. Nothing in this file grants permissions or changes
+Secret values belong on the app's **Settings** tab, not here; `[env]` only
+declares them. Nothing in this file grants permissions or changes
 build resources.
