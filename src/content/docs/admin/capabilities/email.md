@@ -39,6 +39,18 @@ Passwords and API keys are write-only: never read back and never in a settings e
 A notification's audience is set on its template, not its channel. Template copy
 must read correctly on any channel — don't write "this email".
 
+## Whose name is on it
+
+Every platform message ends *Sent by <name> at <address>*, in both the HTML and
+the plain-text part. The name is **Install name** on Admin → Settings — “Toft”
+until you set one — and it also heads the HTML message and appears in Slack posts
+and Teams or webhook cards, so a staging and a production install are told apart
+in words. Mail an app sends comes from `<App> (via <name>)`.
+
+The **From name** above is separate and unchanged by it. When it is empty and the
+install has a name, the Email page offers to fill it in; nothing changes until you
+save.
+
 ## Links in mail
 
 `public_base_url` (**Address**) is the address links in mail use. Leave it blank to
