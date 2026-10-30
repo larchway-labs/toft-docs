@@ -58,10 +58,10 @@ You rarely read these yourself.
 
 Set them on the app's **Settings** tab or with
 [`toft env set`](../../cli/commands/#toft-env). They are encrypted at rest and
-applied at the next start: a restart is enough, no redeploy needed. List the
-names your app needs under [`[env]` in `toft.toml`](../../../user/build/toft-toml/#env)
-and every deploy adds the missing ones, empty and sensitive, for someone to
-fill in. A `.env` file is never uploaded and never read on the install; send
+applied at the next start: a restart is enough, no redeploy needed. Declare the
+variables your app needs under [`[env]` in `toft.toml`](../../../user/build/toft-toml/#env),
+marking the secrets, and every deploy adds the missing ones with the file's
+default and flag; a secret arrives empty for someone to fill in. A `.env` file is never uploaded and never read on the install; send
 its values with `toft env set --from-file .env`.
 
 :::caution
@@ -95,9 +95,9 @@ nothing to read first.
 | Field | |
 |---|---|
 | `set` | Variables to write. `"value": ""` clears one in place. |
-| `sensitive` | Optional per variable. Left out, an existing variable keeps its flag and a new one is **sensitive**. `false` on a sensitive variable is accepted only with a new value. |
+| `sensitive` | Optional per variable. Left out, an existing variable keeps its flag and a new one is **visible**. `false` on a sensitive variable is accepted only with a new value. |
 | `unset` | Variables to remove. |
-| `only_missing` | `true` writes only the variables that are not set yet. |
+| `only_missing` | `true` writes only the variables that are empty, sensitive or not, and keeps one that has a value. |
 
 The answer names variables, never values:
 

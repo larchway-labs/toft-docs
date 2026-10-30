@@ -59,8 +59,9 @@ printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD" | toft env set --from-file - --app my-a
 toft restart --wait --app my-app
 ```
 
-A new variable is stored sensitive. To fill a fresh install without
-overwriting values someone has already set, add `--only-missing`. A `.env` file
+A new variable is visible unless you add `--sensitive`, which a secret like
+this wants. To fill a fresh install without overwriting values someone has
+already set, add `--only-missing`: it fills only empty variables. A `.env` file
 in the working tree is never uploaded by `toft deploy`; send it with
 `toft env set --from-file .env`.
 

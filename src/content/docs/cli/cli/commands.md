@@ -393,14 +393,14 @@ The app's environment variables.
 | `--from-file <file>` | With `set`: read `KEY=VALUE` lines from a dotenv file, or from stdin with `-`. `KEY=VALUE` arguments on the same command win over the file. |
 | `--sensitive` | With `set`: store every value write-only. It is never shown again, here or on the Settings page. |
 | `--visible` | With `set`: store every value readable by the app's editors. |
-| `--only-missing` | With `set`: leave a variable that is already set as it is. |
+| `--only-missing` | With `set`: fill only variables that are empty, and leave one that has a value as it is. |
 
 ```bash
-toft env set DB_HOST=db.internal --visible
-toft env set API_TOKEN=s3cr3t
+toft env set DB_HOST=db.internal
+toft env set API_TOKEN=s3cr3t --sensitive
 toft env set --from-file .env.production
 printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD" | toft env set --from-file -
-toft env set --from-file defaults.env --only-missing --visible
+toft env set --from-file defaults.env --only-missing
 toft env set OLD_TOKEN=                  # clears it
 toft env unset LOG_LEVEL
 toft restart                             # applies the change
@@ -412,15 +412,16 @@ the variables. Piping values in with `--from-file -` keeps secrets out of your
 shell history. A malformed line in the file is refused before anything is sent
 (`invalid_env_file`), and names the line.
 
-**A new variable is sensitive** unless you pass `--visible`. Without
+**A new variable is visible** unless you pass `--sensitive`. Without
 `--sensitive` or `--visible`, a variable that already exists keeps its flag;
 with either, every variable the command sets takes it. A sensitive value can be
 made visible only by sending it again. A file that mixes secrets and settings
-is easiest as two calls: the settings with `--visible`, then the secrets.
+is easiest as two calls: the settings, then the secrets with `--sensitive`.
 
 `KEY=` clears a variable in place: it stays on the app, empty, and `toft env
 set` says it was cleared (`"cleared"` under `--json`). `toft env unset` removes
-it. With `--only-missing`, a variable that is already set is reported as kept
+it. With `--only-missing`, only empty variables are filled, secret or not; one
+that has a value is reported as kept
 (`"kept"` under `--json`) and left alone, which is how to fill a new install
 without overwriting what someone has tuned. A command that changed nothing says
 so and promises no restart.
@@ -440,8 +441,9 @@ env set` says the next deploy (`toft redeploy`) applies the change to the page,
 
 Under `--json`, `list` gives each row's `value` whenever it is shown, `""` for
 an empty one, and `"sensitive": true` with no value for a sensitive one. A
-sensitive variable with no value — one [`[env] names`](../../../user/build/toft-toml/#env)
-in `toft.toml` added that nobody has set yet — prints as `KEY  not set` and
+sensitive variable with no value — such as a secret
+[`[env]`](../../../user/build/toft-toml/#env) in `toft.toml` declared that
+nobody has set yet — prints as `KEY  not set` and
 carries `"unset": true`.
 
 `toft env set` touches only the variables it names and reads nothing first, so

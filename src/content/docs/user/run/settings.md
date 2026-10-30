@@ -33,16 +33,17 @@ Your variables, the ones Toft supplies (`PORT`, `BASE_PATH`, `TOFT_*`), and [cre
 
 ## Declaring the variables your app needs
 
-List the names in [`toft.toml`](../../build/toft-toml/#env) — names only, never values:
+Declare them in [`toft.toml`](../../build/toft-toml/#env), one key each, and mark the secrets:
 
 ```toml
 [env]
-names = ["DB_PASSWORD", "API_TOKEN", "DB_HOST"]
+DB_HOST     = "db.internal"          # visible, with a default
+API_URL     = {}                     # visible, no default
+LOG_LEVEL   = { default = "info" }   # visible, with a default
+DB_PASSWORD = { sensitive = true }   # sensitive, never a default
 ```
 
-Each deploy adds any name the app doesn't have yet as an empty, sensitive variable, so it shows up here as **not set** until someone fills it in. Nothing else changes: a value already set is kept, and a name you remove from the list stays on the app until you delete it. A name an attached credential supplies is skipped. An unfilled variable reaches the app as an empty string.
-
-If a declared variable isn't a secret, such as `DB_HOST`, type its value and open the lock, or run `toft env set --visible DB_HOST=…`.
+Each deploy adds any variable the app doesn't have yet, with the file's default and flag. A secret shows up here as **not set** until someone fills it in; it can never have a default in the file. Nothing else changes: a value already set is kept, and a variable you remove from the file stays on the app until you delete it. A name an attached credential supplies is skipped. An unfilled variable reaches the app as an empty string.
 
 ## Name and slug
 
