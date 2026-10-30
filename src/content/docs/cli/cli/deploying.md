@@ -109,8 +109,8 @@ toft check             # or: toft deploy --dry-run
 
 `toft check` uploads the bundle and asks the install what a deploy would decide
 before building anything: the framework it detects, the language version it
-would use, the jobs in `toft.toml`, and any problem that would refuse the
-deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
+would use, the jobs in `toft.toml`, its `[restart]` and `[render]` schedules
+with their next run, and any problem that would refuse the deploy. Nothing is deployed or recorded. It exits 1 if the deploy would be
 refused, naming the same `reason` the deploy would fail with, such as a `[jobs]`
 table on a static site. It also warns when `toft.toml` declares jobs and this
 install does not run them.
