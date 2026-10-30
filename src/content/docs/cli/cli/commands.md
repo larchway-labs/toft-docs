@@ -433,8 +433,7 @@ Both refusals exit 2 before anything is sent (`invalid_env_name`,
 `reserved_env_name`).
 
 The app reads its environment when it starts, so a change applies at the next
-restart — run `toft restart` — and no redeploy is needed. `--json` says
-`"restart_needed": true`. A notebook, Quarto or R Markdown app is the
+restart — run `toft restart` — and no redeploy is needed. A notebook, Quarto or R Markdown app is the
 exception: it reads its environment when it is rendered, at deploy, so `toft
 env set` says the next deploy (`toft redeploy`) applies the change to the page,
 `--json` says `"redeploy_needed": true`, and a job sees it at its next start.
