@@ -24,6 +24,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 |---|---|---|---|
 | `public_base_url` | Address | Where links in email point. Leave blank to use the address the install started with. | — |
 | `environment_tag` | Environment name | Which environment this is, such as stage or prod. Each deploy reads `.env.<name>` from the app’s repository (or `.env` when that file is missing) and adds only the variables the app doesn’t already have; nothing is overwritten. Telemetry reports it as the deployment environment from the next restart. Blank turns this off. | — |
+| `install_name` | Install name | What emails and notifications call this install, in place of “Toft”: the mail header and footer, Slack posts, Teams and webhook cards, and app mail’s sender (`<App> (via <name>)`). The install’s address always follows it. Up to 60 characters; nothing that looks like an address. Never sent to the vendor. Blank uses “Toft”. | — |
 | `security_txt_contact` | Security contact | Where to report a security problem. Filling this in publishes /.well-known/security.txt. | — |
 | `security_txt_expires` | Good until | When the published contact expires. Required when there is a contact. | — |
 | `security_txt_policy` | Disclosure policy | An https:// page on how you want problems reported. Optional. | — |
