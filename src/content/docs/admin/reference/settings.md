@@ -23,6 +23,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | Setting | Label | What it does | Range |
 |---|---|---|---|
 | `public_base_url` | Address | Where links in email point. Leave blank to use the address the install started with. | — |
+| `environment_tag` | Environment name | Which environment this is, such as stage or prod. Each deploy reads `.env.<name>` from the app’s repository (or `.env` when that file is missing) and adds only the variables the app doesn’t already have; nothing is overwritten. Telemetry reports it as the deployment environment from the next restart. Blank turns this off. | — |
 | `security_txt_contact` | Security contact | Where to report a security problem. Filling this in publishes /.well-known/security.txt. | — |
 | `security_txt_expires` | Good until | When the published contact expires. Required when there is a contact. | — |
 | `security_txt_policy` | Disclosure policy | An https:// page on how you want problems reported. Optional. | — |
@@ -57,7 +58,6 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `announcement_recipient_retention_days` | Keep announcement recipients for | Who each announcement was mailed to, and what happened to each send. | 30–3,650 days |
 | `access_record_retention_days` | Keep the access record for | The audit trail and who opened each app. 0 keeps everything, and is the default. | 365–3,650 days, or 0 |
 | `max_versions_per_app` | Most deployments an app may keep | The most successful deployments one app keeps, the serving one included. Failed builds don’t count. 0 means no limit. | 2–100 deployments, or 0 |
-| `environment_tag` | Environment name | This install’s environment, such as stage or prod. Leave blank to turn this off. | — |
 
 ## Admin → Authentication
 
