@@ -16,7 +16,7 @@ The **Settings** tab holds everything you can change about an app.
 
 ## Environment variables
 
-Set them under **Runtime → Environment variables**. They are stored encrypted and read the usual way, such as `os.environ["API_KEY"]` or `process.env.API_KEY`. Click the lock icon to make a value **sensitive**: it can be replaced but never shown again.
+Set them under **Runtime → Environment variables**, or from a terminal with [`toft env set`](../../../cli/cli/commands/#toft-env). They are stored encrypted and read the usual way, such as `os.environ["API_KEY"]` or `process.env.API_KEY`. Click the lock icon to make a value **sensitive**: it can be replaced but never shown again. A sensitive variable with no value yet shows **not set**. Removing a row deletes the variable.
 
 Saving doesn't restart the app. A **Saved, but not running yet** notice offers **Restart to apply**.
 
@@ -29,7 +29,20 @@ Your variables, the ones Toft supplies (`PORT`, `BASE_PATH`, `TOFT_*`), and [cre
 - **One source per key.** You can't set a key an attached credential supplies.
 - **Names are letters, digits and underscores**, not starting with a digit. Anything else is refused.
 - **Toft's own names are refused**, because Toft sets them itself and your value would never reach the app: `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`, `VIRTUAL_ENV`, `R_LIBS_SITE` and the `TOFT_*` variables it sets. See [Environment variables](../../../cli/reference/environment/) in the CLI & SDK guide. A variable you saved before this rule keeps working and doesn't block saving the rest.
-- **Defaults from the repository.** If the install has an environment tag such as `prod`, each deploy reads `.env.<tag>` (or `.env`) and adds variables the app doesn't have yet. It never overwrites a value set in Toft, and it skips an invalid or reserved name with a warning in the build log.
+- **`.env` files are not read.** Toft never takes values from a file in the repository, and `toft deploy` doesn't upload `.env` or `.env.*` at all. To send a file's values, run `toft env set --from-file .env`.
+
+## Declaring the variables your app needs
+
+List the names in [`toft.toml`](../../build/toft-toml/#env) — names only, never values:
+
+```toml
+[env]
+names = ["DB_PASSWORD", "API_TOKEN", "DB_HOST"]
+```
+
+Each deploy adds any name the app doesn't have yet as an empty, sensitive variable, so it shows up here as **not set** until someone fills it in. Nothing else changes: a value already set is kept, and a name you remove from the list stays on the app until you delete it. A name an attached credential supplies is skipped. An unfilled variable reaches the app as an empty string.
+
+If a declared variable isn't a secret, such as `DB_HOST`, type its value and open the lock, or run `toft env set --visible DB_HOST=…`.
 
 ## Name and slug
 

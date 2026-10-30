@@ -56,8 +56,13 @@ You rarely read these yourself.
 
 ## Your own variables
 
-Set them on the app's **Settings** tab. They are encrypted at rest and applied
-at the next start: a restart is enough, no redeploy needed.
+Set them on the app's **Settings** tab or with
+[`toft env set`](../../cli/commands/#toft-env). They are encrypted at rest and
+applied at the next start: a restart is enough, no redeploy needed. List the
+names your app needs under [`[env]` in `toft.toml`](../../../user/build/toft-toml/#env)
+and every deploy adds the missing ones, empty and sensitive, for someone to
+fill in. A `.env` file is never uploaded and never read on the install; send
+its values with `toft env set --from-file .env`.
 
 :::caution
 Your app does not inherit the platform's environment. It gets the variables
@@ -68,6 +73,49 @@ because it was in your shell will not be there.
 Never set `NODE_ENV=production` as an app variable. It reaches the build, where
 npm skips dev dependencies and the build fails. The platform sets it for the
 running process.
+
+### Through the API
+
+`PATCH /api/v1/apps/{id}/env` changes an existing app's variables. It names only
+the variables it changes; anything not mentioned is left alone, so there is
+nothing to read first.
+
+```json
+{
+  "set": {
+    "DB_PASSWORD": {"value": "s3cr3t", "sensitive": true},
+    "DB_HOST":     {"value": "db.internal", "sensitive": false},
+    "OLD_TOKEN":   {"value": ""}
+  },
+  "unset": ["LEGACY_FLAG"],
+  "only_missing": false
+}
+```
+
+| Field | |
+|---|---|
+| `set` | Variables to write. `"value": ""` clears one in place. |
+| `sensitive` | Optional per variable. Left out, an existing variable keeps its flag and a new one is **sensitive**. `false` on a sensitive variable is accepted only with a new value. |
+| `unset` | Variables to remove. |
+| `only_missing` | `true` writes only the variables that are not set yet. |
+
+The answer names variables, never values:
+
+```json
+{"set": ["DB_PASSWORD", "DB_HOST"], "unchanged": [], "kept": [], "cleared": ["OLD_TOKEN"],
+ "unset": ["LEGACY_FLAG"], "not_present": []}
+```
+
+`unchanged` lists variables sent with the value they already had, `kept` what
+`only_missing` left alone, and `not_present` what `unset` named that wasn't
+there. The route never restarts the app: a change reaches it at its next start,
+so follow with `POST /api/v1/apps/{id}/restart` (`toft restart`) when you want it
+now. The whole request lands or none of it does: a bad or
+reserved name (`invalid_env_name`, `reserved_env_name`), a variable an attached
+credential supplies (`key_from_credential`), or a name both set and unset
+(`set_and_unset`) refuses it all. It needs edit access to the app, or a deploy
+key with the `deploy` scope. `env_vars` on `PATCH /api/v1/apps/{id}` is refused
+with `use_env_route`; creating an app still takes `env_vars`.
 
 ## Never given to an app
 

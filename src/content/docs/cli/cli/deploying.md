@@ -91,9 +91,12 @@ Every `.gitignore` in the tree decides, with `!` negations, plus
 
 A `[static] root` that points into one of those folders keeps it.
 
-Files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`,
-`id_ed25519*`) are uploaded with a warning, not refused. `toft check` names
-them too.
+**`.env` and `.env.*` are never uploaded**, whatever `.gitignore` or
+`.toftignore` says; `.env.example` and `.env.sample` still go. `toft deploy`
+prints `not uploading .env — toft env set --from-file .env sends its values`,
+and that command is how the values reach the app. Other files that look like
+secrets (`*.pem`, `*.key`, `id_rsa*`, `id_ed25519*`) are uploaded with a
+warning, not refused. `toft check` names both.
 
 Do not install dependencies before deploying; the install resolves them. For R,
 ignore `renv/library/` and ship `renv.lock`.
@@ -173,7 +176,7 @@ needs: a tail of the build log, or the dependency findings.
 | `internal_error` | Retry, then tell an administrator. |
 
 A successful deploy can carry `warnings`, such as a `toft.toml` table nothing
-reads, a `.env` file the bundle carried, or a job capped by a ceiling an
+reads, a key file the bundle carried, or a job capped by a ceiling an
 administrator lowered. They print as sentences, and appear in the `--json`
 result as `warnings`, with `warning_details` giving each one a `code`
 (`manifest_unread`, `limit_clamped`) and, for a `toft.toml` key, its `table`.
@@ -193,7 +196,8 @@ naming the next step. See [Errors as JSON](../exit-codes/#errors-as-json).
 ## After it is deployed
 
 ```bash
-toft env set LOG_LEVEL=debug --restart     # change a variable and apply it
+toft env set LOG_LEVEL=debug --visible     # change a variable
+toft restart                               # and apply it
 toft visibility authenticated              # let anyone signed in open it
 toft deployments list                      # the history, * marks what is serving
 toft deployments prune --yes               # keep only the serving deployment

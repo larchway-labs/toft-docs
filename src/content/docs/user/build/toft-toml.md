@@ -62,6 +62,38 @@ schedule = "0 2 * * *"
 
 See [Schedule work with jobs](../../automation/jobs/).
 
+## `[env]`
+
+The names of the environment variables your app needs — names only, never
+values.
+
+```toml
+[env]
+names = ["DB_PASSWORD", "API_TOKEN", "DB_HOST"]
+```
+
+Each deploy adds any name the app doesn't have yet as an empty, sensitive
+variable, which shows as **not set** on the app's Settings tab until someone
+fills it in. A variable that already exists is never changed, and a name you
+take off the list is never deleted. A name an attached credential supplies is
+skipped. The build log says what was added:
+`==> toft.toml [env]: added DB_HOST, API_TOKEN (3 declared, 1 already set)`.
+
+Values go to each install separately, with the Settings tab or
+`toft env set --from-file .env`. A default that is the same everywhere belongs
+in your code, such as `os.getenv("LOG_LEVEL", "info")`.
+
+`toft check` and the deploy refuse:
+
+| Code | When |
+|---|---|
+| `env_values_not_read` | Anything under `[env]` other than `names`, such as `LOG_LEVEL = "info"` or an `[env.prod]` table |
+| `invalid_env_name` | A name that isn't letters, digits and underscores, or starts with a digit |
+| `reserved_env_name` | A name Toft sets itself, such as `PORT`, `HOST` or `BASE_PATH` |
+| `env_names_not_list` | `names` that isn't a list of strings |
+
+See [Settings and environment variables](../../run/settings/).
+
 ## `[jobs.<name>]`
 
 One table per [job](../../automation/jobs/). This file is the only place a job
@@ -99,5 +131,6 @@ command line, so it's safe to let other people supply them.
 A malformed `toft.toml` fails the deploy and names the problem. Unknown tables
 are ignored, so a newer manifest still deploys on an older install.
 
-Environment variables belong on the app's **Settings** tab, not here. Nothing
-in this file grants permissions or changes build resources.
+Environment variable values belong on the app's **Settings** tab, not here;
+`[env]` only names them. Nothing in this file grants permissions or changes
+build resources.

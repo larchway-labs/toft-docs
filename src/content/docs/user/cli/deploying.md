@@ -31,7 +31,7 @@ What gets sent and how the app is chosen is on [From your machine](../../deploy/
 | `toft rollback` | Make an earlier deployment current again; by default the one before what is serving |
 | `toft restart` · `start` · `stop` | Lifecycle; `--wait` waits until it is up |
 | `toft deps` | Why the dependency policy refused a deploy, and what fixes it |
-| `toft env` | List, set and unset [environment variables](../../run/settings/); `--restart` applies them |
+| `toft env` | List, set and unset [environment variables](../../run/settings/); `--from-file` sends a `.env` file's values, and `toft restart` applies a change |
 | `toft visibility` | Print or change [who can see the app](../../share/visibility/) |
 | `toft deployments` | List old deployments, or delete them |
 | `toft delete <slug>` | Delete the app; there is no undo |

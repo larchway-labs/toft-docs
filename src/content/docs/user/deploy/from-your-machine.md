@@ -36,6 +36,10 @@ overrides it for one command.
   repository works too.
 - **Always dropped:** `.git/`, `.hg/`, `.svn/`, `node_modules/`, `venv/`,
   `.venv/`, `__pycache__/`, `*.pyc`, `.DS_Store`.
+- **Never sent:** `.env` and `.env.*`, whatever `.gitignore` says
+  (`.env.example` and `.env.sample` still go). Send the values with
+  `toft env set --from-file .env`; see
+  [Settings and environment variables](../../run/settings/).
 - **Dropped when the root has a `package.json`:** `dist/`, `build/`, `out/`,
   `.next/`, `.nuxt/`, `.svelte-kit/` — the build recreates them. A static site
   whose `[static] root` points into one of these still ships it.
