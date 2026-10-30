@@ -64,11 +64,14 @@ working when people leave — prefer it to a personal key in a pipeline.
 
 | Scope | Allows |
 |---|---|
-| `deploy` | Create, upload, deploy, roll back, restart, stop, read history |
+| `deploy` | Create, upload, deploy, roll back, restart, stop, set and remove environment variables, read history |
 | `read` | Those reads only: apps, groups, deploy history, dependency verdicts, deployment archives |
 
 Neither scope deletes apps, deletes old deployments, or touches jobs, schedules, tags or
-storage. Routes allowed to `deploy` are a strict subset of a full personal key's.
+storage. A `deploy` key can set an app's environment variables so a pipeline can
+rotate a secret with the key it already deploys with; it cannot change a
+variable an attached credential supplies, and it never reads a sensitive value.
+Routes allowed to `deploy` are a strict subset of a full personal key's.
 A deploy key must name an owning group when it creates an app. Each action is
 audited as `deploy_key:{id}`. An install holds at most 30 unrevoked deploy keys.
 

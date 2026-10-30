@@ -190,8 +190,9 @@ It reports:
   it (`sampled rather than held by the kernel`, `not enforced on this install`);
   a job's `memory` or `cpu` key is refused — an administrator sets those;
 - anything in `toft.toml` that nothing reads;
-- files that look like secrets, such as `.env`, which the bundle would carry,
-  as a deploy warns about them;
+- files that look like secrets, such as `server.key`, which the bundle would
+  carry, as a deploy warns about them, and any `.env` file it leaves out (a
+  `.env` or `.env.*` is never uploaded);
 - a `[jobs]` table on a static site, which has nothing to run a job in, as a
   refusal;
 - a warning when `toft.toml` declares jobs and this install does not run jobs;
@@ -383,23 +384,46 @@ The app's environment variables.
 | Subcommand | |
 |---|---|
 | `list` | Names, and the values that are not sensitive. |
-| `set KEY=VALUE [...]` | Set one or more. Other variables are kept. |
+| `set KEY=VALUE [...]` | Set one or more. Other variables are left as they are. |
+| `set --from-file FILE` | Set every variable in a dotenv file. `-` reads from stdin. |
 | `unset KEY [...]` | Remove one or more. |
 
 | Flag | |
 |---|---|
-| `--sensitive` | With `set`: store the values write-only. They are never shown again, here or on the Settings page. |
-| `--restart` | With `set` or `unset`: restart the app afterwards. |
+| `--from-file <file>` | With `set`: read `KEY=VALUE` lines from a dotenv file, or from stdin with `-`. `KEY=VALUE` arguments on the same command win over the file. |
+| `--sensitive` | With `set`: store every value write-only. It is never shown again, here or on the Settings page. |
+| `--visible` | With `set`: store every value readable by the app's editors. |
+| `--only-missing` | With `set`: leave a variable that is already set as it is. |
 
 ```bash
-toft env set DATABASE_URL=postgres://db/app LOG_LEVEL=info
-toft env set API_TOKEN=s3cr3t --sensitive --restart
-toft env unset LOG_LEVEL --restart
+toft env set DB_HOST=db.internal --visible
+toft env set API_TOKEN=s3cr3t
+toft env set --from-file .env.production
+printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD" | toft env set --from-file -
+toft env set --from-file defaults.env --only-missing --visible
+toft env set OLD_TOKEN=                  # clears it
+toft env unset LOG_LEVEL
+toft restart                             # applies the change
 toft env list
 ```
 
 A value is taken as typed, split on the first `=`. Flags may go before or after
-the variables.
+the variables. Piping values in with `--from-file -` keeps secrets out of your
+shell history. A malformed line in the file is refused before anything is sent
+(`invalid_env_file`), and names the line.
+
+**A new variable is sensitive** unless you pass `--visible`. Without
+`--sensitive` or `--visible`, a variable that already exists keeps its flag;
+with either, every variable the command sets takes it. A sensitive value can be
+made visible only by sending it again. A file that mixes secrets and settings
+is easiest as two calls: the settings with `--visible`, then the secrets.
+
+`KEY=` clears a variable in place: it stays on the app, empty, and `toft env
+set` says it was cleared (`"cleared"` under `--json`). `toft env unset` removes
+it. With `--only-missing`, a variable that is already set is reported as kept
+(`"kept"` under `--json`) and left alone, which is how to fill a new install
+without overwriting what someone has tuned. A command that changed nothing says
+so and promises no restart.
 
 A name is letters, digits and underscores, and does not start with a digit.
 Names the platform sets itself — `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`,
@@ -407,26 +431,28 @@ Names the platform sets itself — `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`,
 Both refusals exit 2 before anything is sent (`invalid_env_name`,
 `reserved_env_name`).
 
-The app reads its environment when it starts, so a change applies at the next restart; `--restart` does that
-for you, and no redeploy is needed. Without it, `--json` says
+The app reads its environment when it starts, so a change applies at the next
+restart — run `toft restart` — and no redeploy is needed. `--json` says
 `"restart_needed": true`. A notebook, Quarto or R Markdown app is the
 exception: it reads its environment when it is rendered, at deploy, so `toft
 env set` says the next deploy (`toft redeploy`) applies the change to the page,
 `--json` says `"redeploy_needed": true`, and a job sees it at its next start.
 
-A variable stays sensitive once it is marked so, even when you set it again
-without `--sensitive`. Setting a sensitive variable to an empty value keeps the
-stored one, and `toft env set` says it was kept rather than set (`"kept"` under
-`--json`); `toft env unset` removes it. A command that changed nothing says so
-and promises no restart.
-
 Under `--json`, `list` gives each row's `value` whenever it is shown, `""` for
-an empty one, and `"sensitive": true` with no value for a sensitive one.
+an empty one, and `"sensitive": true` with no value for a sensitive one. A
+sensitive variable with no value — one [`[env] names`](../../../user/build/toft-toml/#env)
+in `toft.toml` added that nobody has set yet — prints as `KEY  not set` and
+carries `"unset": true`.
 
-Changing variables needs edit access to the app. Without it, `list` shows names
-but not values, and `set` and `unset` are refused with exit 3. A variable an
-administrator attached through a credential cannot be set here; the refusal
-(`key_from_credential`) names the credential that supplies it.
+`toft env set` touches only the variables it names and reads nothing first, so
+it never sees a value it did not send and cannot undo someone else's change to
+another variable. Either every variable in one command lands or none does.
+
+Changing variables needs edit access to the app, or a deploy key with the
+`deploy` scope. Without it, `list` shows names but not values, and `set` and
+`unset` are refused with exit 3. A variable an administrator attached through a
+credential cannot be set here; the refusal (`key_from_credential`) names the
+credential that supplies it.
 
 ## `toft visibility`
 

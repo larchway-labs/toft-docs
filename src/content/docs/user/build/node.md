@@ -29,6 +29,16 @@ it. `BASE_PATH` holds it. See [Base paths](../base-paths/).
 **Next.js needs nothing.** Toft sets `basePath` in your Next config before the
 build, merged over whatever your config exports.
 
+## Environment variables
+
+Read them from `process.env`. `toft deploy` doesn't upload `.env` or any
+`.env.*` file (`.env.example` and `.env.sample` still go), so Next.js and
+`dotenv` find none on the install. Set the values on the app instead, with the
+Settings tab or `toft env set --from-file .env.production`. `dotenv` never
+overrides a variable that is already set, so code that loads a `.env` locally
+keeps working unchanged. To make sure every install asks for the names your
+app needs, list them under [`[env]` in `toft.toml`](../toft-toml/#env).
+
 ## Dependencies
 
 | Repository has | Toft runs |

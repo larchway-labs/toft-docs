@@ -19,8 +19,8 @@ Set both or neither. If the runner mounts secrets as files, use
 `TOFT_TOKEN_FILE=<path>` instead of `TOFT_TOKEN`: a path is not sensitive, while
 an environment variable is visible in `/proc` and inherited by child processes.
 
-A deploy key can create apps, deploy, roll back, restart, stop, run jobs, and
-read logs, events and dependencies. It cannot use `toft store`, or manage
+A deploy key can create apps, deploy, roll back, restart, stop, run jobs, set
+environment variables, and read logs, events and dependencies. It cannot use `toft store`, or manage
 keys and grants. For those, use a full personal key
 (`toftu_`).
 
@@ -48,6 +48,22 @@ Each step fails the pipeline on its own; no output parsing is needed. If a step
 fails, `toft events` says what the platform noticed. For a batch app, drop the
 `restart` line.
 
+## Setting secrets from a pipeline
+
+The deploy key can set the app's environment variables, so a pipeline can
+rotate a secret without anyone's personal credential. Pipe values in so they
+never reach the command line:
+
+```bash
+printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD" | toft env set --from-file - --app my-app
+toft restart --wait --app my-app
+```
+
+A new variable is stored sensitive. To fill a fresh install without
+overwriting values someone has already set, add `--only-missing`. A `.env` file
+in the working tree is never uploaded by `toft deploy`; send it with
+`toft env set --from-file .env`.
+
 ## Re-running a day
 
 ```bash
@@ -70,7 +86,8 @@ toft job run nightly-extract --app my-app --for 2026-10-06T03:00:00+01:00
   or dependency findings). Branch on `reason`, not the message.
 - **Warnings are sentences, with codes beside them.** A deploy's or a check's
   `warnings` are for a person to read; `warning_details` gives each a `code` to
-  branch on. A deploy that carried a `.env` file says so in `warnings`.
+  branch on. A deploy that carried a key file such as `server.key` says so in
+  `warnings`; a `.env` file is never uploaded.
 - **Piped output has no color codes**, the app's own included, so a captured
   `toft logs` is plain text.
 - **The human output may change.** Script against `--json`.

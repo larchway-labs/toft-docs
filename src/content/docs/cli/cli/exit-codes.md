@@ -46,7 +46,8 @@ These exit 2 because nothing was attempted:
 - **A directory argument that is not a directory** (`no_such_directory`).
 - **An environment variable name `toft env set` refuses**: not letters, digits
   and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
-  (`reserved_env_name`).
+  (`reserved_env_name`) — or a `--from-file` line that is not `KEY=VALUE`
+  (`invalid_env_file`).
 - **A path matching no route** in `toft api` (`route_not_found`), or a route
   that exists but not for that method (`method_not_allowed`) — whose hint names
   the method it takes.
