@@ -45,6 +45,99 @@ DB_PASSWORD = { sensitive = true }   # sensitive, never a default
 
 Each deploy adds any variable the app doesn't have yet, with the file's default and flag. A secret shows up here as **not set** until someone fills it in; it can never have a default in the file. Nothing else changes: a value already set is kept, and a variable you remove from the file stays on the app until you delete it. A name an attached credential supplies is skipped. An unfilled variable reaches the app as an empty string.
 
+## Different environments
+
+Toft has no environment switch inside an app. Each environment is its own app,
+with its own variables: `sales-dashboard-dev` and `sales-dashboard` on one
+install, or the same app on a staging install and a production install. The
+code is the same everywhere; only the values differ.
+
+Declare the names once in `toft.toml`, so every environment's app asks for the
+same variables:
+
+```toml
+[env]
+APP_ENV     = { default = "production" }
+LOG_LEVEL   = { default = "info" }
+API_URL     = {}
+DB_PASSWORD = { sensitive = true }
+```
+
+Keep one dotenv file per environment beside your code, and out of git:
+
+```bash
+# .env.dev
+APP_ENV=dev
+LOG_LEVEL=debug
+API_URL=https://api-dev.example.com
+```
+
+```bash
+# .env.production
+APP_ENV=production
+LOG_LEVEL=info
+API_URL=https://api.example.com
+```
+
+`toft deploy` never uploads these files, so nothing reaches an app until you
+send it.
+
+### Two apps on one install
+
+Name the app with `--app` for each environment:
+
+```bash
+toft env set --from-file .env.dev        --app sales-dashboard-dev
+toft env set --from-file .env.production --app sales-dashboard
+
+# Secrets are piped in, so they stay out of your shell history
+printf 'DB_PASSWORD=%s\n' "$DEV_DB_PASSWORD"  | toft env set --from-file - --sensitive --app sales-dashboard-dev
+printf 'DB_PASSWORD=%s\n' "$PROD_DB_PASSWORD" | toft env set --from-file - --sensitive --app sales-dashboard
+
+toft restart --app sales-dashboard-dev   # applies the change
+toft env list --app sales-dashboard-dev
+```
+
+### A staging install and a production install
+
+Give the app a slug per install in `toft.toml` (`toft link --install` writes
+this), then choose the install with `--install`:
+
+```toml
+[app]
+slug = "sales-dashboard"
+
+[app.installs."https://staging.toft.example.com"]
+slug = "sales-dashboard-stg"
+```
+
+```bash
+toft env set --from-file .env.staging    --install https://staging.toft.example.com
+toft env set --from-file .env.production --install https://toft.example.com
+```
+
+### Reading them in your app
+
+Read the values, not the name of the environment, so a new environment needs no
+code change. Fall back to a local value for running on your own machine. A
+variable declared in `[env]` but never filled arrives as an empty string, so
+treat empty as missing:
+
+```python
+import os
+api_url = os.environ.get("API_URL") or "http://localhost:5000"
+debug = os.environ.get("LOG_LEVEL") == "debug"
+```
+
+```js
+const apiUrl = process.env.API_URL || "http://localhost:5000";
+```
+
+```r
+api_url <- Sys.getenv("API_URL")
+if (!nzchar(api_url)) api_url <- "http://localhost:5000"
+```
+
 ## Name and slug
 
 They are separate. The slug is the end of the address, so changing it breaks the old address at once, with no redirect. Slugs starting with `_` are reserved.

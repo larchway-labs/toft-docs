@@ -96,7 +96,7 @@ A secret's value goes to each install separately, with the Settings tab or
 | `invalid_env_name` | A name that isn't letters, digits and underscores, or starts with a digit |
 | `reserved_env_name` | A name Toft sets itself, such as `PORT`, `HOST` or `BASE_PATH` |
 
-See [Settings and environment variables](../../run/settings/).
+See [Settings and environment variables](../../run/settings/), and [Different environments](../../run/settings/#different-environments) for a dev, staging and production app.
 
 ## `[jobs.<name>]`
 
