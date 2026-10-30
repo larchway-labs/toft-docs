@@ -130,6 +130,34 @@ Parameters are passed to your process as values, never pasted into the
 command line, so it's safe to let other people supply them.
 :::
 
+## `[restart]` and `[render]`
+
+An app's other two schedules, one of each per app:
+
+```toml
+[restart]                    # restart a serving app
+schedule = "0 4 * * *"
+timezone = "Europe/London"   # optional; UTC without it
+
+[render]                     # re-render a document as a new deployment
+schedule = "0 6 * * 1"
+```
+
+Both take `schedule` (required) and `timezone`, with a job's rules. This file is
+the only place either is set: a deploy records it, and a deploy whose
+`toft.toml` no longer has the table removes it, with a warning on the deploy
+and an event on the app. Pause one on the app's **Settings** tab until the next
+deploy. See [Scheduled restarts](../../run/scheduled-restarts/) and
+[Scheduled re-renders](../reports/).
+
+| Refused with | When |
+|---|---|
+| `restart_no_service` | `[restart]` on a batch app, which has no process to restart |
+| `restart_changes_nothing` | `[restart]` on a static app, or on a document — use `[render]` |
+| `render_not_a_document` | `[render]` on anything but a notebook, Quarto or R Markdown app |
+| `schedule_too_frequent` | Either firing less than an hour apart |
+| `removed_key` | `enabled` in either; pause it on the Settings tab instead |
+
 ## Errors and limits
 
 A malformed `toft.toml` fails the deploy and names the problem. Unknown tables

@@ -57,6 +57,7 @@ export const sidebar = [
           { label: "Logs", slug: "user/run/logs" },
           { label: "Events", slug: "user/run/events" },
           { label: "Settings and variables", slug: "user/run/settings" },
+          { label: "Scheduled restarts", slug: "user/run/scheduled-restarts" },
           { label: "Attached credentials", slug: "user/run/credentials" },
           { label: "Usage and resources", slug: "user/run/usage" },
           { label: "Dependencies and policy", slug: "user/run/dependencies" },

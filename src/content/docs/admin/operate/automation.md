@@ -9,7 +9,11 @@ and its own memory and CPU limits. Scheduled work is a job with a schedule; work
 for a person is a job too. Each start is a **run**.
 
 **Admin → Automation** lists every schedule on the install, read-only, with its
-app, owner, next run and last outcome, and says where runs go. Jobs are defined
+app, owner, next run and last outcome, and says where runs go — jobs, and beside
+them each app's scheduled re-render (`[render]`) and scheduled restart
+(`[restart]`), both also declared only in `toft.toml`. A scheduled restart
+restarts an app only while it is running, and is recorded in the audit log as
+`app.restart` by the system. Jobs are defined
 only in `toft.toml`: neither you nor an app's owner can create or edit one in
 the UI. An owner can run one now, pause its schedule until the next deploy,
 run a finished run again, and cancel.

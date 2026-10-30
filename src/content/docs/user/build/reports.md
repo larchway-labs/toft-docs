@@ -8,10 +8,20 @@ A [document app](../notebooks/) shows the numbers from its last render. A
 
 ## Set a schedule
 
-1. Open the app's **Settings** tab.
-2. Under **Re-render on a schedule**, enter a five-field cron expression, in
-   UTC. `0 6 * * 1-5` is 06:00 UTC on weekdays.
-3. Select **Schedule**. The **On** switch pauses it; **Remove** deletes it.
+Add a `[render]` table to the app's [`toft.toml`](../toft-toml/) and deploy:
+
+```toml
+[render]
+schedule = "0 6 * * 1-5"       # 06:00 on weekdays
+timezone = "Europe/London"     # optional; UTC without it
+```
+
+The schedule versions with your code: change it in a commit, and remove the
+table to remove it. `toft check` shows the schedule and its next run before you
+deploy. A schedule may fire at most once an hour.
+
+The app's **Settings** tab shows it under **Re-render on a schedule**, with its
+next run. **Pause** stops it until the next deploy; **Resume** starts it again.
 
 A re-render is a full deploy of the app's branch: the code is fetched again,
 dependencies are reinstalled, and the document runs from the top. It appears
@@ -19,7 +29,10 @@ in the app's deployment history. If it fails, the published version stays up.
 
 ## Send it to people
 
-Once a schedule exists, add recipients under **Send it to**. After each
+Once `toft.toml` declares `[render]`, add recipients under **Send it to** on
+the Settings tab. The list is kept when you change the schedule or its time
+zone. Removing `[render]` removes the list with it, and the deploy that removed
+it says how many people were on it. After each
 successful scheduled render, each recipient gets an email with a link to the
 app.
 
