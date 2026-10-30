@@ -10,15 +10,22 @@ Sources**. Apps then point at a repository instead of carrying their own token.
 |---|---|
 | A repository picker | Instead of a URL box, and no token prompt |
 | Private repositories | Without a secret in the app's settings |
-| Auto-deploy on push | Through the connection's webhook |
+| Auto-deploy on push | By polling, and in seconds if you set up a webhook |
 | One credential to rotate | Instead of personal access tokens scattered across apps |
 
 ## Auto-deploy
 
-A **webhook** speeds things up when the host can reach this install; **polling**
-on `AUTO_DEPLOY_POLL_INTERVAL` (seconds, default `60`) is the mechanism underneath.
-`AUTO_DEPLOY_POLL_INTERVAL=0` turns auto-deploy off entirely. See
+**Polling** is how a push deploys: on `AUTO_DEPLOY_POLL_INTERVAL` (seconds,
+default `60`). `AUTO_DEPLOY_POLL_INTERVAL=0` turns auto-deploy off entirely. See
 [operating dials](../../config/operating-dials/).
+
+A **webhook** is optional, and off on a new connection. Most organizations don't
+let a git host call in, and you need nothing from the network team to use
+polling. If your host *can* reach this install, choose **Set up webhook…** from
+the connection's menu. Toft shows a secret and a URL once; add both as a push
+webhook at the host, and a push deploys in seconds instead of on the next poll.
+**Replace webhook secret…** issues a new one if it's lost, and **Turn off
+webhook** goes back to polling alone.
 
 ## Testing
 
