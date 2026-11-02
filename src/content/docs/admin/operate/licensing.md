@@ -30,7 +30,7 @@ Gated by tier:
 |---|---|
 | `dependency_policy` | [Dependency policy](../../security/dependencies/) |
 | `identity_providers`, `groups` | Sign-in providers and groups |
-| `app_storage` | [App storage](../../capabilities/storage/) |
+| `app_storage` | [Storage hub](../../capabilities/storage/) |
 | `telemetry` | [Telemetry](../../capabilities/telemetry/) |
 | `trusted_sources` | [Trusted sources](../../security/sources/) |
 | `integrations`, `slack` | [Integrations](../../capabilities/integrations/) |

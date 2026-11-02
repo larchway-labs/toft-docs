@@ -26,7 +26,7 @@ You do not write a Dockerfile, pick a base image or configure a web server.
   [How Toft reads your repository](../../build/how-detection-works/). A
   repository it does not recognize is refused with a reason.
 - **Not a database.** An app gets a small [JSON document](../../data/app-data/)
-  and, where configured, [file storage](../../data/app-storage/). Anything more
+  and, where configured, files in the [storage hub](../../data/app-storage/). Anything more
   is a database your administrator provides.
 - **Not CI.** It builds what you give it. It does not run your tests or gate
   merges.

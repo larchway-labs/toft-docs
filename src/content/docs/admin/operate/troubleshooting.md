@@ -26,7 +26,7 @@ failures that are reported nowhere else.
 | Deploy refused, "worked yesterday" | [Dependency policy](../../security/dependencies/) (a new advisory refuses deploys, never the running app) · [Trusted sources](../../security/sources/) · [Language versions](../../build/languages/) (removed interpreter) · [Clone credentials](../../security/git-connections/) (expired) · [Locks](../../apps/locking/) |
 | Builds queued, not starting | **Admin → Processes → Build queue**, then the build concurrency setting, then host memory. Next.js and R builds are the usual culprits; a [binary R repository](../../build/languages/) helps most |
 | App restarts repeatedly | See [crashes and restarts](../health-and-processes/#crashes-and-restarts). Read the app's logs, and check its memory limit before blaming the owner |
-| Browser uploads to storage fail, nothing logged | Bucket CORS — Toft never saw the request. See [App storage](../../capabilities/storage/) |
+| Browser uploads to storage fail, nothing logged | Bucket CORS — Toft never saw the request. See [Storage hub](../../capabilities/storage/) |
 | Gallery is empty | It is off by default. If on and empty, the catalog may need a newer Toft — you are told so |
 | Metrics stopped | Not an outage. Check the collector endpoint and `METRICS_ADDR` (its own listener, never a path on `:8080`) |
 

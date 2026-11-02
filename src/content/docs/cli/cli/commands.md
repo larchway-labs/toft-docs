@@ -589,7 +589,7 @@ run records which one it repeats (`rerun_of`).
 
 ## `toft store`
 
-Files in a store an administrator granted you, from outside the platform.
+Files in the [storage hub](../../../user/data/app-storage/), from outside the platform — a laptop, a CI job, a script on another server — with a Toft key and a grant, never a cloud credential.
 
 | Subcommand | |
 |---|---|

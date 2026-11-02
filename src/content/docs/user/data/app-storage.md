@@ -1,10 +1,17 @@
 ---
-title: App storage
-description: Durable volumes and object stores an administrator attaches to your app, which one to ask for, and how your code finds them.
+title: Storage hub
+description: Storage your organization already owns, reached by name — from your app, and from scripts and pipelines outside Toft with toft store. Which kind to ask for, and how your code finds it.
 ---
 
-App storage is for files your app keeps: a database file, uploads, reports,
-exports. An administrator creates storage. Your app asks for it in
+The storage hub is for files your app keeps: a database file, uploads,
+reports, exports. It is storage your organization already owns — a bucket, a
+file system, a disk — registered once and reached **by name**, so your code
+never holds a bucket name or a cloud key. The same storage is reachable from
+outside Toft: a CI job, a script on another server or your laptop reads and
+writes it with [`toft store`](../../../cli/cli/commands/#toft-store), under a
+grant, without a cloud credential.
+
+An administrator creates storage. Your app asks for it in
 [`toft.toml`](../../build/toft-toml/#storage), or an administrator — or someone
 they made a delegate of that storage — attaches it in Toft.
 
