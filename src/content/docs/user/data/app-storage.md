@@ -4,8 +4,9 @@ description: Durable volumes and object stores an administrator attaches to your
 ---
 
 App storage is for files your app keeps: a database file, uploads, reports,
-exports. An administrator creates storage and attaches it to apps. You can't
-attach it yourself unless an administrator made you a delegate of that storage.
+exports. An administrator creates storage. Your app asks for it in
+[`toft.toml`](../../build/toft-toml/#storage), or an administrator — or someone
+they made a delegate of that storage — attaches it in Toft.
 
 :::note
 Storage is optional. If your install has none configured, your app has none. Ask your administrator before designing around it.

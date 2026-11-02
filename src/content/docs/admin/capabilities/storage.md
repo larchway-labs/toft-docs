@@ -185,6 +185,40 @@ Each attachment records who made it. Removing a delegate removes the
 attachments they made, and **restarts the apps that had them**. It is the one
 permission change in Toft that restarts a running app.
 
+A user or group whose delegations attach storage to apps can't be deleted:
+the delete lists each one, and you remove the delegate on each resource first.
+
+### Storage declared in toft.toml
+
+Developers can ask for storage in their app's `toft.toml` instead of asking you
+to attach it. The **app's owner** has to be a delegate of that storage — for an
+app a group owns, the group itself — and whoever deploys has to be one too when
+the deploy adds it or raises its level. These attachments say **From
+toft.toml**; they can't be edited here, and if you detach one the next deploy
+attaches it again while the owner can. To stop it, remove the owner as a
+delegate. Transferring an app moves these attachments to the new owner, and is
+refused while the new owner can't attach them.
+
+A deploy key can add storage only if you allow it: **Allow attaching storage**
+in its menu on **Deploy keys**. It still needs the app's owner to be a delegate.
+
+### Default delegations
+
+**Default delegations** on the Storage page make someone a delegate of every
+resource created from then on — the usual setup is the group that owns and
+deploys production apps. Each one becomes an ordinary delegate on each new
+resource, which you can remove on that resource alone.
+
+- **Read** lets them attach read-only, and browse and download every store.
+- **Full** lets them attach read-write, and upload, replace and delete in every
+  store.
+
+**Also on existing resources** adds the delegate where they aren't one yet;
+where they already are at a different level, that level is left as it is.
+Removing a default changes nothing that exists unless you also choose to revoke
+it — which removes only the delegations the default made, and lists the apps
+that will restart.
+
 ## When changes take effect
 
 - **Attaching or detaching takes effect when the app next deploys or

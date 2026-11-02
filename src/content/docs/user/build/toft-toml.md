@@ -158,6 +158,48 @@ deploy. See [Scheduled restarts](../../run/scheduled-restarts/) and
 | `schedule_too_frequent` | Either firing less than an hour apart |
 | `removed_key` | `enabled` in either; pause it on the Settings tab instead |
 
+## `[[storage]]`
+
+Storage an administrator has created, attached to your app by name:
+
+```toml
+[[storage]]
+name   = "sales-data"
+access = "read"          # read (default), write or full
+folder = "2026"          # optional: one folder of the storage
+path   = "/data/sales"   # optional: /storage/<name>[/<folder>] without it
+```
+
+Your code finds it by name, never by path — see [App storage](../../data/app-storage/).
+
+- **The app's owner has to be able to attach each entry.** For an app a group
+  owns, an administrator lets the group itself attach it, not just its members.
+- **Whoever deploys has to be able to attach it too**, but only when the deploy
+  adds an entry or raises its level. Anyone who can deploy the app can keep it
+  as it is.
+- **A deploy with nobody behind it** — an automatic deploy after a push, a
+  scheduled re-render — can keep and remove storage but not add it. A deploy key
+  can add it only if an administrator let that key attach storage.
+- **The change happens at the end of the deploy.** Until then the running app,
+  its restarts and its jobs keep the storage they had. A new store can't be
+  reached by signed URL until the deploy that adds it finishes.
+- **Removing an entry detaches the storage** at the next deploy. Its files stay.
+- Storage `toft.toml` attaches can't be changed in Toft: edit the entry and
+  deploy. Storage an administrator attached stays theirs even when `toft.toml`
+  declares it the same way.
+- `toft check` shows what the deploy would attach, change and detach, and
+  `toft storage ls` lists what you can attach.
+
+| Refused with | When |
+|---|---|
+| `storage_unknown` | Neither you nor the owner can attach a storage of that name, or it doesn't exist |
+| `storage_not_attachable_by_owner` | You can attach it but the app's owner can't — ask an administrator |
+| `storage_not_attachable_by_you` | The owner can, but you can't, and the deploy adds it or raises its level |
+| `storage_level_above_ceiling` | The level is higher than you or the owner may attach |
+| `storage_requires_person` | A deploy with nobody behind it would add storage |
+| `storage_conflicts_console_mapping` | An administrator attached it differently; detach it there first |
+| `storage_revoked_during_deploy` | Permission was taken away during the deploy; the previous version is still serving |
+
 ## Errors and limits
 
 A malformed `toft.toml` fails the deploy and names the problem. Unknown tables

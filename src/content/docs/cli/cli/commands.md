@@ -70,6 +70,7 @@ stream piped, none of this happens and you get the plain behaviour.
 | [`delete`](#toft-delete) | Delete an app. |
 | [`job`](#toft-job) | Jobs: run, rerun, wait for and read the work your app declares in `toft.toml`. |
 | [`store`](#toft-store) | Files in a durable store. |
+| [`storage`](#toft-storage) | The storage you can attach, and what an app has attached. |
 | [`sdk`](#toft-sdk) | Write the install's app SDK into this directory. |
 | [`api`](#toft-api) | Call the install's HTTP API with your stored credential. |
 | [`whoami`](#toft-whoami) | Who you are on this install, and what it will let you do. |
@@ -196,6 +197,13 @@ It reports:
 - a `[jobs]` table on a static site, which has nothing to run a job in, as a
   refusal;
 - a warning when `toft.toml` declares jobs and this install does not run jobs;
+- the storage `[[storage]]` would attach, change and detach, as `storage`
+  lines (`+` added, `~` changed, `-` detached, `=` kept, and `kept: attached in
+  the console` for storage an administrator attached that `toft.toml` declares
+  the same way) — under `--json`, `storage` with `add`, `change`, `remove`,
+  `keep` and `console`. A refused entry is a problem with reason
+  `storage_refused` and its code, such as `storage_unknown` or
+  `storage_not_attachable_by_owner`;
 - what unpacking the bundle removed;
 - each problem that would refuse the deploy, with the same `reason` a failed
   deploy would carry (`unsupported_framework`, `manifest_invalid`,
@@ -230,6 +238,15 @@ The check is refused exactly where the deploy would be. For an existing app:
 without edit access, on a locked app, or on an install that does not take
 uploaded bundles. For a new app: without the publisher role, with uploads off,
 or at the license's app limit. A deploy key can run it.
+
+## `toft storage`
+
+`toft storage ls` lists the storage you can attach and the highest level you
+can attach each at. `toft storage ls --app <slug>` lists what that app has
+attached, at which path and level, and whether `toft.toml` or the console
+attached it. `--json` returns the install's answer. To ask for storage, declare
+it in `toft.toml` — see [`[[storage]]`](../../../user/build/toft-toml/#storage).
+To read and write a store's files, use [`toft store`](#toft-store).
 
 ## `toft redeploy`
 
