@@ -11,7 +11,7 @@ a support question; an absent one reads as what it is.
 |---|---|
 | Artifact store | Its routes 404; nothing in the UI |
 | Isolated backend | The mode is not offered |
-| App storage | No storage on any app |
+| Storage hub | No storage on any app |
 | Background jobs | On by default. Switched off, no job runs and no schedule fires. With no cluster, runs go to the platform's own machine |
 
 **Admin → System info** and **[Admin → Checks](../../operate/checks/)** show what is
@@ -30,7 +30,7 @@ always has a value, with the environment as its floor.
 
 | Capability | Configured by |
 |---|---|
-| [App storage](../storage/) | A storage resource, and a mount or a bucket |
+| [Storage hub](../storage/) | A storage resource, and a mount or a bucket |
 | [Integrations](../integrations/) | A connection per kind |
 | [Email](../email/) | An SMTP relay or a sending API |
 | [The gallery](../gallery/) | A setting; off by default |

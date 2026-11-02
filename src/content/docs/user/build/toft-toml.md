@@ -170,7 +170,7 @@ folder = "2026"          # optional: one folder of the storage
 path   = "/data/sales"   # optional: /storage/<name>[/<folder>] without it
 ```
 
-Your code finds it by name, never by path — see [App storage](../../data/app-storage/).
+Your code finds it by name, never by path — see the [storage hub](../../data/app-storage/).
 
 - **The app's owner has to be able to attach each entry.** For an app a group
   owns, an administrator lets the group itself attach it, not just its members.

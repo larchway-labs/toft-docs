@@ -165,7 +165,7 @@ and a `CALLBACK_URL` a workload can resolve.
 | `RUNNER_IMAGE_PYTHON`, `RUNNER_IMAGE_NODE`, `RUNNER_IMAGE_GO`, `RUNNER_IMAGE_R`, `RUNNER_IMAGE_STATIC` | [Runner images](../../build/runner-images/), one per language. |
 | `RUNNER_VERSION` | The runner contract version. Leave unset. |
 
-## App storage (isolated mode)
+## Storage hub (isolated mode)
 
 | Variable | What it does |
 |---|---|

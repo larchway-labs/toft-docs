@@ -47,7 +47,7 @@ role, AKS workload identity, an Azure managed identity. The one exception is
 | | Holds | Configured by |
 |---|---|---|
 | **Artifact store** | Toft's built releases | `ARTIFACT_*` |
-| **App storage** | Apps' own files | `STORE_*` and a [storage resource](../../capabilities/storage/) |
+| **Storage hub** | Apps' own files | `STORE_*` and a [storage resource](../../capabilities/storage/) |
 
 `STORE_BACKEND` is never derived from `ARTIFACT_STORE`.
 

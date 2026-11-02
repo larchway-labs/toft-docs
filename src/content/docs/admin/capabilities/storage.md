@@ -1,10 +1,14 @@
 ---
-title: App storage
-description: What a storage resource is, the two kinds, where the bytes can live, and how apps and people reach one.
+title: Storage hub
+description: Storage the organization already owns, reached by name by apps and by automations outside Toft. What a storage resource is, the two kinds, where the bytes can live, and how apps and people reach one.
 ---
 
-App storage gives apps durable files: a database file, uploads, datasets,
-reports. You manage it in **Admin → Storage**.
+The storage hub gives apps durable files — a database file, uploads,
+datasets, reports — from storage the organization already owns, registered
+once and reached by name. Apps never hold a bucket name or a cloud key, and
+neither does anything outside Toft: a pipeline or a script reaches the same
+data with `toft store` and a Toft key, under a grant you can see and revoke. You
+manage it in **Admin → Storage**.
 
 ## How it fits together
 
