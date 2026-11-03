@@ -34,12 +34,15 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Toft",
-      logo: { src: "./src/assets/logo.svg", alt: "Toft" },
+      logo: {
+        light: "./src/assets/logo.svg",
+        dark: "./src/assets/logo-dark.svg",
+        alt: "Toft",
+      },
       description: "How to use, run and build on Toft.",
-      // Light only, like the platform: the documented way to remove Starlight's
-      // theme toggle is an empty component, not CSS a reader can defeat.
+      // Light and dark, following the reader's OS until they pick (toft.css
+      // holds both palettes). The platform itself stays light-only.
       components: {
-        ThemeSelect: "./src/components/empty.astro",
         // The header's right-hand slot holds the guide switcher instead.
         SocialIcons: "./src/components/GuideNav.astro",
         Sidebar: "./src/components/Sidebar.astro",
@@ -48,10 +51,10 @@ export default defineConfig({
       },
       // One guide in the sidebar, and a Markdown alternate on every page.
       routeMiddleware: "./src/routeData.ts",
-      // Code reads against the page, not a terminal window: one light theme,
-      // the hairline every other surface has, and no window chrome.
+      // Code reads against the page, not a terminal window: a syntax theme per
+      // page theme, the hairline every other surface has, and no window chrome.
       expressiveCode: {
-        themes: ["github-light"],
+        themes: ["github-dark", "github-light"],
         // A command is copied whole, so it is read whole: shell blocks wrap
         // rather than hiding the end of a long URL behind a scrollbar.
         defaultProps: {
