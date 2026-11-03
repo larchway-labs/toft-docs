@@ -165,7 +165,7 @@ Storage an administrator has created, attached to your app by name:
 ```toml
 [[storage]]
 name   = "sales-data"
-access = "read"          # read (default), write or full
+access = "full"          # read, write or full — leave it out for what the storage can serve
 folder = "2026"          # optional: one folder of the storage
 path   = "/data/sales"   # optional: /storage/<name>[/<folder>] without it
 ```
