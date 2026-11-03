@@ -76,7 +76,7 @@ install allows, so the agent learns its limits before trying a deploy.
   so a large page does not flood the agent's context.
 - Flags go anywhere on the line, so an agent does not have to reorder a
   command it composed.
-- With `--json`, every refusal carries `code`, `retryable` and often a `hint`.
+- With `--json`, every refusal carries `code`, `retryable` and a `hint`.
   An agent should retry only when `retryable` is true, and pass the `hint` on
   to a person when the next step is theirs. See
   [Errors as JSON](../exit-codes/#errors-as-json).

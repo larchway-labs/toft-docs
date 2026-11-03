@@ -51,7 +51,9 @@ Toft has four kinds of credential. The prefix tells you which one you hold.
 | `toftd_` | Deploy key | **Admin → Deploy keys** | CI. Belongs to nobody, so it survives people leaving. |
 | `tofta_` | App token | Injected as `TOFT_APP_TOKEN` | The app's own credential for calling the platform. You never handle it. |
 
-`toft` accepts the first two.
+`toft` accepts the first two. A `TOFT_TOKEN` or `--token-stdin` value that does
+not begin `toft` is no key at all: `toft` refuses it with exit 3 `invalid_key`
+before sending it anywhere, rather than reading an install as empty.
 
 ### Scope
 

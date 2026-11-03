@@ -72,13 +72,16 @@ toft job run nightly-extract --app my-app --for 2026-10-06T03:00:00+01:00
 ```
 
 `--for` names the instant the run is for; the job reads it as
-`TOFT_SCHEDULED_FOR`. A value without an offset is read as UTC.
+`TOFT_SCHEDULED_FOR`, with the offset you typed (`+01:00` here) kept. A value
+without an offset is read as UTC.
 
 ## Parsing `--json`
 
 - **One JSON document per line.** A watched deploy streams a frame per phase,
   then a result object. A failed job run prints the run, then the error. Read
   line by line, as `jq` does.
+- **A list is one document per row, never an array**, and an empty list prints
+  nothing: `toft apps --json | jq -s length` counts the apps.
 - **Errors are JSON too**: `{"error", "kind", "code", "exit", "retryable"}` on
   stdout, plus `hint` when the install named a next step, with the sentence on
   stderr. Retry only when `retryable` is true. See

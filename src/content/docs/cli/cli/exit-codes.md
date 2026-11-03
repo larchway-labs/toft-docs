@@ -68,7 +68,11 @@ These exit 2 because nothing was attempted:
   values.
 - **`toft store` given a folder where a file was wanted** (`is_a_folder`),
   `toft://` with no store (`no_store`), or `get -o - --json`
-  (`conflicting_flags`).
+  (`conflicting_flags`). A `cp` or `mv` source that is not there is
+  `not_found`, with `-r` as without it.
+- **A download onto a file that exists**, without `--force` (`file_exists`):
+  `toft store get` and `toft fetch -o` alike. `toft fetch -o` naming a
+  directory is `is_a_directory`, and `-o - --json` is `conflicting_flags`.
 - **A `toft.toml` that does not parse** (`manifest_invalid`).
 - **A directory argument that is not a directory** (`no_such_directory`).
 - **An environment variable name `toft env set` refuses**: not letters, digits
@@ -88,7 +92,7 @@ These exit 2 because nothing was attempted:
 | Code in the error | What happened |
 |---|---|
 | `key_expired` | Run `toft login` to replace the key. |
-| `invalid_key` | The install does not know this key: it was revoked, or minted on another install. Check `TOFT_TOKEN`, or run `toft login`. |
+| `invalid_key` | The install does not know this key: it was revoked, or minted on another install. Check `TOFT_TOKEN`, or run `toft login`. A credential that is not shaped like a Toft key at all — one that does not begin `toft` — gets the same refusal from `toft` itself, before anything is sent. |
 | `key_read_scope` | The key can read but not write. Mint a full key. |
 | `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
@@ -129,8 +133,9 @@ with `--json`.
 
 ## Restart with `--wait`
 
-`toft restart --wait` exits 0 for `running`, `sleeping` or `ready`, and 1 for
-`crashed` or `failed`. Without `--wait`, exit 0 means only that the install
+`toft restart --wait` and `toft start --wait` exit 0 for `running`, `sleeping`
+or `ready`, and 1 for `crashed` or `failed`. `toft start` of an app that is
+already running exits 0 and restarts nothing (`already_running`). Without `--wait`, exit 0 means only that the install
 accepted the request.
 
 ## Errors as JSON
@@ -150,7 +155,7 @@ goes to stderr.
 | `exit` | The exit code, repeated. |
 | `code` | A stable name to branch on, such as `key_expired`, `app_locked` or `not_found`. Present whenever the install refused, and on the exit-2 refusals `toft` makes itself that have a name, such as `manifest_invalid` or `no_such_directory`. Usage mistakes have one too: `unknown_command`, `no_command`, `unknown_flag`, `bad_flag`, `unexpected_argument`. |
 | `retryable` | Always present. Whether trying again could work. |
-| `hint` | The next step in the install's words, when there is one. |
+| `hint` | The next step. The install sends one when there is a step worth naming; every refusal `toft` makes itself carries one, at worst the command's own `--help`. |
 
 **Branch on `code` and `retryable`, not on the exit code alone.** `retryable`
 is the install's decision: a `409 queue_full` is worth retrying, a `503` that

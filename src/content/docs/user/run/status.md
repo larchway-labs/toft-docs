@@ -56,3 +56,5 @@ toft restart --wait
 ```
 
 A restart runs the same deployment again. It doesn't rebuild or re-check dependencies.
+
+`toft start` only starts: on an app that is already running it says `already running` and changes nothing, so it is safe to run whenever you want the app up. `toft restart` is the one that bounces a running app.

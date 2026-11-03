@@ -87,6 +87,13 @@ A refusal names its reason: `key_read_scope` or `deploy_key_read_scope` (a wider
 scope would work), `session_required` or `deploy_key_not_permitted` (no key
 would).
 
+A credential the install cannot read at all — a bearer token that is no key or
+session, an `X-API-Key` that is neither `toftu_` nor `toftd_` — is refused
+**401 `invalid_key`**. It is never treated as no credential, so a mistyped key
+cannot quietly see only what an anonymous visitor would. A request with no
+credential at all is still anonymous. A method a route does not take is
+**405 `method_not_allowed`**, with or without a key.
+
 ## The one `/admin` route a key reaches
 
 `GET /api/v1/admin/estate/targets` — the [scan-target](../scan-targets/) list —
