@@ -327,30 +327,57 @@ site-search button[data-open-modal]:hover {
    label over its pages — the landing page's column heading — rather than a
    bold collapsible that competes with the links under it. */
 
+/* Sections collapse (src/routeData.ts); the one holding this page is open.
+   A section heading is a row you click: label left, caret right, a tint on
+   hover. Closed sections sit close together, so the guide reads as a list of
+   its sections with the current one unfolded. */
 #starlight__sidebar .top-level > li + li {
-  margin-top: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+#starlight__sidebar .top-level > li > details[open] {
+  margin-bottom: 0.75rem;
 }
 
 #starlight__sidebar summary {
-  padding: 0 0 0.375rem 0.5rem;
-  cursor: default;
+  padding: 0.375rem 0.5rem;
+  border-radius: calc(var(--lp-radius) - 2px);
+  cursor: pointer;
+}
+
+#starlight__sidebar summary:hover {
+  background: var(--lp-muted);
 }
 
 #starlight__sidebar summary .caret {
-  display: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--lp-muted-foreground);
 }
 
 #starlight__sidebar .group-label .large {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   letter-spacing: 0;
-  color: var(--lp-muted-foreground);
+  color: var(--lp-foreground);
+}
+
+#starlight__sidebar details:not([open]) .group-label .large {
+  font-weight: 500;
+  color: var(--lp-nav-ink);
 }
 
 #starlight__sidebar ul ul li {
   margin-inline-start: 0;
   padding-inline-start: 0;
   border: 0;
+}
+
+/* The open section's pages hang off a hairline rail under their heading. */
+#starlight__sidebar .top-level > li > details > ul {
+  margin: 0.125rem 0 0 0.875rem;
+  padding-inline-start: 0.375rem;
+  border-inline-start: 1px solid var(--lp-border);
 }
 
 #starlight__sidebar a {

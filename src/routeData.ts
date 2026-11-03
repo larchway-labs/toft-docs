@@ -4,6 +4,9 @@
  * - **The sidebar shows one guide.** All three in one tree is 138 links, two
  *   of them to pages called "Language versions". A page's sidebar is the guide
  *   it sits in; the header switches guides.
+ * - **Its sections are collapsed**, except the one holding this page
+ *   (Starlight opens that one): the user guide alone is 50 pages, and a
+ *   reader wants the section they are in plus a list of the others.
  * - **Every page names its Markdown copy** in a `<link rel="alternate">`, so
  *   an agent that fetched the HTML can find the cheaper version of it.
  */
@@ -22,7 +25,9 @@ export const onRequest = defineRouteMiddleware((context) => {
   if (route.id === "" || route.id === "index" || route.id === "404") return;
 
   const guide = route.sidebar.find(holdsCurrent);
-  if (guide?.type === "group") route.sidebar = guide.entries;
+  if (guide?.type === "group") {
+    route.sidebar = guide.entries.map((e) => (e.type === "group" ? { ...e, collapsed: true } : e));
+  }
 
   route.head.push({
     tag: "link",
