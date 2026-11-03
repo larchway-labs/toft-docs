@@ -56,6 +56,16 @@ The role arrives signed on every request and is verified locally against
 `unknown`, and every `at_least` check on it is false. Use this in request
 handlers. See [The six roles](../../reference/roles/).
 
+`is_person` means the caller is on the person ladder (`anonymous`, `viewer`,
+`editor`, `owner`), not that a human is there. An anonymous visitor is
+`is_person` true and `signed_in` false; a schedule firing (`system`), the app
+itself (`app`) and `unknown` are false for both. (R has `caller_role()` and
+`caller_can()` only.)
+
+A word that is not a role — `at_least("superuser")`, `caller_can(h, "")` — is
+`bad_request`, so a typo fails loudly rather than denying everyone. In Go,
+`AtLeast` has only a bool to return, so it panics with that `*toft.Error`.
+
 ## `who`: who they are
 
 <Tabs syncKey="lang">

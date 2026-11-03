@@ -227,13 +227,17 @@ A run carries `status` (`queued`, `running`, `succeeded`, `failed`,
 `viewer`, `cli`, `schedule`, `ui`), `rerun_of`, `params`, `scheduled_for`,
 `deadline`, `progress` and `progress_message`, `queue_position` while queued,
 `exit_code`, `failure_reason` in words (`exit 3: connection refused`, `timed
-out after 45m`, `stopped at 1024 MB`), `peak_memory_mb` and `status_url`. Node
-and Go use their own casing.
+out after 45m`, `stopped at 1024 MB`), `peak_memory_mb`, `status_url` and
+`logs_url` (`/api/v1/app/job-runs/<id>/logs`). `rerun_of`, `scheduled_for` and
+`failure_reason` are always present, null when empty (`NULL` in R), in all four
+languages. An R run also carries `$done`, true for any status but queued and
+running. Node and Go use their own casing.
 
 - **A run that wrote nothing has no output**: `output()` is `None` in Python,
   `null` in Node, `nil` in Go and `NULL` in R, and `output_json()` /
-  `outputJson()` answer `None` / `null` (Go's `OutputJSON` answers `false`).
-  Empty bytes mean the run wrote an empty output. A 404 for any other reason —
+  `outputJson()` / `job_output(json = TRUE)` answer `None` / `null` / `NULL`
+  (Go's `OutputJSON` answers `false`). Empty bytes mean the run wrote an empty
+  output, which is not JSON: the JSON readers raise `not_json` for it. A 404 for any other reason —
   no such run — still raises.
 - **`list` checks its arguments before asking**: a `status` that is not one of
   the eight above is `bad_request` (Node exports the list as `RUN_STATUSES`), as
@@ -252,7 +256,7 @@ The run's view of itself, and nothing outside a job:
 | `toft.run` | `toft.run` | `toft.CurrentRun()` | `current_run()` | `None`, `null`, `nil` or `NULL` outside a job. |
 | `run.params` | `run.params` | `run.Params(&v)` | `$params` | The parameters, typed. |
 | `run.rerun_of` | `run.rerunOf` | `run.RerunOf` | `$rerun_of` | The run this one repeats, if any. |
-| `run.scheduled_for` | `run.scheduledFor` | `run.ScheduledFor()` | `$scheduled_for` | The instant this run is for, or none. |
+| `run.scheduled_for` | `run.scheduledFor` | `run.ScheduledFor()` | `$scheduled_for` | The instant this run is for, or none. Node's is a `Date`, which holds no zone (`+05:30` prints as `Z`); `run.scheduledForText` keeps the text as sent, offset included. |
 | `run.deadline` | `run.deadline` | `run.Deadline()` | `$deadline` | When the run will be stopped. |
 | `run.trigger`, `run.trigger_role` | `run.trigger`, `run.triggerRole` | `run.Trigger`, `run.TriggerRole` | `$trigger`, `$trigger_role` | How it started, and with which role. (R's `current_run()` has no `started_by`; `$trigger` is how it started.) |
 | `run.progress(n, msg)` | `run.progress(n, msg)` | `run.Progress(ctx, n, msg)` | `run_progress(n, msg)` | 0–100 and a few words, shown on the status page. Outside 0–100 is `bad_request`. |

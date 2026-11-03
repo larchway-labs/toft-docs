@@ -5,7 +5,8 @@ description: One JSON document per app, up to 256 KiB, that survives restarts, r
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Every app has **one JSON document**, up to 256 KiB. There are no keys, no
+Every app has **one JSON document**, up to 256 KiB — a larger one is refused
+with `too_large` (413, the body's `limit` is 262144). There are no keys, no
 collections and no queries. Use it for a saved filter, a last-run timestamp, or
 settings someone edited in your UI.
 
