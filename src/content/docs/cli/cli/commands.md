@@ -363,6 +363,8 @@ and prints the status line, then the body. The path is from the app's root:
 | `--method <verb>` | The request method. Default `GET`. |
 | `--data <body>` | A request body. `@file` reads a file, `@-` reads stdin. |
 | `--header 'K: V'` | A request header. Repeat for more. |
+| `--form k=v` | A `multipart/form-data` field; `k=@file` sends a file under its own name. Repeat for more. Implies `POST`, and is not combined with `--data`. |
+| `-o`, `--output <file>` | Write the body to a file instead of printing it — whole, with no `--max-body` bound. Written only when the app answers 2xx or 3xx; a refusal is printed and an existing file is left as it was. |
 | `--max-body <n>` | Print at most `n` bytes of the body. Default `8192`; `0` prints all of it. |
 | `--expect <code>` | Exit 1 unless the status is exactly this. |
 | `--anonymous` | Send no credential, to see what a stranger sees. |
@@ -397,6 +399,8 @@ like any other page, with `platform_page: "run_page"` under `--json`.
 toft fetch /api/health --expect 200
 toft fetch /submit --method POST --data @form.json --header 'Content-Type: application/json'
 toft fetch / --anonymous      # a private app answers 401: that is the app working
+toft fetch /export.xlsx -o export.xlsx
+toft fetch /admin/load --form dataset=frs --form file=@frs.csv
 ```
 
 Your key is sent only to the install's address for apps, and the install removes
@@ -731,6 +735,8 @@ A timeout prints with every unit it has: `90s` shows as `1m30s`, not `1m`.
 ## `toft store`
 
 Files in the [storage hub](../../../user/data/app-storage/), from outside the platform — a laptop, a CI job, a script on another server — with a Toft key and a grant, never a cloud credential.
+
+`<store>` is any storage's name: every object store, and every **volume** on an install without a cluster, which is a folder on the Toft host. On a cluster, an S3 Files volume works too; an EFS or Azure Files volume does not, because only an app that mounts it can reach its files.
 
 | Subcommand | |
 |---|---|

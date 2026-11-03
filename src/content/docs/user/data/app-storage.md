@@ -75,6 +75,32 @@ Your app reaches it with the SDK's `upload`, `download`, `url`, `remove` and
 `list` calls instead, which also work everywhere else, and from the app's jobs
 as well as from the app itself.
 
+### Where it appears
+
+Your app and every one of its jobs see the same attached storage, in the
+`TOFT_STORAGE` environment variable — JSON listing each one's name, kind,
+level, folder and **path**. The SDK calls above read it for you. Read the path
+from there rather than writing it into your code, because it depends on the
+install:
+
+- **On a cluster**, storage is mounted at the `path` in
+  [`toft.toml`](../../build/toft-toml/#storage), or `/storage/<name>` (and
+  `/storage/<name>/<folder>` for one folder) without one.
+- **On an install with no cluster**, it is a folder under your app's own
+  directory, and the path is somewhere else entirely.
+
+`TOFT_STORAGE` is absent, not empty, when nothing is attached.
+
+### Putting files on it from outside
+
+To load data onto a volume or a store before your app runs — a reference
+dataset, a seed database — use [`toft store`](../browsing-a-store/) from your
+own machine: `toft store put <name> <file>`, or `toft store cp -r ./data
+toft://<name>/`. You need a grant on the storage, which is separate from your
+app's access (below). It works for every object store, and for every volume on
+an install without a cluster. A volume on a cluster can be reached only by an
+app that mounts it.
+
 ## One storage, attached twice
 
 The same storage can be attached twice at different folders and levels, such as
