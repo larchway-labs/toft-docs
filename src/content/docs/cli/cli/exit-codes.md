@@ -23,7 +23,15 @@ These exit 2 because nothing was attempted:
   `toft deployments delete`, or a store you cannot reach (`not_found`). A deployment id that is too short
   (`invalid_id`) or matches several (`ambiguous_id`) lands here too.
 - **A name that is already taken** (`name_taken`): `toft create` with a slug
-  you named (`--app`, `toft.toml`) that someone has claimed.
+  you named (`--app`, `toft.toml`) that someone has claimed. A slug you named
+  that is not a slug at all is `invalid_slug`, and the message names the slug
+  it would be.
+- **No app linked** for `toft deploy` (`no_app`), which never creates one, and
+  `toft link` into an `[app]` table that already names a slug
+  (`app_already_named`).
+- **Unattended `toft login <url>`** (`unattended_login`): with `--plain`,
+  `TOFT_PLAIN`, `CI` set or stdin not a terminal, nobody can approve the browser
+  sign-in. Use `--token-stdin` or `--password-stdin`.
 - **Nothing older to roll back to** (`nothing_older`): `toft rollback` with no
   argument when the serving deployment is the oldest successful one, or the
   only one.
@@ -34,7 +42,9 @@ These exit 2 because nothing was attempted:
 - **A parameter the job refuses**: a required one missing (`param_required`), a
   value of the wrong type (`param_type`) or not among its choices
   (`param_choice`). The hint is the command with the parameter filled in.
-- **A `toft job run --param` with no name** (`=x`, `invalid_param`).
+- **A `toft job run --param` with no name** (`=x`, `invalid_param`), or
+  parameters over 64 KB (`params_too_large`): put the data in a store and pass
+  its name.
 - **A `toft.toml` asking for something the install will not give**:
   `limit_exceeds_ceiling` for a job's timeout or memory above the
   administrator's ceiling, and `removed_key` for `retries`, `viewer_runnable`,
@@ -44,6 +54,15 @@ These exit 2 because nothing was attempted:
 - **A word no command reads** (`unexpected_argument`), an unknown flag
   (`unknown_flag`), a flag written wrong (`bad_flag`), or an unknown command
   (`unknown_command`; `no_command` for a bare `toft --json`).
+- **A flag value `toft` cannot read**: a duration such as `--since`,
+  `--timeout` or `--wait-timeout` (`invalid_duration`), a time such as `--for`
+  (`invalid_time`), or, in `toft api`, a `--data` that is not JSON
+  (`invalid_json`) or a method that is not one (`invalid_method`).
+- **Nothing to act on**: `toft login --forget` of an install with no stored
+  credential (`no_credential`), `toft redeploy` of an uploaded app with nothing
+  to rebuild from (`nothing_to_rebuild`), `toft sdk vendor --lang` of a language
+  there is no SDK for (`sdk_language_unknown`), or `toft skill` of a name it
+  does not have (`unknown_skill`).
 - **`toft events --kind` or `--severity`** naming something the install does not
   record (`invalid_kind`, `invalid_severity`); the message lists the valid
   values.
@@ -69,6 +88,7 @@ These exit 2 because nothing was attempted:
 | Code in the error | What happened |
 |---|---|
 | `key_expired` | Run `toft login` to replace the key. |
+| `invalid_key` | The install does not know this key: it was revoked, or minted on another install. Check `TOFT_TOKEN`, or run `toft login`. |
 | `key_read_scope` | The key can read but not write. Mint a full key. |
 | `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
@@ -88,6 +108,9 @@ Some refusals mean "not now" rather than "no", and exit 1: another deployment
 is already queued for the app (`deploy_queued`), a run is already going
 (`already_running`), or the job queue is full (`queue_full`). Wait, then run the
 command again. `retryable` says which ones are worth retrying automatically.
+
+A signal (Ctrl-C, SIGTERM) while `toft` was reading stdin exits 1 too, with the
+code `interrupted`: nothing was sent.
 
 ## A run's outcome is the exit code
 
@@ -144,7 +167,9 @@ does a failed `toft check`, `toft fetch` or `--verify`: the result already says
 what went wrong. Two cases write both: a `toft fetch` the platform answered in
 the app's place (the result, then a refusal coded with the state, such as
 `stopped` or `batch`), and a `toft job run` that did not succeed (the run, then
-a refusal coded with how it ended).
+a refusal coded with how it ended). Each of those refusals carries a `hint`
+with the next command: `toft start` for a stopped app, `toft job logs <id>` or
+`toft job rerun <id>` for a run.
 
 The same fields are in the body of every refusal the API sends. `toft api`
 prints that body on stdout as it is, with no second document, so a script
