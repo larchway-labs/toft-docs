@@ -49,7 +49,10 @@ token, the channel, the From address. Your app never holds or chooses them.
 Sending a `channel`, `folder` or `url` field is refused with
 `destination_not_allowed`, and an email's `from`, `reply_to` or headers with
 `sender_not_allowed`; the hint says the app's owners choose these on the
-Integrations tab.
+Integrations tab. Node and R refuse these fields themselves, before anything is
+sent (in Node, `channel`, `folder`, `url`, `routingKey` and the like; `from`,
+`replyTo` or `reply_to`, and `headers`). Node also refuses any other option a
+call does not take, as `bad_request`.
 
 ## The calls
 
@@ -70,8 +73,10 @@ An email `to` that is not a string or a list of strings — `None` included — 
 `bad_request` before anything is sent, as is a body that can't be encoded as
 JSON (`NaN` or `Inf` included). A string that is not an address is sent, and
 the platform refuses it with `bad_recipient` (400). A message or attachment over
-the size limit is `too_large` (413). Every one of these refusals carries a
-`hint`.
+a size limit is `too_large` (413) — a Slack text over 3,000 characters, an
+email's text, HTML or subject over its limit, or a body too big to accept at
+all. Every one of these refusals carries a `hint`, and a size refusal's names
+the limit.
 
 ## Ask first
 

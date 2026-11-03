@@ -228,7 +228,9 @@ A run carries `status` (`queued`, `running`, `succeeded`, `failed`,
 `deadline`, `progress` and `progress_message`, `queue_position` while queued,
 `exit_code`, `failure_reason` in words (`exit 3: connection refused`, `timed
 out after 45m`, `stopped at 1024 MB`), `peak_memory_mb`, `status_url` and
-`logs_url` (`/api/v1/app/job-runs/<id>/logs`). `rerun_of`, `scheduled_for` and
+`logs_url` (`/api/v1/app/job-runs/<id>/logs`, the path the app's own token
+opens; `toft` shows the same run with `/api/v1/apps/<app-id>/job-runs/<id>/logs`,
+the path a person's key opens). `rerun_of`, `scheduled_for` and
 `failure_reason` are always present, null when empty (`NULL` in R), in all four
 languages. An R run also carries `$done`, true for any status but queued and
 running. Node and Go use their own casing.
@@ -266,6 +268,12 @@ The run's view of itself, and nothing outside a job:
 Each value is also in the environment; see [Environment
 variables](../../reference/environment/#inside-a-job).
 
+**Printing the run is safe.** The run object holds the job's token and the
+address its output is written to, but neither shows when you log it: Python's
+`repr(toft.run)`, Node's `console.log` and `JSON.stringify`, and Go's `%v`,
+`%+v`, `%#v` and `json.Marshal` all leave them out, and R's run does not hold
+them.
+
 - **The exit code decides the outcome.** Exit 0 is `succeeded`; anything else
   is `failed`, and the last line the job wrote to stderr becomes its reason
   when it gives none.
@@ -297,6 +305,12 @@ it started late. A manual run has one only if someone named it, with
 `toft job run --for` or **Run for a past date** in Toft's Run now form, and a
 rerun keeps its original's. It is never defaulted to now, so re-running
 Tuesday's work on Thursday processes Tuesday.
+
+An instant named with an offset keeps it: `toft job run --for
+2026-11-03T09:00:00-05:00` reaches the job as `2026-11-03T09:00:00-05:00`, in
+`TOFT_SCHEDULED_FOR`, in `run.scheduled_for` and in every read of the run, not
+converted to UTC. In Node, a `JobRun`'s `scheduledFor` and `scheduledForText`
+are that text.
 
 ## Which apps can have jobs
 
