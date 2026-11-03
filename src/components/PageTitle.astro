@@ -1,7 +1,7 @@
 ---
 /**
  * A page's head: where it sits, its title, its one-line description as the
- * lede, and the two ways to hand the page to an agent.
+ * lede, and a small menu for handing the page to an AI assistant.
  *
  * The description was frontmatter nobody saw but a search engine. Every page
  * has one, and it is the sentence that tells a reader whether this is the
@@ -23,29 +23,57 @@ const md = markdownHref(id);
 ---
 
 <div class="toft-page-head">
-  {
-    guide && (
-      <p class="toft-eyebrow">
-        {guide.label}
-        {section && <span aria-hidden="true">/</span>}
-        {section}
-      </p>
-    )
-  }
+  <div class="toft-page-top">
+    {
+      guide ? (
+        <p class="toft-eyebrow">
+          {guide.label}
+          {section && <span aria-hidden="true">/</span>}
+          {section}
+        </p>
+      ) : (
+        <span />
+      )
+    }
+    <div class="toft-page-menu print:hidden">
+      <button type="button" class="toft-copy-page" data-src={md}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        <span>Copy page</span>
+      </button>
+      <details>
+        <summary aria-label="More ways to use this page">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+        </summary>
+        <div class="toft-page-menu-list">
+          <button type="button" class="toft-copy-page" data-src={md}>
+            <strong>Copy as Markdown</strong>
+            <small>For pasting into an AI assistant</small>
+          </button>
+          <a href={md}>
+            <strong>View as Markdown</strong>
+            <small>This page as plain text</small>
+          </a>
+          <a data-ask="https://claude.ai/new?q=" href="https://claude.ai/new" target="_blank" rel="noopener">
+            <strong>Open in Claude</strong>
+            <small>Ask questions about this page</small>
+          </a>
+          <a data-ask="https://chatgpt.com/?q=" href="https://chatgpt.com/" target="_blank" rel="noopener">
+            <strong>Open in ChatGPT</strong>
+            <small>Ask questions about this page</small>
+          </a>
+        </div>
+      </details>
+    </div>
+  </div>
   <h1 id={PAGE_TITLE_ID}>{entry.data.title}</h1>
   {entry.data.description && <p class="toft-lede">{entry.data.description}</p>}
-  <div class="toft-page-actions print:hidden">
-    <button type="button" class="toft-copy-page" data-src={md}>
-      <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-      <span>Copy as Markdown</span>
-    </button>
-    <a href={md}>View as Markdown</a>
-  </div>
 </div>
 
 <script>
+  // Copy: fetch the page's Markdown copy, not the rendered HTML.
   for (const button of document.querySelectorAll<HTMLButtonElement>(".toft-copy-page")) {
-    const label = button.querySelector("span")!;
+    const label = button.querySelector("span, strong")!;
+    const idle = label.textContent;
     button.addEventListener("click", async () => {
       try {
         const text = await (await fetch(button.dataset.src!)).text();
@@ -54,7 +82,33 @@ const md = markdownHref(id);
       } catch {
         label.textContent = "Couldn’t copy";
       }
-      setTimeout(() => (label.textContent = "Copy as Markdown"), 2000);
+      setTimeout(() => (label.textContent = idle), 2000);
+    });
+  }
+
+  // Open in an assistant: a prompt naming the Markdown copy's full address,
+  // built here because the site's host differs per mirror.
+  const md = document.querySelector<HTMLElement>(".toft-copy-page")?.dataset.src;
+  if (md) {
+    const url = new URL(md, location.href).href;
+    const prompt = `Read ${url} so I can ask questions about it.`;
+    for (const a of document.querySelectorAll<HTMLAnchorElement>("a[data-ask]")) {
+      a.href = a.dataset.ask + encodeURIComponent(prompt);
+    }
+  }
+
+  // The menu closes on a choice, a click elsewhere, or Escape.
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>(".toft-page-menu details")) {
+    const close = () => menu.removeAttribute("open");
+    menu.querySelectorAll(".toft-page-menu-list > *").forEach((el) => el.addEventListener("click", () => setTimeout(close, 0)));
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target as Node)) close();
+    });
+    menu.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        close();
+        menu.querySelector("summary")?.focus();
+      }
     });
   }
 </script>
