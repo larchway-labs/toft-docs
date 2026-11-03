@@ -73,7 +73,7 @@ language, Go included, with the newest as the default:
 | Language | Versions |
 |---|---|
 | Python | 3.15, 3.14, 3.13 |
-| Node | 24, 22, 20 |
+| Node | 26, 24, 22 |
 | R | 4.6, 4.5, 4.4 |
 
 Your install may differ.
