@@ -240,6 +240,37 @@ that will restart.
   attachments and delete the old one. **Edit description…** is the only edit.
 - **A drive label changes at once**, and only on these pages.
 
+## From the API
+
+An administrator's key can create a resource and attach it, with
+[`toft api`](../../../cli/cli/commands/#toft-api). Grants, delegates and default
+delegations need the administrator's session (`--session`).
+
+```bash
+toft api POST admin/storage --data '{"name":"sales-data","kind":"volume"}'
+toft api PUT admin/storage/<id>/mappings/<app-id> --data '{"access":"read"}'
+toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
+```
+
+- **Create** needs only `name` and `kind`. `backing` defaults to the one the
+  install offers (`GET admin/storage` lists them). On a host with
+  `SHARED_STORAGE_ROOTS`, `storage_root` defaults to the single root when one is
+  declared; with several, leaving it out is refused with `storage_root_required`,
+  which lists them. A store, or a bucket-backed volume, also takes `bucket` and
+  `prefix`.
+- **Attach** takes `path`, `access` and `folder`, all optional. The path
+  defaults to `/storage/<name>`, or `/storage/<name>/<folder>` with a folder —
+  the same default as `[[storage]]` in `toft.toml`. Under a host root, the level
+  is the root's own: read-write on a read-write root, read only on a `:ro` one.
+  Leave `access` out to take it; anything else is 400
+  `storage_level_unsupported`. A partitioned resource needs a `folder` (422
+  `storage_folder_required`).
+- **Detach** with `DELETE …/mappings/<app-id>` removes every attachment of that
+  resource on the app. `?folder=<name>` removes one folder's, and `?folder=`
+  with nothing after it removes the whole-resource attachment.
+- An attachment made this way takes effect at the app's next start — a restart
+  or a deploy — like one made on this page.
+
 ## Without a cluster
 
 On an install that runs apps as processes on one host, Toft mounts nothing. You

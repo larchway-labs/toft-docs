@@ -137,6 +137,12 @@ points at, so the same code works in either execution mode and on another
 install. Each one carries its `access` level: Python `read_only`, Node
 `readOnly` (and `writable`), Go `ReadOnly()`.
 
+`mounts()` lists every attachment with the same fields in all four languages:
+`name`, `kind`, `path`, `access`, `folder`, `read_only` and `mounted`. In R
+they are list elements; Node prints and JSON-encodes them under those names;
+in Go they are the encoded `Mount`, with `ReadOnly()` and `Mounted()` as
+methods.
+
 A `.sqlite` or `.duckdb` file on an attached volume is opened directly at its path.
 
 ### A store, mounted or not
@@ -232,7 +238,9 @@ storage("drop", "backup")
 </Tabs>
 
 With no folder named, a name that matches two attachments raises and lists what
-is attached. An empty folder (`""`) means the root.
+is attached. An empty folder (`""`) means the root. A folder that is absolute,
+ends in `/`, or has a `.` or `..` segment is `invalid_name`, in all four
+languages.
 
 ### Rules
 
@@ -242,7 +250,8 @@ is attached. An empty folder (`""`) means the root.
   nothing attached returns an empty list; the `TOFT_STORAGE` variable it reads
   is then absent altogether, not `[]`. Off the platform, `storage()` and
   `store()` raise `off_platform` instead, in all four languages. Set
-  `TOFT_STORAGE` to stand a mount in locally.
+  `TOFT_STORAGE` to stand a mount in locally; an entry in it without its
+  `name`, `kind` or `access` is `storage_env_invalid`.
 - **The fix for `not_mapped`** is an attachment: an administrator on the app's
   Storage tab, or a [`[[storage]]`](../../../user/build/toft-toml/#storage)
   entry in `toft.toml` from someone allowed to attach it. The SDK's message

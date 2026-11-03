@@ -53,7 +53,8 @@ statuses `jobs.list` accepts, beside `TERMINAL_STATUSES`; both are read-only
 (`add` throws). `toft.run.scheduledFor` is a `Date`, which holds no zone, so an
 instant sent as `+05:30` prints as `Z`; `toft.run.scheduledForText` keeps the
 text as sent, offset included. A malformed `TOFT_STORAGE` raises
-`storage_env_invalid`.
+`storage_env_invalid`. `notify` refuses a destination or sender field, and any
+option a call does not take, before sending anything.
 
 ## Go
 
@@ -138,6 +139,10 @@ number. `job_cancel()` returns the run read again, and a run object carries
   refuses it with `bad_recipient`.
 - A refusal the SDK makes itself — a bad argument, a missing local file — is
   coded and never retryable.
+- `mounts()` entries carry `name`, `kind`, `path`, `access`, `folder`,
+  `read_only` and `mounted`, and a `TOFT_STORAGE` entry without its `name`,
+  `kind` or `access` is `storage_env_invalid`.
+- Printing a job's run object never shows its token or output address.
 - A refusal carries the same `code`, `retryable` and `hint`. See
   [When the platform says no](../../sdk/errors/).
 

@@ -49,7 +49,7 @@ output, `output_unreadable` when reading it back, and `store_refused` for any
 | `insufficient_access` | A write through a mapping that does not allow it. |
 | `already_exists` | An upload of a name that exists, at `write`. |
 | `not_a_store` | A store-only call on a volume. |
-| `invalid_name` | An empty name, an absolute one, or one with `.` or `..`. |
+| `invalid_name` | An empty name, an absolute one, or one with `.` or `..` — and the same for a folder named to `storage()` or `store()`, or one ending in `/`. |
 | `no_viewer` | `viewer(headers)` on a request with no viewer header — an API key, a health check, a local server — or `jobs.mine()` on the app acting as itself. The hint names starting the job as the app instead. (An anonymous visitor to a public app does carry one; a start in their name is refused by the platform, `viewer_anonymous`.) |
 | `would_outlive_request` | `wait()` while serving a request, with no timeout or one past the request's deadline. The hint is `return toft.jobs.respond(run)`. |
 | `wait_timeout` | `wait()` ran out of time before the run finished. Retryable: the run is still going. |
@@ -59,7 +59,7 @@ output, `output_unreadable` when reading it back, and `store_refused` for any
 | `no_output` | `write_output` in a run that has no output location. |
 | `no_run` | An in-job call (R's `run_progress()`, `run_write_output()`) outside a job. |
 | `off_platform` | A variable the platform injects is missing — the code is running outside Toft, or in a notebook or R Markdown render, which is a build step — or a run handle was made outside a job. Off the platform, `storage()` and `store()` raise this rather than `not_mapped`, in all four languages; set `TOFT_STORAGE` to stand a mount in locally. |
-| `storage_env_invalid` | R and Node: `TOFT_STORAGE` is not valid JSON. |
+| `storage_env_invalid` | `TOFT_STORAGE` is not a valid JSON array, or an entry in it has no `name`, `kind` or `access`. A missing `path` is accepted: a store reached over signed URLs has none. |
 | `not_json` | `output_json()` / `outputJson()` / `OutputJSON` / `job_output(json = TRUE)` on a run output that is not JSON, an output written empty included, in all four languages. A run that wrote no output at all answers `None` / `null` / `false` / `NULL` instead. |
 | `write_failed`, `scratch_unavailable`, `entropy_unavailable` | Go: a local write failed, the scratch folder could not be made, or the system could not supply random bytes. |
 
@@ -71,11 +71,11 @@ Each of these carries a `hint` naming the way out.
 
 | `code` | When |
 |---|---|
-| `too_large` | 413. App data over 256 KiB (the body's `limit` is 262144), or a notification whose message or attachment is over the limit. |
+| `too_large` | 413. App data over 256 KiB (the body's `limit` is 262144), or a notification over any of its size limits — a Slack text over 3,000 characters, an email's text, HTML or subject over its limit, an attachment, or a whole message too big to accept. The hint names the limit. |
 | `params_too_large` | 413. Job parameters over 64 KB. The limit is in the body's `limit_bytes` (65536): Python `e.body["limit_bytes"]`, Node `err.body.limit_bytes`, Go `e.Body["limit_bytes"]` (a `float64`), R `e$body$limit_bytes`. Put the data in a store and pass its name. |
 | `bad_recipient` | 400. An email address the platform will not send to — a `to` that is a string but not an address included. |
-| `destination_not_allowed` | 400. A send that names a destination, such as a Slack `channel` or a folder. The app's owners choose it on the Integrations tab. |
-| `sender_not_allowed` | 400. An email with `from`, `reply_to` or headers. |
+| `destination_not_allowed` | 400. A send that names a destination, such as a Slack `channel` or a folder. The app's owners choose it on the Integrations tab. Node and R refuse it themselves, before anything is sent. |
+| `sender_not_allowed` | 400. An email with `from`, `reply_to` or headers. Node and R refuse it themselves, before anything is sent. |
 | `<kind>_not_attached` | 403. The integration is not attached to this app, for example `email_not_attached` or `slack_not_attached`. |
 
 ## Should I retry?

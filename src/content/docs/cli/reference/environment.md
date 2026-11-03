@@ -50,7 +50,7 @@ You rarely read these yourself.
 | `TOFT_RUN_ID`, `TOFT_JOB_NAME` | This run, and its job. |
 | `TOFT_JOB_TOKEN` | The run's credential. Also used to send notifications and reach the app's stores; it opens nothing else. |
 | `TOFT_PARAMS` | Parameters as JSON, typed as `toft.toml` declares them. Each is also `TOFT_PARAM_<NAME>`, for shell jobs. |
-| `TOFT_SCHEDULED_FOR` | The instant the run is for, RFC 3339 in the schedule's zone. Absent when none was given. |
+| `TOFT_SCHEDULED_FOR` | The instant the run is for, RFC 3339: in the schedule's zone, or with the offset it was named with (`toft job run --for 2026-11-03T09:00:00-05:00` arrives as written). Absent when none was given. |
 | `TOFT_TRIGGER`, `TOFT_TRIGGER_ROLE` | How the run started (`app`, `viewer`, `cli`, `schedule` or `ui`), and with which role (`system` for a schedule). |
 | `TOFT_RERUN_OF` | The run this one repeats, when someone ran it again. Absent on a first run. |
 | `TOFT_DEADLINE` | When the run will be stopped, RFC 3339. |

@@ -25,7 +25,6 @@ timezone      = "Europe/London"      # optional; UTC without it
 overlap       = "skip"               # optional; queue (default) or skip
 notify        = "failures"           # optional; none (default), failures or always
 timeout       = "45m"                # optional; your install's default without it
-memory        = 1024                 # optional; MB
 expect_within = "26h"                # optional; tell the owners if it stops succeeding
 
 [jobs.nightly-report.params.region]
@@ -51,7 +50,9 @@ every job gets the install's job defaults (1 GB and two cores unless they
 changed them) unless an administrator gives that job an override, which stays
 in place across deploys. Your app's own memory and CPU limits do not apply to its
 jobs. A `memory` or `cpu` key is refused with `removed_key` — remove it, and if a
-job needs more, ask an administrator.
+job needs more, ask an administrator. A run stopped at its memory limit ends
+**out of memory**, and the next step it names is the same: an administrator
+raises that job's memory on the app's **Automation** tab.
 
 A job may not ask for more time than your install allows. A deploy that does is
 refused with `limit_exceeds_ceiling`, and the message says what you may ask
@@ -141,8 +142,9 @@ one, so re-running Tuesday's work on Thursday processes Tuesday:
 toft job run nightly-report --for 2026-10-06T03:00:00+01:00
 ```
 
-In Toft, set **Run for a past date** in the Run now form. A rerun keeps the
-original's time.
+The offset you type is kept: the job sees `2026-10-06T03:00:00+01:00`, not the
+same instant in UTC. In Toft, set **Run for a past date** in the Run now form. A
+rerun keeps the original's time.
 
 ## How a run ends
 
