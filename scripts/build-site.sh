@@ -25,7 +25,7 @@ build() { # build BRANCH-VERSION FOLDER
     local w
     w=$(mktemp -d)
     git worktree add --quiet --detach "$w" "origin/release/$1"
-    (cd "$w" && npm ci --no-audit --no-fund >/dev/null && DOCS_BASE="$PREFIX/$2" npx astro build >/dev/null)
+    (cd "$w" && npm ci --no-audit --no-fund >/dev/null && DOCS_BASE="$PREFIX/$2" DOCS_VERSION="$1" npx astro build >/dev/null)
     cp -r "$w/dist" "$out/$2"
     git worktree remove --force "$w"
     echo "built release/$1 -> $PREFIX/$2/"
