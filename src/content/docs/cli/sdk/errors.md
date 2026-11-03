@@ -74,8 +74,8 @@ Each of these carries a `hint` naming the way out.
 | `too_large` | 413. App data over 256 KiB (the body's `limit` is 262144), or a notification over any of its size limits — a Slack text over 3,000 characters, an email's text, HTML or subject over its limit, an attachment, or a whole message too big to accept. The hint names the limit. |
 | `params_too_large` | 413. Job parameters over 64 KB. The limit is in the body's `limit_bytes` (65536): Python `e.body["limit_bytes"]`, Node `err.body.limit_bytes`, Go `e.Body["limit_bytes"]` (a `float64`), R `e$body$limit_bytes`. Put the data in a store and pass its name. |
 | `bad_recipient` | 400. An email address the platform will not send to — a `to` that is a string but not an address included. |
-| `destination_not_allowed` | 400. A send that names a destination, such as a Slack `channel` or a folder. The app's owners choose it on the Integrations tab. Node and R refuse it themselves, before anything is sent. |
-| `sender_not_allowed` | 400. An email with `from`, `reply_to` or headers. Node and R refuse it themselves, before anything is sent. |
+| `destination_not_allowed` | 400. A send that names a destination, such as a Slack `channel` or a folder. The app's owners choose it on the Integrations tab. Node refuses it itself, before anything is sent; R passes it on and the platform refuses it. |
+| `sender_not_allowed` | 400. An email with `from`, `reply_to` or headers. Node refuses it itself, before anything is sent; R passes it on and the platform refuses it. |
 | `<kind>_not_attached` | 403. The integration is not attached to this app, for example `email_not_attached` or `slack_not_attached`. |
 
 ## Should I retry?

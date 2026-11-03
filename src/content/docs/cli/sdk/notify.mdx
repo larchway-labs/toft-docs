@@ -49,9 +49,9 @@ token, the channel, the From address. Your app never holds or chooses them.
 Sending a `channel`, `folder` or `url` field is refused with
 `destination_not_allowed`, and an email's `from`, `reply_to` or headers with
 `sender_not_allowed`; the hint says the app's owners choose these on the
-Integrations tab. Node and R refuse these fields themselves, before anything is
-sent (in Node, `channel`, `folder`, `url`, `routingKey` and the like; `from`,
-`replyTo` or `reply_to`, and `headers`). Node also refuses any other option a
+Integrations tab. Node refuses these fields itself, before anything is
+sent (R passes them on, and the platform refuses them) — in Node, `channel`, `folder`, `url`, `routingKey` and the like; `from`,
+`replyTo` or `reply_to`, and `headers`. Node also refuses any other option a
 call does not take, as `bad_request`.
 
 ## The calls
