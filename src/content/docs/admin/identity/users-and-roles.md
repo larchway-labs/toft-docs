@@ -21,11 +21,13 @@ granted **editor** on an app — promote to publisher first.
 | Page | Shows |
 |---|---|
 | **People** | Everyone, filterable by role and by state: active, pending, locked, dormant |
-| **People → the person** | Their apps, groups, sign-in identities, API keys, and an **access** table — everything they can reach |
+| **People → the person** | Their apps, groups, sign-in identities, API keys, an **access** table — everything they can reach — and **Apps used**: the apps they actually opened in the last 30, 90 or 365 days, most recent first |
 | **Me → Access** | The same access list, for yourself |
 
 Open a person's access before an offboarding, an access review or a "do they
-already have this?" question.
+already have this?" question. **Apps used** answers the next one — what they
+have been relying on — and lists only apps that still exist, counting their own
+visits and not their API keys' traffic.
 
 ## Locking
 
