@@ -15,7 +15,8 @@ command does not read is refused with exit 2, not ignored. A switch takes its va
 Under `--json`, every one of these usage refusals carries a `code`:
 `unknown_command`, `no_command` (a bare `toft --json`), `unknown_flag`,
 `bad_flag` (a flag written wrong, or a switch given a separate value) and
-`unexpected_argument` (a word nothing reads).
+`unexpected_argument` (a word nothing reads). Every refusal `toft` makes itself
+also carries a `hint`: the step to take, or at worst the command's own `--help`.
 
 ## Global flags
 
@@ -30,7 +31,7 @@ command.
 |---|---|
 | `--app <slug>` | Which app. Otherwise `TOFT_APP`, `.toft.toml`, then `toft.toml`. |
 | `--install <url>` | Which install, by URL or alias. Otherwise the default from `toft login`. |
-| `--json` | Machine-readable output on stdout, **one JSON document per line**. |
+| `--json` | Machine-readable output on stdout, **one JSON document per line**. A list is one document per row, never an array. |
 | `-q`, `--quiet` | No narration. The answer still goes to stdout, and the reason an item of a `store` copy failed still goes to stderr. |
 | `--yes` | Answer confirmations. Required when nothing can be asked. |
 | `--no-color` | No color. `NO_COLOR` and `TERM=dumb` do the same, and so does output that is not a terminal. |
@@ -42,6 +43,16 @@ statuses are colored badges (`● running`, `○ sleeping`, `✕ failed`), a dep
 ends in a summary box and an error starts with `✗`. Piped, redirected or in CI,
 the same commands print plain lines with no color codes and errors start with
 `toft:`. Scripts should read `--json` rather than either.
+
+Under `--json`, every list prints one document per row and an empty list prints
+nothing at all: `toft apps`, `toft top`, `deployments list`, `env list`,
+`job list`, `job runs`, `job logs`, `logs`, `events`, `store ls` with no store
+named, the items of a `store cp` or `mv` batch, and `skill`. Read them line by
+line, or gather them with `jq -s`:
+
+```bash
+toft apps --json | jq -s length
+```
 
 When both stdout and stderr are a terminal, a few things stay live: the deploy
 steps tick over as they run (with `--logs`, the build log scrolls above them), a
@@ -187,6 +198,11 @@ linked it exits 2 `no_app` and names `toft link <slug>`.
 | `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check), including in a directory with no app linked. |
 | `--verify <path>` | Once it succeeds, request this path as you. See [`--verify`](#--verify). |
 | `--verify-timeout <d>` | How long `--verify` retries a 5xx. Default `30s`. |
+
+Under `--json`, a successful result may carry `warnings`, the same sentences the
+deploy prints, and `warning_details` beside them: one object per coded warning,
+with its `code` (`go_toolchain_fetched`, `node_version_unread`,
+`manifest_unread`…), as [`toft check`](#toft-check) names them.
 
 ### `--verify`
 
@@ -364,7 +380,8 @@ and prints the status line, then the body. The path is from the app's root:
 | `--data <body>` | A request body. `@file` reads a file, `@-` reads stdin. |
 | `--header 'K: V'` | A request header. Repeat for more. |
 | `--form k=v` | A `multipart/form-data` field; `k=@file` sends a file under its own name. Repeat for more. Implies `POST`, and is not combined with `--data`. |
-| `-o`, `--output <file>` | Write the body to a file instead of printing it — whole, with no `--max-body` bound. Written only when the app answers 2xx or 3xx; a refusal is printed and an existing file is left as it was. |
+| `-o`, `--output <file>` | Write the body to a file instead of printing it — whole, with no `--max-body` bound. Written only when the app answers 2xx or 3xx; a refusal is printed and the file is left as it was. `-o -` writes the whole body to stdout. |
+| `--force` | Let `--output` replace a file that exists. |
 | `--max-body <n>` | Print at most `n` bytes of the body. Default `8192`; `0` prints all of it. |
 | `--expect <code>` | Exit 1 unless the status is exactly this. |
 | `--anonymous` | Send no credential, to see what a stranger sees. |
@@ -377,6 +394,11 @@ absolute URL (`https://…` or `//host/…`): `fetch` takes a path of the app, n
 an address. The same goes for `--verify`. `--json` returns one document: `url`, `status`, a few useful
 `headers`, `body`, `bytes`, `truncated`, `elapsed_ms`, `redirects` (`[]` when
 there were none) and `final_url` (the `url` itself when nothing redirected).
+
+`-o` never replaces a file that exists unless you pass `--force`: without it,
+`fetch` exits 2 `file_exists` before the app is asked anything. A directory is
+exit 2 `is_a_directory`, and `-o - --json` is exit 2 `conflicting_flags`, since
+both want stdout.
 
 When the platform answers in the app's place — the app is stopped, locked,
 building, crashed, or a batch app with no pages — `fetch` says *the platform
@@ -400,6 +422,7 @@ toft fetch /api/health --expect 200
 toft fetch /submit --method POST --data @form.json --header 'Content-Type: application/json'
 toft fetch / --anonymous      # a private app answers 401: that is the app working
 toft fetch /export.xlsx -o export.xlsx
+toft fetch /export.csv -o - | wc -l      # the whole body on stdout
 toft fetch /admin/load --form dataset=frs --form file=@frs.csv
 ```
 
@@ -414,7 +437,7 @@ request as a signed-in browser, so that code sees a name.
 
 ## `toft apps`
 
-The apps you can see. `--mine` lists only the ones that are yours: apps you own, apps a group you belong to owns, and apps you were granted — the same split as **Mine** in the web console.
+The apps you can see. `--mine` lists only the ones that are yours: apps you own, apps a group you belong to owns, and apps you were granted — the same split as **Mine** in the web console. `--json` prints one app per line, and nothing when there are none.
 
 ## `toft top`
 
@@ -457,6 +480,8 @@ event names — `app_crashed`, `app_restarted`, `deploy_failed`, `job_run_failed
 `releases_pruned` and so on, not `crash`. Anything else exits 2 with
 `invalid_kind` or `invalid_severity`, listing the valid values.
 
+`--json` prints one event per line, and nothing when there are none.
+
 ## `toft deps`
 
 The packages a deployment installed, the advisories against them, and the
@@ -475,9 +500,10 @@ a transitive one's is the shortest chain from the app to it.
 
 ## `toft restart`, `start`, `stop`
 
-`restart` and `start` are the same call: the platform starts a stopped app or
-restarts a running one, and the answer says which — `started` or `restarted`
-(`action` under `--json`). A notebook, Quarto or R Markdown app serves the same
+`restart` is the bounce: it restarts a running app, or starts a stopped one,
+and the answer says which — `restarted` or `started` (`action` under `--json`).
+`start` only starts: on an app that is already running it changes nothing (see
+[`toft start`](#toft-start)). A notebook, Quarto or R Markdown app serves the same
 rendered pages after a restart, and the answer carries a note saying so: a
 changed variable reaches the page at the next deploy.
 
@@ -491,9 +517,11 @@ batch app has no service, so all three are refused with `no_service`.
 
 ### `toft start`
 
-Starts the app. It is the same call as `toft restart`: one route serves both,
-and the platform decides from the app's state whether this was a start or a
-restart (`action` under `--json`).
+Starts the app if it is not already running. A running app is left alone: it
+prints `already running`, and under `--json` the answer has `outcome:
+"already_running"` and `action: "none"`. Nothing restarts, so "make sure it is
+up" causes no downtime, however often you say it. To restart a running app,
+use `toft restart`.
 
 | Flag | |
 |---|---|
@@ -586,7 +614,7 @@ exception: it reads its environment when it is rendered, at deploy, so `toft
 env set` says the next deploy (`toft redeploy`) applies the change to the page,
 `--json` says `"redeploy_needed": true`, and a job sees it at its next start.
 
-Under `--json`, `list` gives each row's `value` whenever it is shown, `""` for
+Under `--json`, `list` prints one variable per line, and gives each row's `value` whenever it is shown, `""` for
 an empty one, and `"sensitive": true` with no value for a sensitive one. A
 sensitive variable with no value — such as a secret
 [`[env]`](../../../user/build/toft-toml/#env) in `toft.toml` declared that
@@ -651,8 +679,9 @@ prints a `kept <id>: <reason> — <remedy>` line for each (`kept` under `--json`
 and `delete <id>` on one of them is refused with the reason and what to do about
 it — for a job's release, wait for the run or cancel it (`toft job wait`, `toft
 job cancel`); the serving one is exit 3 (`deployment_protected`). An id that names
-nothing exits 2. `list --json` returns the install's answer, with
-`step_timings` as an object rather than a string holding one. `prune` and `delete` print how many were
+nothing exits 2. `list --json` prints one deployment per line, as the install
+describes it, with `step_timings` as an object rather than a string holding
+one. `prune` and `delete` print how many were
 deleted and the space freed; `--yes` answers the confirmation.
 
 ### Deployment ids
@@ -697,7 +726,7 @@ eight characters `toft job runs` prints.
 | Flag | |
 |---|---|
 | `--param k=v` | A parameter. Repeatable. The install holds it to the job's declared type and choices and converts it, so `--param rows=500` arrives as a number. A required one left out is asked for when a terminal is attached. |
-| `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`; `2026-10-06` or `2026-10-06T03:00` are read as UTC. The run sees it as `TOFT_SCHEDULED_FOR`. |
+| `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`; `2026-10-06` or `2026-10-06T03:00` are read as UTC. A time that names its offset keeps it: the run sees `TOFT_SCHEDULED_FOR=2026-10-06T03:00:00+01:00` as typed, and every read of the run says the same. |
 | `--idempotency-key <k>` | Starts carrying the same key within 24 hours are one run: a repeat answers the first run, with `deduplicated: true`. The same key with a different job, parameters or `--for` exits 3 with `idempotency_key_reused`. |
 | `--no-wait` | Start and return the run id. |
 | `--follow` | Stream the run's log while waiting; with `logs`, keep reading until the run ends. `--logs` is the same. |
@@ -707,7 +736,9 @@ eight characters `toft job runs` prints.
 
 `run`, `rerun` and `wait` exit with the run's outcome: 0 for `succeeded`; 1 for
 `failed`, `timed_out`, `out_of_memory`, `cancelled` or `skipped`, with the
-state and its reason on the last line. A full queue (`queue_full`) is 1 too:
+state and its reason on the last line. An `out_of_memory` run's hint is for an
+administrator to raise the job's memory on the app's Automation tab; a `memory`
+key in `toft.toml` is refused. A full queue (`queue_full`) is 1 too:
 try again later. A parameter the job refuses (`param_required`, `param_type`,
 `param_choice`) or a job the app does not declare (`no_such_job`) is 2, with a
 hint naming the command to fix it.
@@ -722,12 +753,17 @@ repeat answer the first run. Every start's answer carries `deduplicated`, true o
 false. Parameters over 64 KB are refused with `params_too_large`: put the data in
 a store and pass its name.
 
-Under `--json`, `list` gives a scheduled job's `schedule` as the bare cron
+Under `--json`, `list` prints one job per line, and gives a scheduled job's `schedule` as the bare cron
 expression with `timezone` beside it (`UTC` when none is declared), and every
 row carries `expect_within_sec` and `expect_within` (such as `"26h"`), `null`
 when the job declares none.
 
 A timeout prints with every unit it has: `90s` shows as `1m30s`, not `1m`.
+
+A run document's `logs_url` is the path your credential opens:
+`/api/v1/apps/<app-id>/job-runs/<id>/logs`, which `toft job logs` reads. The
+same run read through the SDK, with the app's own token, names
+`/api/v1/app/job-runs/<id>/logs` for the same log.
 
 `toft task` is gone. It exits 2 with `removed_command` and points at
 `[jobs.<name>]` in `toft.toml`. See [Jobs](../../sdk/jobs/).
@@ -771,8 +807,9 @@ subcommand takes that form back, so you can copy any line into the next command.
 `<store>/<path>` works too. For `cp` and `mv` with `toft://` on neither side, it
 is read as a store only when nothing in the working directory has the store's
 name: a local folder of that name wins. Write `toft://` to mean the store.
-Flags can go before or after the arguments. `ls --json` returns
-`{"folders": [...], "objects": [...]}`, with `-r` too.
+Flags can go before or after the arguments. `ls <store> --json` returns
+`{"folders": [...], "objects": [...]}`, with `-r` too; `ls --json` with no store
+named prints one store per line.
 
 A **partitioned** store takes uploads only inside the folders that apps are
 attached to. `toft store ls` lists those folders under the store, or says none
@@ -786,7 +823,8 @@ is attached yet; an upload anywhere else is refused (exit 3).
 
 `rm`, `cp` and `mv` look the store and the source up before anything moves or
 anything is asked, so a store you cannot reach or a file that isn't there exits
-2 (`not_found`) with nothing transferred, rather than asking for `--yes`. A
+2 (`not_found`) with nothing transferred, rather than asking for `--yes` — with
+`-r` as without it. A
 folder where a file was wanted exits 2 (`is_a_folder`) — `get` of a folder, and
 `cp`, `mv` or `rm` of one without `-r`, with or without the trailing slash. The
 same goes for `ls`, `get` and `put` on a store that names nothing you can reach,
@@ -799,8 +837,8 @@ stdout. A refusal — your access level, or a partitioned store's folders — ex
 A copy of several files in which every item was refused for the same reason is
 that refusal, with its exit code and `code`: copying one file onto an existing
 name at `write` exits 3 with `already_exists`, as `put` does. A batch that
-partly failed exits 1 with "n of m failed", and under `--json` each item carries
-its own `code`.
+partly failed exits 1 with "n of m failed". Under `--json`, a batch prints one
+document per item, and a failed item carries its own `code`.
 
 A `toft store` grant lets you move files. It does not let you attach the store
 to an app: that needs a delegation from an administrator — see
@@ -894,4 +932,4 @@ toft skill toft-cli > ~/.claude/skills/toft-cli/SKILL.md
 toft skill toft-sdk > ~/.claude/skills/toft-sdk/SKILL.md
 ```
 
-`--json` returns the names, or `{name, content}` for one skill.
+`--json` prints one name per line, or `{name, content}` for one skill.
