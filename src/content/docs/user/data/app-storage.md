@@ -78,8 +78,8 @@ as well as from the app itself.
 ### Where it appears
 
 Your app and every one of its jobs see the same attached storage, in the
-`TOFT_STORAGE` environment variable — JSON listing each one's name, kind,
-level, folder and **path**. The SDK calls above read it for you. Read the path
+`TOFT_STORAGE` environment variable — JSON listing each one's `name`, `kind`,
+`access` (its level), `folder` and **`path`**. The SDK calls above read it for you. Read the path
 from there rather than writing it into your code, because it depends on the
 install:
 
