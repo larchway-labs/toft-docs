@@ -257,7 +257,7 @@ its own code and hint; a deploy stops at the first.
 
 | Code | When |
 |---|---|
-| `manifest_syntax` | The file doesn't parse; the message names the line |
+| `manifest_syntax` | The file doesn't parse, or a value is the wrong type (`fallback = "yes"` where `true` or `false` belongs, `node = 22` where `"22"` does); the message names the line and says which |
 | `invalid_runtime` | A `[runtime]` pin Toft can't read |
 | `invalid_job_name`, `invalid_job_command` | A job's name, or its `command` or `args` |
 | `invalid_timeout` | A `timeout` that isn't a duration or is outside 1 second to 7 days; the message names the value |
