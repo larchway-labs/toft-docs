@@ -14,13 +14,15 @@
    page. That is Starlight's convention, not a mistake.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Toft is light-only, so every selector Starlight might switch on gets
-   the same values. The theme toggle is removed in astro.config.mjs by
-   overriding the component; this is the belt to that pair of braces, and it is
-   what keeps a reader whose OS is dark from getting a half-dark page. */
+/* Light and dark. The platform is light-only; its documentation is not,
+   because a reader keeps docs open beside an editor and a terminal, and every
+   reference site they compare it to follows their OS. Starlight's ThemeSelect
+   stays in the header, so the reader can also pick.
+
+   The light palette is the platform's. The dark one is drawn for these pages:
+   the same hues, the same five tones, lightness turned over. */
 :root,
-:root[data-theme="light"],
-:root[data-theme="dark"] {
+:root[data-theme="light"] {
   color-scheme: light;
 
   /* ── The platform's palette, under its own names ───────────────────────── */
@@ -57,19 +59,92 @@
   --lp-neutral-border: oklch(0.92 0.004 286.32);
   --lp-neutral-fg: oklch(0.442 0.017 285.786);
 
-  /* The one dark surface in a light-only product, and it is dark because a
+  /* The one dark surface in the light-only platform, and it is dark because a
      terminal is. Code blocks are read against it here for the same reason the
      log pane is in the app. */
   --lp-terminal: oklch(0.141 0.005 285.823);
   --lp-terminal-foreground: oklch(0.92 0.004 286.32);
 
-  /* ── Mapped onto Starlight ─────────────────────────────────────────────── */
-  --sl-color-white: var(--lp-foreground);
+  /* Inks and edges the rules below used to spell out as literals. */
+  --lp-link: var(--lp-primary);
+  --lp-primary-hover: oklch(0.43 0.18 264);
+  --lp-body: oklch(0.25 0 0);
+  --lp-nav-ink: oklch(0.32 0 0);
+  --lp-quiet-ink: oklch(0.38 0 0);
+  --lp-bullet: oklch(0.7 0.01 264);
+  --lp-border-strong: oklch(0.82 0.01 264);
+  --lp-caution-bar: oklch(0.75 0.15 70);
+  --lp-shadow-ink: oklch(0.145 0 0);
+  --lp-shadow-tint: oklch(0.3 0.08 264);
+
   --sl-color-gray-1: oklch(0.205 0 0);
   --sl-color-gray-2: oklch(0.35 0 0);
-  --sl-color-gray-3: var(--lp-muted-foreground);
   --sl-color-gray-4: oklch(0.65 0.005 264);
   --sl-color-gray-5: oklch(0.82 0.005 264);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --lp-background: oklch(0.13 0.004 264);
+  --lp-card: oklch(0.16 0.005 264);
+  --lp-foreground: oklch(0.965 0 0);
+  --lp-muted: oklch(0.215 0.006 264);
+  --lp-muted-foreground: oklch(0.7 0.008 264);
+  --lp-accent: oklch(0.255 0.035 264);
+  --lp-accent-foreground: oklch(0.86 0.07 264);
+  --lp-border: oklch(0.275 0.006 264);
+  --lp-primary: oklch(0.56 0.19 264);
+  --lp-primary-foreground: oklch(0.985 0 0);
+
+  --lp-ok-surface: oklch(0.21 0.035 166);
+  --lp-ok-border: oklch(0.4 0.08 165);
+  --lp-ok-fg: oklch(0.78 0.13 165);
+
+  --lp-attention-surface: oklch(0.22 0.035 85);
+  --lp-attention-border: oklch(0.45 0.1 75);
+  --lp-attention-fg: oklch(0.83 0.14 80);
+
+  --lp-danger-surface: oklch(0.22 0.045 20);
+  --lp-danger-border: oklch(0.45 0.12 22);
+  --lp-danger-fg: oklch(0.76 0.15 25);
+
+  --lp-info-surface: oklch(0.22 0.045 272);
+  --lp-info-border: oklch(0.42 0.12 274);
+  --lp-info-fg: oklch(0.78 0.12 274);
+
+  --lp-neutral-surface: oklch(0.2 0.004 264);
+  --lp-neutral-border: oklch(0.3 0.006 264);
+  --lp-neutral-fg: oklch(0.74 0.01 286);
+
+  --lp-terminal: oklch(0.12 0.005 285.823);
+  --lp-terminal-foreground: oklch(0.92 0.004 286.32);
+
+  --lp-link: oklch(0.74 0.13 264);
+  --lp-primary-hover: oklch(0.62 0.19 264);
+  --lp-body: oklch(0.86 0.004 264);
+  --lp-nav-ink: oklch(0.8 0.006 264);
+  --lp-quiet-ink: oklch(0.78 0.006 264);
+  --lp-bullet: oklch(0.5 0.01 264);
+  --lp-border-strong: oklch(0.38 0.01 264);
+  --lp-caution-bar: oklch(0.72 0.14 70);
+  --lp-shadow-ink: oklch(0 0 0);
+  --lp-shadow-tint: oklch(0 0 0);
+
+  --sl-color-gray-1: oklch(0.92 0 0);
+  --sl-color-gray-2: oklch(0.82 0.004 264);
+  --sl-color-gray-4: oklch(0.52 0.008 264);
+  --sl-color-gray-5: oklch(0.38 0.008 264);
+}
+
+/* Starlight declares its own colours under :root[data-theme=light] and on
+   bare :root for dark, so the mapping has to match both to win. */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  /* ── Mapped onto Starlight ─────────────────────────────────────────────── */
+  --sl-color-white: var(--lp-foreground);
+  --sl-color-gray-3: var(--lp-muted-foreground);
   --sl-color-gray-6: var(--lp-border);
   --sl-color-gray-7: var(--lp-muted);
   --sl-color-black: var(--lp-card);
@@ -79,7 +154,7 @@
   --sl-color-accent-high: var(--lp-accent-foreground);
 
   --sl-color-text: var(--lp-foreground);
-  --sl-color-text-accent: var(--lp-primary);
+  --sl-color-text-accent: var(--lp-link);
   --sl-color-text-invert: var(--lp-primary-foreground);
 
   /* One white surface, as the landing page has: the page, the header and the
@@ -94,7 +169,7 @@
   --sl-color-hairline-light: var(--lp-border);
   --sl-color-hairline-shade: var(--lp-border);
 
-  --sl-color-backdrop-overlay: oklch(0.145 0 0 / 0.4);
+  --sl-color-backdrop-overlay: oklch(from var(--lp-shadow-ink) l c h / 0.5);
 
   /* Asides, mapped to the five tones rather than to Starlight's rainbow. Note
      is info, tip is ok, caution is attention, danger is danger — the same four
@@ -119,7 +194,7 @@
   --sl-color-purple: var(--lp-border);
   --sl-color-purple-high: var(--lp-accent-foreground);
 
-  --sl-color-asides-text-accent: var(--lp-primary);
+  --sl-color-asides-text-accent: var(--lp-link);
 
   /* Type. Geist and Geist Mono are the platform's two voices; the mono one
      earns its place the same way it does there — a slug, an environment
@@ -127,9 +202,9 @@
   --sl-font: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
-  --sl-shadow-sm: 0 1px 2px 0 oklch(0.145 0 0 / 0.05);
-  --sl-shadow-md: 0 1px 3px 0 oklch(0.145 0 0 / 0.08), 0 1px 2px -1px oklch(0.145 0 0 / 0.06);
-  --sl-shadow-lg: 0 4px 12px -2px oklch(0.145 0 0 / 0.1);
+  --sl-shadow-sm: 0 1px 2px 0 oklch(from var(--lp-shadow-ink) l c h / 0.05);
+  --sl-shadow-md: 0 1px 3px 0 oklch(from var(--lp-shadow-ink) l c h / 0.08), 0 1px 2px -1px oklch(from var(--lp-shadow-ink) l c h / 0.06);
+  --sl-shadow-lg: 0 4px 12px -2px oklch(from var(--lp-shadow-ink) l c h / 0.1);
 
   /* Type scale. Body copy is set at 16px: these pages are read, not scanned
      like the app's tables, and the product's 15px was a size for dense
@@ -194,7 +269,7 @@ site-search button[data-open-modal] {
 }
 
 site-search button[data-open-modal]:hover {
-  border-color: oklch(0.82 0.01 264);
+  border-color: var(--lp-border-strong);
 }
 
 /* ── The guide switcher ─────────────────────────────────────────────────────
@@ -232,7 +307,7 @@ site-search button[data-open-modal]:hover {
 .toft-guide-nav a[aria-current] {
   background: var(--lp-card);
   color: var(--lp-foreground);
-  box-shadow: 0 1px 2px oklch(0.145 0 0 / 0.08), 0 0 0 1px var(--lp-border);
+  box-shadow: 0 1px 2px oklch(from var(--lp-shadow-ink) l c h / 0.08), 0 0 0 1px var(--lp-border);
 }
 
 /* The phone menu's footer would draw it a second time. */
@@ -284,7 +359,7 @@ site-search button[data-open-modal]:hover {
   padding: 0.3125rem 0.5rem;
   font-size: 0.875rem;
   line-height: 1.35;
-  color: oklch(0.32 0 0);
+  color: var(--lp-nav-ink);
   border-radius: calc(var(--lp-radius) - 2px);
 }
 
@@ -320,7 +395,7 @@ starlight-toc a:hover {
 }
 
 starlight-toc a[aria-current="true"] {
-  color: var(--lp-primary);
+  color: var(--lp-link);
   font-weight: 500;
 }
 
@@ -344,7 +419,7 @@ starlight-toc a[aria-current="true"] {
   margin: 0;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--lp-primary);
+  color: var(--lp-link);
 }
 
 .toft-eyebrow span {
@@ -416,7 +491,7 @@ starlight-toc a[aria-current="true"] {
 .sl-markdown-content {
   font-size: var(--sl-text-body);
   line-height: 1.7;
-  color: oklch(0.25 0 0);
+  color: var(--lp-body);
 }
 
 .sl-markdown-content :is(h2, h3, h4) {
@@ -469,8 +544,8 @@ starlight-toc a[aria-current="true"] {
 }
 
 .sl-markdown-content a:not(.sl-anchor-link):not(:where(.not-content *)) {
-  color: var(--lp-primary);
-  text-decoration-color: color-mix(in oklch, var(--lp-primary) 35%, transparent);
+  color: var(--lp-link);
+  text-decoration-color: color-mix(in oklch, var(--lp-link) 35%, transparent);
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
@@ -499,7 +574,7 @@ starlight-toc a[aria-current="true"] {
 }
 
 .sl-markdown-content ul > li:not(:where(.not-content *))::marker {
-  color: oklch(0.7 0.01 264);
+  color: var(--lp-bullet);
 }
 
 /* Inline code is a thing you copy: a tint, ink-coloured. No edge — a table
@@ -634,7 +709,7 @@ starlight-toc a[aria-current="true"] {
 
 .starlight-aside--note { --sl-color-asides-border: var(--lp-info-fg); }
 .starlight-aside--tip { --sl-color-asides-border: var(--lp-ok-fg); }
-.starlight-aside--caution { --sl-color-asides-border: oklch(0.75 0.15 70); }
+.starlight-aside--caution { --sl-color-asides-border: var(--lp-caution-bar); }
 .starlight-aside--danger { --sl-color-asides-border: var(--lp-danger-fg); }
 
 /* ── Previous and next ─────────────────────────────────────────────────────
@@ -797,7 +872,7 @@ starlight-toc a[aria-current="true"] {
 }
 
 .toft-button.primary:hover {
-  background: oklch(0.43 0.18 264);
+  background: var(--lp-primary-hover);
 }
 
 .toft-button.primary:hover::after {
@@ -821,7 +896,7 @@ starlight-toc a[aria-current="true"] {
   border: 1px solid var(--lp-border);
   border-radius: calc(var(--lp-radius) + 4px);
   background: var(--lp-card);
-  box-shadow: 0 1px 2px oklch(0.145 0 0 / 0.04), 0 12px 32px -16px oklch(0.3 0.08 264 / 0.18);
+  box-shadow: 0 1px 2px oklch(from var(--lp-shadow-ink) l c h / 0.04), 0 12px 32px -16px oklch(from var(--lp-shadow-tint) l c h / 0.18);
 }
 
 @media (min-width: 56rem) {
@@ -865,7 +940,7 @@ starlight-toc a[aria-current="true"] {
   font-size: 0.75rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--lp-primary);
+  color: var(--lp-link);
 }
 
 .toft-command {
@@ -967,7 +1042,7 @@ starlight-toc a[aria-current="true"] {
 }
 
 .toft-band-label h2 a:hover::after {
-  color: var(--lp-primary);
+  color: var(--lp-link);
 }
 
 .toft-band-label > p:last-child {
@@ -979,7 +1054,7 @@ starlight-toc a[aria-current="true"] {
 }
 
 .toft-band-label a:not(h2 a) {
-  color: var(--lp-primary);
+  color: var(--lp-link);
   text-underline-offset: 3px;
 }
 
@@ -1034,12 +1109,12 @@ starlight-toc a[aria-current="true"] {
 }
 
 .toft-links a {
-  color: oklch(0.38 0 0);
+  color: var(--lp-quiet-ink);
   text-decoration: none;
 }
 
 .toft-links a:hover {
-  color: var(--lp-primary);
+  color: var(--lp-link);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -1052,7 +1127,7 @@ starlight-toc a[aria-current="true"] {
 a.toft-path {
   font-family: var(--sl-font-mono);
   font-size: 0.8125rem;
-  color: var(--lp-primary);
+  color: var(--lp-link);
   text-decoration: none;
 }
 
@@ -1076,4 +1151,17 @@ a.toft-path:hover {
   from {
     transform: translateY(0.75rem);
   }
+}
+
+/* ── Dark: the phone menu button ────────────────────────────────────────────
+   Starlight inverts it to a white disc on a dark page; here it is the same
+   muted chip as the guide switcher. */
+:root[data-theme="dark"] starlight-menu-button button {
+  background-color: var(--lp-muted);
+  color: var(--lp-foreground);
+  box-shadow: 0 0 0 1px var(--lp-border);
+}
+
+:root[data-theme="dark"] starlight-menu-button[aria-expanded="true"] button {
+  background-color: var(--lp-accent);
 }
