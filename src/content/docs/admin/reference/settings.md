@@ -34,8 +34,8 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `default_execution_mode` | New apps are born | The mode a new app starts in when its creator doesn’t choose. | — |
 | `background_jobs_enabled` | Background jobs | Lets apps run scheduled and on-demand work as a process of its own. | — |
 | `app_memory_limit_mb` | Memory limit per app | Memory one app may use before it is restarted, in MB or GB. 0 uses the install default. | 64–1,048,576 MB, or 0 |
-| `app_cpu_request_millicores` | CPU reserved per app | CPU each isolated app reserves, in cores. 0 uses the install default. | 1–64,000 m, or 0 |
-| `app_cpu_limit_millicores` | CPU limit per app | The most CPU time one app may use, in cores. 0 uses the install default (`APP_CPU_LIMIT_MILLICORES`, one core as shipped). Applies to shared and isolated apps. An amount of time, not a set of cores: over it an app is slowed, not restarted, and its owners are told when that lasts. It can't be lower than the reservation above. | 50–64,000 m, or 0 |
+| `app_cpu_request_millicores` | CPU reserved per app | CPU each isolated app reserves. The screen asks in cores; the API key holds millicores (1,000 m is one core), and `app_cpu_request_cores` takes cores. 0 uses the install default. | 1–64,000 m (0.001–64 cores), or 0 |
+| `app_cpu_limit_millicores` | CPU limit per app | The most CPU time one app may use — in cores on the screen, millicores in this key (`app_cpu_limit_cores` takes cores). 0 uses the install default (`APP_CPU_LIMIT_MILLICORES`, one core as shipped). Applies to shared and isolated apps. An amount of time, not a set of cores: over it an app is slowed, not restarted, and its owners are told when that lasts. It can't be lower than the reservation above. | 50–64,000 m (0.05–64 cores), or 0 |
 | `max_concurrent_builds` | Builds at once | How many deploys may build at the same time. 0 uses the install default. | 1–64 builds, or 0 |
 | `auto_deploy_poll_seconds` | Auto-deploy check interval | How often tracked branches are checked for new commits. 0 uses the install default. | 10–86,400 seconds, or 0 |
 | `r_package_repository` | R package repository | Where R builds install packages from. Leave blank to use the install default. | — |
@@ -50,7 +50,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `default_job_timeout_seconds` | Stop a job after | The timeout for a job whose toft.toml declares none. | 60–604,800 seconds |
 | `max_job_timeout_seconds` | Longest a job may run | The ceiling on any job’s timeout. A longer one in toft.toml is refused at check and deploy. | 60–604,800 seconds |
 | `job_memory_limit_mb` | Memory per job run | Memory a job run may use. 0 uses the install default (`JOB_MEMORY_LIMIT_MB`, 1,024 MB as shipped). Override it on one job from its app’s Automation tab. | 64–1,048,576 MB, or 0 |
-| `job_cpu_limit_millicores` | CPU per job run | The most CPU time a job run may use, in cores. 0 uses the install default (`JOB_CPU_LIMIT_MILLICORES`, 2,000 m as shipped). | 50–64,000 m, or 0 |
+| `job_cpu_limit_millicores` | CPU per job run | The most CPU time a job run may use — in cores on the screen, millicores in this key (`job_cpu_limit_cores` takes cores). 0 uses the install default (`JOB_CPU_LIMIT_MILLICORES`, 2,000 m as shipped). | 50–64,000 m (0.05–64 cores), or 0 |
 | `gallery_deploy_mode` | Gallery | What the gallery offers: nothing, extensions only, or extensions and examples. | — |
 | `job_log_retention_days` | Keep job logs for | A background job’s log lines. | 1–365 days |
 | `job_run_retention_days` | Keep job runs for | Job runs and their output files. | 1–3,650 days |
