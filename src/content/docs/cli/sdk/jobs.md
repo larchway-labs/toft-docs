@@ -122,9 +122,10 @@ job, parameters or `scheduled_for` is refused 409 `idempotency_key_reused`.
 A full queue raises `QueueFull` (Python, Node; `*toft.QueueFullError` in Go;
 code `queue_full` in R), retryable. `viewer()` on a request with no viewer
 header — an API key, a health check, a local server — raises `no_viewer`. An
-anonymous visitor to a public app does carry one, which names nobody: the start
-is refused `viewer_anonymous`, with a hint to start the job as the app instead
-(`toft.jobs.start`).
+anonymous visitor to a public app does carry one, which names nobody: every jobs call
+on that viewer — start, list, `mine`, get, cancel — is refused `viewer_anonymous`,
+with a hint to make the same call as the app instead (`toft.jobs.start`,
+`toft.jobs.list`).
 
 ### Respond, don't wait
 
