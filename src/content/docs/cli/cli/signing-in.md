@@ -18,8 +18,13 @@ after the machine, and you revoke it there.
 | `--token-stdin` | Read a key from stdin instead of opening a browser. Takes a personal key or a deploy key. |
 | `--password-stdin` | Sign in as the built-in administrator with a password read from stdin, and store the session **beside** the key. See [The administrator's session](#the-administrators-session). |
 | `--user <name>` | With `--password-stdin`: who signs in. Defaults to `admin`. |
-| `--forget <install>` | Drop one stored credential. |
-| `--forget-all` | Drop every stored credential. |
+| `--forget <install>` | Drop one stored credential. With `--json`, prints `{"forgotten": [...]}`. |
+| `--forget-all` | Drop every stored credential. With `--json`, prints `{"forgotten": [...]}`. |
+
+The browser sign-in needs a person. When nobody is there to approve it —
+`--plain` or `TOFT_PLAIN`, `CI` set, or stdin not a terminal — `toft login
+<url>` exits 2 with `unattended_login` instead of waiting. Unattended, use
+`--token-stdin` (or `--password-stdin` for the administrator's session).
 
 `toft login` with no URL signs in again to your default install, which is what
 you run when a key expires. Forgetting a credential does **not** revoke the key;
@@ -28,7 +33,8 @@ that happens on the install.
 With no URL, `--token-stdin` re-keys the stored default install too, and when
 there is none it refuses before reading anything. Ctrl-C or SIGTERM ends a read
 of stdin — `--token-stdin`, `--password-stdin`, `env set --from-file -`, `api
---data @-` — so a pipeline that never writes does not hang.
+--data @-` — so a pipeline that never writes does not hang. That exits 1 with
+the code `interrupted`, and nothing is sent.
 
 :::caution
 There is no `--token` flag. A secret on the command line ends up in shell
