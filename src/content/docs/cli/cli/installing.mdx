@@ -3,6 +3,8 @@ title: Installing toft
 description: Install the toft command-line client on Linux, macOS or Windows, and keep it current.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 `toft` is Toft's command-line client: one binary, no runtime, no daemon. It
 pushes the directory on your disk to an install, watches the build, and reads
 the logs afterwards.
@@ -13,7 +15,10 @@ browser is the **user guide**; running an install is the **admin guide**. Your
 install's **Documentation** page links to all three for its version.
 :::
 
-## Linux and macOS
+## Install
+
+<Tabs syncKey="os">
+<TabItem label="Linux and macOS">
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh
@@ -35,7 +40,8 @@ Pass options through the pipe with `sh -s --`:
 curl -fsSL https://raw.githubusercontent.com/larchway-labs/toft-cli/main/install.sh | sh -s -- --version 0.7.0
 ```
 
-## Windows
+</TabItem>
+<TabItem label="Windows">
 
 Download `toft_windows_amd64.exe`, rename it `toft.exe`, and put it on your
 `PATH`:
@@ -43,6 +49,9 @@ Download `toft_windows_amd64.exe`, rename it `toft.exe`, and put it on your
 ```powershell
 curl.exe -fsSLo toft.exe https://github.com/larchway-labs/toft-cli/releases/latest/download/toft_windows_amd64.exe
 ```
+
+</TabItem>
+</Tabs>
 
 :::caution[Unsigned binaries]
 The binaries are not code-signed. On Windows, Smart App Control may refuse

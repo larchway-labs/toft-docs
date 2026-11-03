@@ -3,6 +3,8 @@ title: Who is asking
 description: caller, who and viewer — what a request may do, who sent it, and acting on their behalf.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 Three calls answer three different questions.
 
 | Call | Question | Round trip | Anonymous visitor |
@@ -13,23 +15,41 @@ Three calls answer three different questions.
 
 ## `caller`: what they may do
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 c = toft.caller(request.headers)
 if not c.at_least(toft.ROLE_EDITOR):
     abort(403)
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const c = toft.caller(req.headers);
 if (!c.atLeast(toft.ROLE_EDITOR)) return res.status(403).end();
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 c := toft.CallerFor(r.Header)
 if !c.AtLeast(toft.RoleEditor) { … }
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 caller_role(req$HEADERS)                 # "editor", "viewer", ... or "unknown"
 caller_can(req$HEADERS, "editor")        # TRUE / FALSE
 ```
+
+</TabItem>
+</Tabs>
 
 The role arrives signed on every request and is verified locally against
 `TOFT_ROLE_KEY`. It never fails: a missing, invalid or expired role reads as
@@ -38,6 +58,9 @@ handlers. See [The six roles](../../reference/roles/).
 
 ## `who`: who they are
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 me = toft.who(request.headers)           # Identity, or None
 if me and (me.role == "owner" or me.is_admin):
@@ -45,16 +68,31 @@ if me and (me.role == "owner" or me.is_admin):
 if me and "finance" in me.group_names:
     render_approvals()
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const me = await toft.who(req.headers);
 if (me?.role === "owner" || me?.isAdmin) renderAdminTab();
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 me, err := toft.Who(ctx, r.Header)       // *Identity, or nil
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 me <- viewer(req$HEADERS)                # a list, or NULL
 ```
+
+</TabItem>
+</Tabs>
 
 An identity has `id`, `name`, `email`, `role`, `is_admin` and `groups`. It returns nothing
 for an anonymous visitor, because that is an answer, not an error.
@@ -92,22 +130,39 @@ signed in)>`), so a log line says what it is.
 
 ## `viewer`: act as them
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 me = toft.viewer(request.headers)
 me.jobs.start("reconcile", params={"month": month})
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const me = toft.viewer(req.headers);
 await me.jobs.start("reconcile", {});
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 me, err := toft.ViewerFor(r.Header)
 me.Jobs.Start(ctx, "reconcile", opts)
 ```
 
+</TabItem>
+<TabItem label="R">
+
 ```r
 viewer_jobs(req) |> job_start("reconcile", params = list(month = month))
 ```
+
+</TabItem>
+</Tabs>
 
 Work started through `viewer()` is recorded in that person's name. It raises
 `no_viewer` when the request carries no viewer at all (an API key, a health

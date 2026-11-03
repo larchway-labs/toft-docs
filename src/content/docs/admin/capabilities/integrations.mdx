@@ -3,6 +3,8 @@ title: Integrations
 description: Let apps send messages and files outward using an identity the install holds, never one the app holds.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 An integration lets an app send something outward — a message or a file — with
 credentials **the install holds**. The app supplies the content; the platform
 supplies the identity. Manage them in **Admin → Integrations**.
@@ -54,6 +56,8 @@ The bot is the governed way into Teams. It can post only to teams and group chat
 where your organization installed the Toft app, and Teams admins can see and remove
 those installations. It also carries Toft's own notices, such as a failed deploy.
 
+<Steps>
+
 1. **Register a bot.** In the Teams Developer Portal (dev.teams.microsoft.com), open
    **Tools › Bot management**, create a bot and add a client secret. No Azure
    subscription is needed. The bot must be single-tenant.
@@ -69,6 +73,8 @@ those installations. It also carries Toft's own notices, such as a failed deploy
 5. **Choose channels.** Pick a default channel on the connection, which Toft's
    notices for administrators need, and give each app its own channel on the app's
    Integrations tab. An app posts only to the channel it was given.
+
+</Steps>
 
 If someone removes the app from a team, the team shows **Not installed** and sends
 to it fail. Toft never sends them somewhere else. Download the app again whenever
@@ -142,6 +148,8 @@ credential.
 
 #### SharePoint or OneDrive
 
+<Steps>
+
 1. **Register an app.** In Entra, create an app registration and give it the
    application permission **`Files.SelectedOperations.Selected`**, then grant admin
    consent. On its own, this permission reaches nothing.
@@ -191,6 +199,8 @@ credential.
    ```
 
    R, Node and Go have Microsoft libraries that read the same three variables.
+
+</Steps>
 
 #### Google Drive
 

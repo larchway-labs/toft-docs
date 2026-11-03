@@ -3,10 +3,15 @@ title: Access tokens
 description: Read and write a SharePoint, OneDrive or Google Drive folder with the provider's own SDK, using a short-lived token Toft hands your app.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 When an administrator has turned on **Let apps get access tokens** on the
 SharePoint, OneDrive or Google Drive connection attached to your app, your app can
 get that connection's own access token and call Microsoft Graph or the Drive API
 directly: list, read, replace and delete files. Your app never holds a secret.
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
 
 ```python
 token = toft.access_token("sharepoint")
@@ -15,15 +20,30 @@ token.expires_at             # when it stops working
 token.folder.drive_id        # the folder your app was attached to,
 token.folder.item_id         # in Graph's own ids
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const token = await toft.accessToken("sharepoint");
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 token, err := toft.AccessToken(ctx, "sharepoint")
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 token <- access_token("sharepoint")
 ```
+
+</TabItem>
+</Tabs>
 
 The kind is `sharepoint`, `onedrive` or `gdrive`. Each SDK keeps the token and
 fetches a new one five minutes before it expires, so you can call it before every
@@ -33,11 +53,18 @@ request.
 
 Python and Node have an adapter that Microsoft's libraries accept as a credential:
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 from msgraph import GraphServiceClient
 
 client = GraphServiceClient(toft.azure_credential("sharepoint"))
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 import { Client } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from
@@ -48,6 +75,9 @@ const client = Client.initWithMiddleware({
     toft.azureCredential("sharepoint"), { scopes: [] }),
 });
 ```
+
+</TabItem>
+</Tabs>
 
 In Go, wrap it in five lines of your own:
 

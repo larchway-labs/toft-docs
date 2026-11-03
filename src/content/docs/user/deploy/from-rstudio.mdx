@@ -3,6 +3,8 @@ title: From RStudio
 description: Publish from RStudio or Posit Workbench with the Publish button and rsconnect, as you would to Posit Connect.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 Toft answers the same calls as Posit Connect, so RStudio's **Publish** button
 and `rsconnect::deployApp()` work unchanged. Add Toft as a server once, then
 publish as usual. You do not need `toft`.
@@ -16,6 +18,8 @@ publish as usual. You do not need `toft`.
 
 ## Add Toft as a server
 
+<Steps>
+
 1. In RStudio, open **Tools → Global Options → Publishing → Connect…** and
    choose **Posit Connect**.
 2. Enter your Toft address, such as `https://toft.your-company.com`, with no
@@ -23,6 +27,8 @@ publish as usual. You do not need `toft`.
 3. A browser page titled **Sign in RStudio** opens in Toft. Select
    **Approve**.
 4. RStudio finishes adding the account.
+
+</Steps>
 
 :::caution[Approve only your own request]
 Approving creates a personal API key that acts as you. If you did not just

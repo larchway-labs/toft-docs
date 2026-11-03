@@ -3,9 +3,14 @@ title: App data
 description: One JSON document per app, up to 256 KiB, that survives restarts, redeploys and rollbacks.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 Every app has **one JSON document**, up to 256 KiB. There are no keys, no
 collections and no queries. Use it for a saved filter, a last-run timestamp, or
 settings someone edited in your UI.
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
 
 ```python
 doc = toft.data.get()                       # dict, or None
@@ -13,24 +18,39 @@ saved = toft.data.set({"period": p})        # returns the Document written
 toft.data.update(lambda s: s.update(runs=s.get("runs", 0) + 1))
 toft.data.clear()
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 await toft.data.get();                      // object, or null
 await toft.data.set({ period });
 await toft.data.update((s) => { s.runs = (s.runs ?? 0) + 1; });
 await toft.data.clear();
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 doc, err := toft.Data.Get(ctx)              // map[string]any, nil if none
 saved, err := toft.Data.Set(ctx, settings)
 saved, err = toft.Data.Update(ctx, func(s map[string]any) (map[string]any, error) { … })
 ok, err := toft.Data.Clear(ctx)
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 doc <- app_data_get()                       # list, or NULL
 saved <- app_data_set(list(period = p))     # a named list; returns the document
 saved <- app_data_update(function(s) { s$runs <- (s$runs %||% 0) + 1; s })
 app_data_clear()                            # TRUE when there was a document
 ```
+
+</TabItem>
+</Tabs>
 
 ## Writes return what they wrote
 

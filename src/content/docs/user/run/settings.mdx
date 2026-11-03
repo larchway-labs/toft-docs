@@ -3,6 +3,8 @@ title: Settings and environment variables
 description: Name, slug, source, runtime and environment variables on an app's Settings tab.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 The **Settings** tab holds everything you can change about an app.
 
 | Section | Contains |
@@ -123,20 +125,32 @@ code change. Fall back to a local value for running on your own machine. A
 variable declared in `[env]` but never filled arrives as an empty string, so
 treat empty as missing:
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 import os
 api_url = os.environ.get("API_URL") or "http://localhost:5000"
 debug = os.environ.get("LOG_LEVEL") == "debug"
 ```
 
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const apiUrl = process.env.API_URL || "http://localhost:5000";
 ```
+
+</TabItem>
+<TabItem label="R">
 
 ```r
 api_url <- Sys.getenv("API_URL")
 if (!nzchar(api_url)) api_url <- "http://localhost:5000"
 ```
+
+</TabItem>
+</Tabs>
 
 ## Name and slug
 

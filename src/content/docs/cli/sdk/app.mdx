@@ -3,22 +3,42 @@ title: The app itself
 description: Read the app's id, slug, mode and mount path, and ask what an administrator attached.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ## Who am I
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
 
 ```python
 toft.app.id, toft.app.slug, toft.app.name, toft.app.mode, toft.app.base_path
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 toft.app.id;  toft.app.slug;   // plain properties
 await toft.app.mode();         // also name(), basePath()
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 self, err := toft.App.Self(ctx)   // self.ID, .Slug, .Name, .Mode, .BasePath
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 info <- app_info()                # info$slug, info$base_path, ...
 app_base_path()
 ```
+
+</TabItem>
+</Tabs>
 
 :::caution[Node: id and slug are properties, the rest are async]
 In Node, `toft.app.id` and `toft.app.slug` are plain strings — calling them,
@@ -49,15 +69,29 @@ deployment that started it. It is correct on the first request.
 
 ## What did an administrator attach
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 if toft.app.can("email"): ...
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 if (await toft.app.can("email")) { … }
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 ok, err := toft.App.Can(ctx, "email")
 ```
+
+</TabItem>
+</Tabs>
 
 `can()` takes an integration name (`email`, `slack`) or a full capability
 (`email.send`). `toft.app.capabilities` lists everything attached. `can("")` is

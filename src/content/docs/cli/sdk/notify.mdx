@@ -3,26 +3,46 @@ title: Notifications
 description: Send Slack messages, email and files as the app, through integrations an administrator attached.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 toft.notify.slack("Ingest finished: 1,204 rows")
 toft.notify.slack_file("/tmp/recon.xlsx", title="Weekly reconciliation")
 toft.notify.email(to=["finance@example.com"], subject="Weekly report", text=body)
 toft.notify.send("teams", "Nightly load complete")
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 await toft.notify.slack("Ingest finished: 1,204 rows");
 await toft.notify.slackFile(file, { title: "Weekly reconciliation" });
 await toft.notify.email({ to, subject, text });
 await toft.notify.send("teams", "Nightly load complete");
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 toft.Notify.Slack(ctx, "Ingest finished: 1,204 rows")
 toft.Notify.SlackFile(ctx, file, toft.SlackFileOptions{Title: "Weekly reconciliation"})
 toft.Notify.Email(ctx, toft.EmailMessage{To: to, Subject: subject, Text: body})
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 notify("slack", text = "Ingest finished: 1,204 rows")
 ```
+
+</TabItem>
+</Tabs>
 
 Your app supplies the message. The platform supplies the identity: the bot
 token, the channel, the From address. Your app never holds or chooses them, and

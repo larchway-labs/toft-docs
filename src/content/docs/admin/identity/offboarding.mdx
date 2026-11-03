@@ -3,10 +3,14 @@ title: Offboarding and dormancy
 description: Remove someone's access cleanly, and let the dormancy sweep catch the accounts nobody removed.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 ## Offboarding
 
 Locking an account takes effect **immediately**: sessions and personal API keys
 stop working. Their apps keep serving — which is why you transfer them first.
+
+<Steps>
 
 1. **Open the person** (**People → the person**) and review their access —
    everything they can reach.
@@ -15,6 +19,8 @@ stop working. Their apps keep serving — which is why you transfer them first.
 3. **Revoke their keys**, or confirm they have none.
 4. **Lock the account.**
 5. **Delete it later**, if at all. Deletion is refused while they still own apps.
+
+</Steps>
 
 Do it while you can still ask them which apps matter. A
 [directory feed](../directory-feed/) can lock accounts when your IdP deactivates

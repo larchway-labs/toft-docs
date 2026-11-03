@@ -77,6 +77,15 @@ function body(entry: Doc, ids: Set<string>): string {
         aside = false;
         continue;
       }
+      // MDX pages: the component import and the <Steps>/<Tabs> wrappers are
+      // layout, not content. A tab's label becomes a bold line, so "Windows"
+      // still heads the Windows instructions; a numbered list stays a list.
+      if (/^import .* from ["']@astrojs\/starlight\/components["'];?\s*$/.test(line)) continue;
+      if (/^<\/?(Steps|Tabs|TabItem)(\s[^>]*)?>\s*$/.test(line)) {
+        const label = line.match(/^<TabItem\s[^>]*label="([^"]*)"/)?.[1];
+        if (label) out.push(`**${label}**`);
+        continue;
+      }
     }
     const text = fence === null ? relink(line, entry.id, ids) : line;
     out.push(aside ? quote(text) : text);
