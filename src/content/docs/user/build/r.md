@@ -6,12 +6,15 @@ description: Shiny, plumber and R documents — what Toft detects, and why you n
 | Framework | Detected by |
 |---|---|
 | **Shiny** | `app.R`; `ui.R` and `server.R`; `server.R` with `www/index.html`; or an `.Rmd` with `runtime: shiny` |
-| **plumber** | `plumber.R`, or a root `.R` file with `#* @get`-style annotations |
+| **plumber** | `plumber.R`, or a root `.R` file with a route annotation such as `#* @get /summary` (`@get`, `@post`, `@put`, `@delete`, `@head`, `@options`, `@patch` or `@use`) |
 | **R Markdown** | one `.Rmd` at the root, rendered at deploy time |
 | **Quarto (knitr)** | one `.qmd` whose engine is knitr, rendered at deploy time |
 
 File names match in either case (`app.r` works). The two document types are
-covered in [Notebooks and documents](../notebooks/).
+covered in [Notebooks and documents](../notebooks/). A bare `#*` comment with no
+route annotation doesn't make a file plumber; a tree with nothing else to detect
+is refused as `unsupported_framework`. Keep helper scripts with route
+annotations out of the root, or the repository becomes plumber.
 
 There is no generic R app: a script run with `Rscript` exits, and an app that
 exits is a crash. An R repository matching none of the four is refused, with
@@ -20,8 +23,10 @@ the four listed.
 ## Commit `renv.lock`
 
 :::caution
-Without `renv.lock`, no packages are installed. The deploy succeeds, the build
-log says so, and your app fails at its first `library()` call.
+Without `renv.lock`, no packages are installed, and `toft check` and the build
+log say so. A Shiny or plumber app deploys and then fails at its first
+`library()` call. An R Markdown or Quarto document still goes through its render
+step, so the deploy fails there, naming the missing package.
 :::
 
 ```r

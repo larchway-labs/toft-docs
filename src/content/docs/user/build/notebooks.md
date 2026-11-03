@@ -36,7 +36,14 @@ variables were available.
 ## Dependencies
 
 Toft installs the renderer (Jupyter, nbconvert or Quarto). Declare only what
-your document imports: `requirements.txt` for Python, `renv.lock` for R.
+your document imports: `requirements.txt` for Python, `renv.lock` for R. An R
+document with no `renv.lock` still renders, with nothing installed, so the
+deploy fails at the render step naming the first missing package.
+
+The render is a build step, not a running app, so a [Toft SDK](../../../cli/sdk/what-it-is/)
+call from a chunk or cell is refused with `off_platform`. Put platform work —
+app data, storage, notifications — in a [job](../../automation/jobs/), and have
+the document read what the job wrote.
 
 Only the rendered output is served. Your source files, `renv.lock` and
 everything else in the repository return 404.

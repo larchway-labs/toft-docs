@@ -93,7 +93,10 @@ toft.storage("warehouse", folder="drop")  # the writable folder
   `toft store`](../browsing-a-store/).
 
 Neither implies the other. Your app having `reports` doesn't let you browse it,
-and your grant gives your app nothing.
+and your grant gives your app nothing — nor does it let you attach the storage
+in `toft.toml`. Attaching needs a delegation from an administrator, to you or to
+the app's owner; a `[[storage]]` entry naming storage you hold only a grant on
+is refused with `storage_not_attachable_by_you`.
 
 ## Good to know
 

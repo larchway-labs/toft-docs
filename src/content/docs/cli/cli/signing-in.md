@@ -25,6 +25,11 @@ after the machine, and you revoke it there.
 you run when a key expires. Forgetting a credential does **not** revoke the key;
 that happens on the install.
 
+With no URL, `--token-stdin` re-keys the stored default install too, and when
+there is none it refuses before reading anything. Ctrl-C or SIGTERM ends a read
+of stdin — `--token-stdin`, `--password-stdin`, `env set --from-file -`, `api
+--data @-` — so a pipeline that never writes does not hang.
+
 :::caution
 There is no `--token` flag. A secret on the command line ends up in shell
 history and in `ps`. Use `--token-stdin` or the environment variables below.
@@ -84,7 +89,8 @@ toft fetch / --session     # the app sees a signed-in person, not a key
 ```
 
 - `--session` **never falls back to the key.** With no session stored, or one
-  that has expired, it refuses with exit 3 and tells you to sign in again.
+  that has expired, it refuses with exit 3 (`no_session` or `session_expired`)
+  and tells you to sign in again.
 - The session lasts as long as the install's session policy allows (hours, not
   months). It is renewed while you use it, and **Sign out everywhere** ends it.
 - `toft fetch --session` reaches the app as a signed-in browser would, so code

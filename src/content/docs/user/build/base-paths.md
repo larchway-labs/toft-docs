@@ -14,6 +14,9 @@ host. Most "it deployed but the page is broken" problems come from this.
 | `HOST` | The address to bind to. |
 | `BASE_PATH` | The prefix, e.g. `/apps/reports`. |
 
+`PORT` and `HOST` are given to the app's web process only; a job run gets
+neither. `BASE_PATH` is set everywhere, jobs included.
+
 For most frameworks the proxy strips the prefix before forwarding, so your
 routes stay at `/`. Next.js, Streamlit and marimo are configured with the
 prefix and receive it unchanged.

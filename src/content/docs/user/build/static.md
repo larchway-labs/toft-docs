@@ -32,7 +32,7 @@ committed, and not listed in `.gitignore`.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `root` | repository root | Folder to serve, relative to the repository. |
+| `root` | repository root | Folder to serve, relative to the repository. `"."` names the repository itself. |
 | `entry` | `index.html`, else the only `.html` file in the root | The page served at `/apps/<slug>/`. Several candidates and no `entry` fails the deploy. |
 | `fallback` | `false` | Serve `entry` for unmatched GET requests whose path has no file extension, unless the request asks only for a non-HTML type such as JSON. A missing file with an extension stays a 404. Turn on for single-page apps with client-side routing. |
 

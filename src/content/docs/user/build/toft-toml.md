@@ -19,10 +19,35 @@ slug = "sales-dashboard"
 slug = "sales-dashboard-stg"
 ```
 
+`[app]` reads `slug`, `install` and `installs."<url>".slug` and nothing else.
+Any other key under it is reported by `toft check` and the deploy as a
+`manifest_unread` warning, like any key nothing reads.
+
 ## `[runtime]`
 
-Version ranges for `python`, `node` and `r`. A `go` key is refused — Go reads
-`go.mod`. See [Language versions](../versions/).
+Version pins or ranges for `python`, `node` and `r`, each a quoted string:
+
+```toml
+[runtime]
+python = "3.13"        # or a range: ">=3.12,<3.14", "==3.13.*"
+node   = "22"
+r      = "4.5"
+```
+
+- **A pin is a quoted string.** `node = 22` is refused with *runtime.node must
+  be a quoted string — write node = "..."*.
+- **A pin has the line's own width**: Node is matched on the major alone, Python
+  and R on major and minor. A pin of the wrong width is refused, and the hint is
+  your own line at the right width: `node = "22.1.0"` → write `"22"`, `python =
+  "3.13.18"` → `"3.13"`, `python = "3"` → `"==3.*"`, `">=3"` → `">=3.0"`.
+- A version the install doesn't carry is refused with `runtime_version`, and the
+  hint names one it does. `toft whoami` lists what it carries.
+- A `python` pin that your `pyproject.toml`'s `requires-python` excludes is a
+  warning, `pin_excluded_by_requires_python`.
+- A `go` key is refused: Go reads `go.mod`, whose `go` line is a minimum, not a
+  pin.
+
+See [Language versions](../versions/).
 
 ## `[static]`
 
@@ -31,9 +56,12 @@ detection.
 
 | Key | Meaning |
 |---|---|
-| `root` | Folder to serve, relative to the repository. |
+| `root` | Folder to serve, relative to the repository. `"."` is the repository itself. |
 | `entry` | Page served at `/apps/<slug>/`. Defaults to `index.html`. |
 | `fallback` | `true` to serve `entry` for unmatched routes (single-page apps). |
+
+A `[static]` table `toft check` can't read — a key of the wrong type, say — is
+a problem it reports, not a table it skips.
 
 See [Static sites](../static/).
 
@@ -106,16 +134,18 @@ is defined; every deploy makes the app's jobs match it.
 | Key | Meaning |
 |---|---|
 | `command` | What to run. Required, unless `args` is given. |
-| `args` | Go apps only: arguments to the binary the build produced, instead of `command`. `["job", "extract"]`. |
+| `args` | Go apps only, `[batch]` Go apps included: arguments to the binary the build produced, instead of `command`. `["job", "extract"]`. A leading `"./toft-app"` is dropped, never passed on as the first argument. |
 | `schedule` | Cron expression. UTC unless `timezone` is set. Leave it out for an on-demand job. |
 | `timezone` | IANA zone for `schedule`, e.g. `Europe/London`. |
 | `overlap` | `queue` (default) or `skip`: what a scheduled firing does while the job's last scheduled run is still going — wait behind it, or record a skipped run. |
 | `notify` | `none` (default), `failures` or `always`: when to email the app's owners about a run. |
 | `expect_within` | Report the job overdue after this long without a success: `26h`, `7d` (1 hour to 31 days). |
-| `timeout` | How long a run may take: `"45m"`, or seconds. Your install's default without it. |
+| `timeout` | How long a run may take: `"90s"`, `"45m"`, `"2h"`, `"7d"`, or whole seconds — from 1 second to 7 days. Your install's default without it. |
 
 Declare parameters as `[jobs.<name>.params.<param>]` with `type` (`string`,
-`int`, `float` or `bool`), `required` or `default`, `choices` and `help`.
+`int`, `float` or `bool`), `required` or `default`, `choices` and `help`. A
+`float` parameter reaches the job as a float — `2` and `"2"` arrive as `2.0`,
+and so does a default.
 
 A job's memory and CPU are not declared here: your administrator sets them, as
 the install's job defaults or an override on one job. A `memory` or `cpu` key
@@ -189,12 +219,17 @@ Your code finds it by name, never by path — see the [storage hub](../../data/a
   declares it the same way.
 - `toft check` shows what the deploy would attach, change and detach, and
   `toft storage ls` lists what you can attach.
+- **A `toft store` grant is not a right to attach.** A grant lets a person put
+  and get files with `toft store`. Attaching storage to an app needs a
+  delegation from an administrator, to you or to the app's owner; an entry
+  naming storage you hold only a grant on is refused with
+  `storage_not_attachable_by_you`, and the message says what to ask for.
 
 | Refused with | When |
 |---|---|
-| `storage_unknown` | Neither you nor the owner can attach a storage of that name, or it doesn't exist |
+| `storage_unknown` | You hold nothing on a storage of that name — the same answer whether or not it exists |
 | `storage_not_attachable_by_owner` | You can attach it but the app's owner can't — ask an administrator |
-| `storage_not_attachable_by_you` | The owner can, but you can't, and the deploy adds it or raises its level |
+| `storage_not_attachable_by_you` | The owner can, but you can't, and the deploy adds it or raises its level — including when all you hold is a `toft store` grant |
 | `storage_level_above_ceiling` | The level is higher than you or the owner may attach |
 | `storage_requires_person` | A deploy with nobody behind it would add storage |
 | `storage_conflicts_console_mapping` | An administrator attached it differently; detach it there first |
@@ -202,8 +237,25 @@ Your code finds it by name, never by path — see the [storage hub](../../data/a
 
 ## Errors and limits
 
-A malformed `toft.toml` fails the deploy and names the problem. Unknown tables
-are ignored, so a newer manifest still deploys on an older install.
+A malformed `toft.toml` fails `toft check` and the deploy with `reason`
+`manifest_invalid`, and every problem carries a `code` and a `hint` naming the
+line to write instead:
+
+| Code | When |
+|---|---|
+| `manifest_syntax` | The file doesn't parse; the message names the line |
+| `invalid_runtime` | A `[runtime]` pin Toft can't read |
+| `invalid_job_name`, `invalid_job_command` | A job's name, or its `command` or `args` |
+| `invalid_timeout` | A `timeout` that isn't a duration or is outside 1 second to 7 days; the message names the value |
+| `invalid_schedule`, `invalid_timezone`, `invalid_overlap`, `invalid_notify`, `invalid_expect_within` | The matching job key |
+| `invalid_param` | A parameter declaration |
+| `batch_and_static` | `[batch]` together with `[static]` |
+| `manifest_invalid` | Anything with no finer code |
+
+Unknown tables and keys are not refused, so a newer manifest still deploys on
+an older install — but `toft check` and the build log name each one as a
+`manifest_unread` warning, since a misspelled key is a setting left at its
+default.
 
 Secret values belong on the app's **Settings** tab, not here; `[env]` only
 declares them. Nothing in this file grants permissions or changes

@@ -27,14 +27,32 @@ ok, err := toft.Data.Clear(ctx)
 ```
 ```r
 doc <- app_data_get()                       # list, or NULL
-version <- app_data_set(list(period = p))   # a named list
+saved <- app_data_set(list(period = p))     # a named list; returns the document
+saved <- app_data_update(function(s) { s$runs <- (s$runs %||% 0) + 1; s })
+app_data_clear()                            # TRUE when there was a document
 ```
 
 ## Writes return what they wrote
 
 `set` and `update` return a `Document` with `data`, `version`, `updated_at` and
-`bytes`, so you don't need to read it back. (R's `app_data_set` returns the new
-version.) `read()` returns the same `Document` for the current state.
+`bytes`, so you don't need to read it back. `read()` returns the same `Document`
+for the current state.
+
+:::caution[R: changed on 3 November 2026]
+R's `app_data_set()` and `app_data_update()` now return the document —
+`list(data, version, empty = FALSE)`, shaped as `app_data_read()` shapes it —
+not the bare version number they returned before. Code that used the return
+value as a number reads `saved$version` now.
+:::
+
+In Go, numbers in `Document.Data` are `float64`, in `Set`'s answer as in
+`Get`'s. To read the document exactly, decode it into your own type:
+`ok, err := doc.Decode(&v)` (`ok` is false when nothing is stored), and an
+`int64` field gets the integer.
+
+**Versions never repeat.** A clear leaves a marker at the next version, so the
+first write after it carries on counting rather than starting again at 1, and an
+`if_version` read before the clear is refused with `version_conflict` (412).
 
 ## Two writers need `update`
 
@@ -44,13 +62,24 @@ lost.
 `update` reads the document, applies your function, and writes it back only if
 the version is unchanged, retrying if someone else wrote in between. Your
 function may change the document in place or return a replacement. It receives
-`{}` when nothing is stored. It also waits out the app's rate limit (60 calls a
-minute) rather than losing the write, so several writers at once all land.
+`{}` when nothing is stored. It gives up after five version conflicts with
+`version_conflict`. It also waits out the app's rate limit (60 calls a minute)
+without spending those attempts, so several writers at once all land — how long
+it waits depends on the language:
+
+| | Waits out `rate_limited` |
+|---|---|
+| Python | Up to 300 seconds in all, honoring `Retry-After` |
+| Node, Go | Up to 30 waits |
+| R | Retries once, as every R call does |
+
+Past that, it raises `rate_limited` itself.
 
 For a single conditional write, pass the version you read:
 `set(doc, if_version=n)` in Python, `{ ifVersion }` in Node, `SetIf` in Go,
 `if_version =` in R. A mismatch raises `VersionConflict`
-(`*toft.VersionConflictError` in Go).
+(`*toft.VersionConflictError` in Go). Clearing takes one too: `ClearIf` in Go,
+`app_data_clear(if_version = n)` in R.
 
 ## Empty is not nothing
 

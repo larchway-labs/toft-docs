@@ -6,7 +6,7 @@ description: What each toft exit code means, and which ones are worth retrying.
 | Code | Meaning | Retry? |
 |---|---|---|
 | `0` | It worked. | |
-| `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page. | No. Fix the cause. |
+| `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page or the platform's own page in the app's place. Also a wait that ran out (`wait_timeout`, `timeout`): the work carries on. | No, except a wait that ran out or a platform page whose state passes on its own (`retryable` says). |
 | `2` | Usage or configuration: a bad flag, an argument no command reads, no app linked, a refused prompt, a name that does not exist or is already taken. | No. Fix the command. |
 | `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit, jobs switched off on the install, or the app's state, such as rerunning a run that has not finished or deleting the serving deployment. | No. Fix the credential, or the state. |
 | `4` | The install could not be reached. | Yes. |
@@ -41,7 +41,15 @@ These exit 2 because nothing was attempted:
   `enabled` or a `[tasks]` table, at `toft check` and deploy.
 - **`toft task`**, which is gone (`removed_command`). Declare `[jobs.<name>]` in
   `toft.toml` instead.
-- **A word no command reads.**
+- **A word no command reads** (`unexpected_argument`), an unknown flag
+  (`unknown_flag`), a flag written wrong (`bad_flag`), or an unknown command
+  (`unknown_command`; `no_command` for a bare `toft --json`).
+- **`toft events --kind` or `--severity`** naming something the install does not
+  record (`invalid_kind`, `invalid_severity`); the message lists the valid
+  values.
+- **`toft store` given a folder where a file was wanted** (`is_a_folder`),
+  `toft://` with no store (`no_store`), or `get -o - --json`
+  (`conflicting_flags`).
 - **A `toft.toml` that does not parse** (`manifest_invalid`).
 - **A directory argument that is not a directory** (`no_such_directory`).
 - **An environment variable name `toft env set` refuses**: not letters, digits
@@ -69,6 +77,7 @@ These exit 2 because nothing was attempted:
 | `deployment_protected` | `toft deployments delete` of the serving deployment. Roll back or deploy first. |
 | `already_current` | The deployment you asked to make current is already serving. |
 | `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `full`. |
+| `idempotency_key_reused` | `toft job run --idempotency-key` with a key already used for a different job, parameters or `--for`. Use a new key. |
 
 Any refusal of this kind, where the app's state rather than your credential says
 no, has `"kind": "refused"` under `--json`, with the install's `code`.
@@ -116,7 +125,7 @@ goes to stderr.
 | `error` | The sentence, for a person. Don't match on it; the wording can change. |
 | `kind` | `usage`, `auth`, `refused`, `unreachable`, `locked` or `failed`. |
 | `exit` | The exit code, repeated. |
-| `code` | A stable name to branch on, such as `key_expired`, `app_locked` or `not_found`. Present whenever the install refused, and on the exit-2 refusals `toft` makes itself that have a name, such as `manifest_invalid` or `no_such_directory`. Absent for a plain usage mistake, such as a bad flag. |
+| `code` | A stable name to branch on, such as `key_expired`, `app_locked` or `not_found`. Present whenever the install refused, and on the exit-2 refusals `toft` makes itself that have a name, such as `manifest_invalid` or `no_such_directory`. Usage mistakes have one too: `unknown_command`, `no_command`, `unknown_flag`, `bad_flag`, `unexpected_argument`. |
 | `retryable` | Always present. Whether trying again could work. |
 | `hint` | The next step in the install's words, when there is one. |
 
@@ -132,7 +141,10 @@ too.
 
 A failed deploy writes its result object instead, with no second document. So
 does a failed `toft check`, `toft fetch` or `--verify`: the result already says
-what went wrong.
+what went wrong. Two cases write both: a `toft fetch` the platform answered in
+the app's place (the result, then a refusal coded with the state, such as
+`stopped` or `batch`), and a `toft job run` that did not succeed (the run, then
+a refusal coded with how it ended).
 
 The same fields are in the body of every refusal the API sends. `toft api`
 prints that body on stdout as it is, with no second document, so a script

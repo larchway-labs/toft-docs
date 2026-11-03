@@ -18,7 +18,7 @@ settings = toft.data.get() or {"period": "monthly"}
 toft.data.set({**settings, "period": "weekly"})
 ```
 
-`get()` returns `None` when nothing is stored, which is different from a stored `{}`. `clear()` removes the document and returns the app to storing nothing.
+`get()` returns `None` when nothing is stored, which is different from a stored `{}`. `clear()` removes the document and returns the app to storing nothing. Versions keep counting through a clear, so a write that names a version read before the clear is refused.
 
 ## Two writers
 

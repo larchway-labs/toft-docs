@@ -59,11 +59,17 @@ me <- viewer(req$HEADERS)                # a list, or NULL
 An identity has `id`, `name`, `email`, `role`, `is_admin` and `groups`. It returns nothing
 for an anonymous visitor, because that is an answer, not an error.
 
-It also returns nothing for a request made with an **API key** — `toft fetch`,
-`curl` with a key. Toft lets the key in as its owner but tells the app no
-person is behind it, and `viewer(headers)` refuses for the same reason. To test
-this code from a terminal, `toft fetch --session` sends the request as a
-signed-in browser (see [The administrator's session](../../cli/signing-in/#the-administrators-session)).
+It also returns nothing for a request with no viewer on it at all — a health
+check, or code running inside a job — and for a request made with an **API
+key** (`toft fetch`, `curl` with a key).
+
+**An API key carries its owner's role but no viewer.** Toft signs the key
+owner's role onto the request, so `caller()` reports it — `owner` for the
+owner's own key — with `is_person` and `signed_in` true, meaning *a role on the
+person ladder*. But it sends no viewer, so `who()` returns nothing and
+`viewer(headers)` raises `no_viewer`. To test viewer code from a terminal,
+`toft fetch --session` sends the request as a signed-in browser (see [The
+administrator's session](../../cli/signing-in/#the-administrators-session)).
 
 It fails for one reason: a signed-in person is looking and viewer identity is not
 switched on for this app. That is an administrator's setting, not a state to
@@ -79,6 +85,9 @@ setting itself.
 
 Answers are cached for 60 seconds. Pass `refresh=True` (Node `{ refresh: true }`,
 Go `WhoNow`) to bypass.
+
+In Node, the `Viewer` for an anonymous visitor prints as `[Viewer: an anonymous
+visitor; nobody is signed in]`, so a log line says what it is.
 
 ## `viewer`: act as them
 

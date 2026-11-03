@@ -37,13 +37,13 @@ help     = "Which region to report on"
 | Key | |
 |---|---|
 | `command` | Run with the deployment's own interpreter. |
-| `args` | Instead of `command`, in a Go app: arguments to the one binary the build produced, `./toft-app`. `args = ["job", "reconcile"]`. |
+| `args` | Instead of `command`, in a Go app (a `[batch]` one included): arguments to the one binary the build produced, `./toft-app`. `args = ["job", "reconcile"]`. A leading `"./toft-app"` is dropped, never passed as the first argument. |
 | `schedule`, `timezone` | Five cron fields, read in `timezone` (an IANA name) or UTC. A zoned schedule fires once per wall-clock time through daylight saving changes. Without a schedule the job runs only when started. |
 | `overlap` | A scheduled firing while the job's last scheduled run is still going: `queue` waits behind it, `skip` records a `skipped` run. A start from your code or a person is never held. |
 | `notify` | Email the app's owners on `failures` or `always`. Default `none`. |
-| `timeout` | A duration (`"45m"`) or seconds. Without it, the install's default. |
+| `timeout` | A duration (`"90s"`, `"45m"`, `"2h"`, `"7d"`) or whole seconds, from 1 second to 7 days. Without it, the install's default. |
 | `expect_within` | `1h` to `31d`. Owners are told once if the job goes this long without succeeding. |
-| `params.<name>` | `type` (`string`, `int`, `float`, `bool`), `required` or `default` (not both), `choices`, `help`. |
+| `params.<name>` | `type` (`string`, `int`, `float`, `bool`), `required` or `default` (not both), `choices`, `help`. A `float` arrives as a float (`2` and `"2"` are `2.0`), defaults included. |
 
 A job's memory and CPU are an administrator's to set, not yours: every job
 gets the install's job defaults (1,024 MB and 2,000 millicores as shipped)
@@ -101,18 +101,23 @@ toft.Jobs.Respond(w, r, run)
 ```
 ```r
 run <- viewer_jobs(req) |> job_start("reconcile", params = list(month = "2026-03"))
-job_respond(run)                       # fills in plumber's res
+job_respond(run, res, req)             # fills in plumber's res
 ```
 
 `start` returns as soon as the run is queued. Parameters are checked against
 the declaration there: `param_required`, `param_type` or `param_choice`, before
 anything runs. They are passed as values, never put into a command line, and
-recorded on the run, so they must not carry secrets; they are capped at 64 KB.
-For larger input, write it to the app's storage and pass its name.
+recorded on the run, so they must not carry secrets; they are capped at 64 KB
+(over that, 413 `params_too_large` with `limit_bytes`). For larger input, write
+it to the app's storage and pass its name.
 
-A start that matches a run already in flight, or one that finished in the last
-minute, returns that run with `deduplicated` set. Pass an idempotency key to
-widen that to 24 hours.
+A start from your app that matches a run already in flight, or one that
+finished in the last minute (same person, same parameters), returns that run
+with `deduplicated` set; every start's answer carries `deduplicated`, true or
+false. That one-minute window belongs to starts from the app alone — `toft job
+run` and Toft's Run button make a new run every time. Pass an idempotency key to
+make repeats one run for 24 hours, from anywhere; the same key with a different
+job, parameters or `scheduled_for` is refused 409 `idempotency_key_reused`.
 
 A full queue raises `QueueFull` (Python, Node; `*toft.QueueFullError` in Go;
 code `queue_full` in R), retryable. `viewer()` on a request with no viewer
@@ -137,7 +142,7 @@ poll.
 | Python | `respond(run)` in Flask; `respond(run, request=request)` in FastAPI or Starlette | That framework's response; otherwise a `(body, status, headers)` tuple |
 | Node | `respond(run, req)` with a Fetch `Request` or a Node `IncomingMessage` | A Fetch `Response`. In Express: `res.status(r.status).set(Object.fromEntries(r.headers)).send(await r.text())` |
 | Go | `Respond(w, r, run)` | Writes the response |
-| R | `job_respond(run)` inside a plumber endpoint | plumber's `res`, filled in; otherwise a list of `status`, `headers`, `body` |
+| R | `job_respond(run, res, req)` inside a plumber endpoint; `res` and `req` are found in the handler's frame when left out | plumber's `res`, filled in; otherwise a list of `status`, `headers`, `body` |
 
 Every request Toft forwards to your app carries `X-Toft-Request-Deadline`, when
 the request will be cut off (300 seconds by default). **`wait` refuses inside a
@@ -176,7 +181,7 @@ still going (in Python, `toft.WaitTimeout`, which is also a `TimeoutError`).
 | `run.refresh()` | `run.refresh()` | `run.Refresh(ctx)` | `job_refresh(run)` | Read it again. |
 | `run.logs()`, `run.tail()` | `run.logs()`, `run.tail()` | `run.Logs(ctx, 0)`, `run.Tail(ctx, fn)` | `job_logs(run)` | What it printed. |
 | `run.output()`, `run.output_json()` | `run.output()`, `run.outputJson()` | `run.Output(ctx)`, `run.OutputJSON(ctx, &v)` | `job_output(run, json = TRUE)` | What it wrote. |
-| `run.cancel()` | `run.cancel()` | `run.Cancel(ctx)` | `job_cancel(run)` | Stop it. A person may cancel only their own runs. |
+| `run.cancel()` | `run.cancel()` | `run.Cancel(ctx)` | `job_cancel(run)` | Stop it. A person may cancel only their own runs. R returns the run read again after the cancel. |
 
 A run carries `status` (`queued`, `running`, `succeeded`, `failed`,
 `timed_out`, `out_of_memory`, `cancelled`, `skipped`), `started_by` (`app`,
@@ -185,6 +190,15 @@ A run carries `status` (`queued`, `running`, `succeeded`, `failed`,
 `exit_code`, `failure_reason` in words (`exit 3: connection refused`, `timed
 out after 45m`, `stopped at 1024 MB`), `peak_memory_mb` and `status_url`. Node
 and Go use their own casing.
+
+- **A run that wrote nothing has no output**: `output()` is `None` in Python,
+  `null` in Node, `nil` in Go and `NULL` in R, and `output_json()` /
+  `outputJson()` answer `None` / `null` (Go's `OutputJSON` answers `false`).
+  Empty bytes mean the run wrote an empty output. A 404 for any other reason —
+  no such run — still raises.
+- **`list` checks its arguments before asking**: a `status` that is not one of
+  the eight above is `bad_request` (Node exports the list as `RUN_STATUSES`), as
+  is a `limit` out of range (Python 1–200; Go and R non-negative).
 
 **A run is never retried.** A failed run stays failed, with its reason. Trying
 again is a decision: your app starting the job again, **Run again** in Toft, or
@@ -201,8 +215,8 @@ The run's view of itself, and nothing outside a job:
 | `run.rerun_of` | `run.rerunOf` | `run.RerunOf` | `$rerun_of` | The run this one repeats, if any. |
 | `run.scheduled_for` | `run.scheduledFor` | `run.ScheduledFor()` | `$scheduled_for` | The instant this run is for, or none. |
 | `run.deadline` | `run.deadline` | `run.Deadline()` | `$deadline` | When the run will be stopped. |
-| `run.trigger`, `run.trigger_role` | `run.trigger`, `run.triggerRole` | `run.Trigger`, `run.TriggerRole` | `$trigger`, `$trigger_role` | How it started, and with which role. |
-| `run.progress(n, msg)` | `run.progress(n, msg)` | `run.Progress(ctx, n, msg)` | `run_progress(n, msg)` | 0–100 and a few words, shown on the status page. |
+| `run.trigger`, `run.trigger_role` | `run.trigger`, `run.triggerRole` | `run.Trigger`, `run.TriggerRole` | `$trigger`, `$trigger_role` | How it started, and with which role. (R's `current_run()` has no `started_by`; `$trigger` is how it started.) |
+| `run.progress(n, msg)` | `run.progress(n, msg)` | `run.Progress(ctx, n, msg)` | `run_progress(n, msg)` | 0–100 and a few words, shown on the status page. Outside 0–100 is `bad_request`. |
 | `run.log(msg)` | `run.log(msg)` | `run.Log(msg, false)` | `run_log(msg)` | A line in the run's log (stdout; stderr with the error flag). |
 | `run.write_output(b)`, `run.write_output_json(x)` | `run.writeOutput(b)`, `run.writeOutputJson(x)` | `run.WriteOutput(ctx, b)`, `run.WriteOutputJSON(ctx, x)` | `run_write_output(x, json = TRUE)` | The run's one output. |
 
@@ -216,13 +230,22 @@ variables](../../reference/environment/#inside-a-job).
   instead of being stopped mid-write.
 - **A rerun has the same parameters.** A job that must not repeat a side effect
   checks `rerun_of`.
-- **A job can send notifications** through the app's integrations, and reach
-  the stores its app is attached to with the SDK's `upload`, `download`, `url`,
-  `remove` and `list` calls. App data, viewer identity and starting another job
-  are refused with `job_send_only`, by design: the refusal names the job and
-  the run, and its hint gives the two ways round — do it from the app's own
-  process, or write the result with `run.write_output_json(...)` and let an
-  endpoint read it back.
+- **Log order holds within a stream, not across them.** The runner reads stdout
+  and stderr as two pipes, so a line logged with the error flag can land before
+  or after the plain lines printed around it.
+- **A job holds no app token, no `PORT` and no request.** It can send
+  notifications through the app's integrations, get integration tokens, and
+  reach the stores its app is attached to with the SDK's `upload`, `download`,
+  `url`, `remove` and `list` calls. `who()` with no viewer header answers `None`
+  without asking. Every other app call — app data, `toft.app` (its `id` and
+  `slug` included), starting another job, `who()` given a header — is refused
+  with `job_send_only`, by design: the refusal names the job and the run, and
+  its hint gives the two ways round — do it from the app's own process, or write
+  the result with `run.write_output_json(...)` and let an endpoint read it back.
+  Node is the exception for the two fields it reads from the environment:
+  `app.slug` answers from `TOFT_APP_SLUG`, and `app.id` raises `off_platform`,
+  because the app's id is given to the web process alone.
+- **A run handle made outside a job** is `off_platform`.
 
 ### The instant a run is for
 

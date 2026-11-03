@@ -17,7 +17,7 @@ You don't declare a framework. Toft inspects the repository root — or the
 | 5 | `go.mod` plus a `main` package | [Go](../go/) |
 | 6 | One `.Rmd` or R-engine `.qmd` at the root | [R document](../notebooks/) |
 | 7 | One `.ipynb` or Python `.qmd` at the root, or one marimo `.py` | [Notebook](../notebooks/) or [marimo](../python/) |
-| 8 | `app.R`, `ui.R` + `server.R`, `plumber.R`, or an annotated `.R` | [Shiny or plumber](../r/) |
+| 8 | `app.R`, `ui.R` + `server.R`, `plumber.R`, or a root `.R` with a route annotation such as `#* @get /x` | [Shiny or plumber](../r/) |
 | 9 | `requirements.txt`, `pyproject.toml` or `Pipfile` | [Python](../python/) |
 | 10 | A folder of HTML with none of the files above | [Static site](../static/) |
 

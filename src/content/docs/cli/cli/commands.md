@@ -12,9 +12,16 @@ flag. After `--`, every word is an argument, whatever it looks like. A word a
 command does not read is refused with exit 2, not ignored. A switch takes its value after `=`: write
 `--enabled=false`, never `--enabled false`, which is refused.
 
+Under `--json`, every one of these usage refusals carries a `code`:
+`unknown_command`, `no_command` (a bare `toft --json`), `unknown_flag`,
+`bad_flag` (a flag written wrong, or a switch given a separate value) and
+`unexpected_argument` (a word nothing reads).
+
 ## Global flags
 
-Every command accepts these.
+Every command accepts these, and they may also come before the command:
+`toft --json apps` is `toft apps --json`, and `toft --app demo status` is
+`toft status --app demo`. Any other flag goes after the command.
 
 | Flag | Effect |
 |---|---|
@@ -121,8 +128,16 @@ one that does not exist, or is private with no credential set, is refused with
 still found by the first build.
 
 `--json` waits for the first build like `deploy --json`: progress lines, then one
-result object with the deploy's exit code. With `--no-watch` it prints the app
-document and returns.
+result object with the deploy's exit code. With `--no-watch` it prints one
+`{app, app_id, url, deployment_id}` object and returns. In every result of
+`create`, `deploy`, `redeploy` and `rollback`, watched or not, `app` is the slug
+and `app_id` the app's id.
+
+Whatever `toft check` refuses, `create` refuses at the upload, and **a refused
+create leaves no app and claims no slug**. A create that gets past the upload and
+fails later — at the dependency scan, the build or the start — **keeps the app**,
+with status `failed`, its deployment and its build log. Fix the tree and `toft
+deploy` into it, or `toft delete` it.
 
 | Flag | |
 |---|---|
@@ -146,7 +161,7 @@ document and returns.
 | Flag | |
 |---|---|
 | `--logs` | Stream the build log. A step's build lines print before its ✓. |
-| `--no-watch` | Return after starting; print the deployment id. With `--json`, one `{app, url, deployment_id}` object. |
+| `--no-watch` | Return after starting; print the deployment id. With `--json`, one `{app, app_id, url, deployment_id}` object. |
 | `--watch <deployID>` | Rejoin a deploy started earlier. The result reports the deploy's real duration. An id that names nothing exits 2. |
 | `--dry-run` | Check instead of deploying. The same as [`toft check`](#toft-check), including in a directory with no app linked. |
 | `--verify <path>` | Once it succeeds, request this path as you. See [`--verify`](#--verify). |
@@ -173,7 +188,9 @@ and the `body` when it failed. `--verify` cannot be combined with `--no-watch`.
 
 A failed check does not undo the deploy: the new release is serving. The message
 names `toft rollback --yes --app <slug>`, and under `--json` the `verify` object
-carries it as `next`.
+carries it as `next`. On a first deploy — `toft create --verify`, or a deploy of
+an app with nothing serving yet — there is nothing to roll back to: the message
+says so, and `next` is `toft logs --app <slug>`.
 
 ## `toft check`
 
@@ -207,10 +224,17 @@ It reports:
 - what unpacking the bundle removed;
 - each problem that would refuse the deploy, with the same `reason` a failed
   deploy would carry (`unsupported_framework`, `manifest_invalid`,
-  `runtime_version`), and a `code` and `hint` where there is one: a job asking
-  for more than the install allows is `limit_exceeds_ceiling`, and a key Toft
-  no longer reads (`retries`, `viewer_runnable`, `enabled`, `[tasks]`) is
-  `removed_key`.
+  `runtime_version`), and always a `code` and a `hint`: a job asking for more
+  than the install allows is `limit_exceeds_ceiling`, and a key Toft no longer
+  reads (`retries`, `viewer_runnable`, `enabled`, `[tasks]`) is `removed_key`.
+  Under `manifest_invalid` the code says what is wrong: `manifest_syntax` (the
+  file does not parse; the line is named), `invalid_job_name`,
+  `invalid_job_command`, `invalid_runtime`, `invalid_timeout`,
+  `invalid_schedule`, `invalid_timezone`, `invalid_overlap`, `invalid_notify`,
+  `invalid_expect_within`, `invalid_param`, `batch_and_static`, and
+  `manifest_invalid` itself only for what has no finer code. An unsatisfiable
+  version pin is `runtime_version`, and its hint names a version to use. See
+  [Pins](../../../user/build/toft-toml/#runtime) for the pin hints.
 
 It exits 0 when a deploy would get past these decisions and 1 when it would be
 refused. `toft deploy` and `toft create` refuse the same tree at the upload,
@@ -222,8 +246,10 @@ returns the install's answer as it sent it.
 
 Warnings are full sentences, the same ones a deploy prints. Under `--json`,
 `warnings` holds the sentences and `warning_details` holds one object per
-warning: a `code` (`manifest_unread` for a `toft.toml` table nothing reads,
-`limit_clamped` for a job an administrator's lowered ceiling caps), the
+warning: a `code` (`manifest_unread` for a `toft.toml` table or key nothing
+reads, an unknown key under `[app]` included; `limit_clamped` for a job an
+administrator's lowered ceiling caps; `pin_excluded_by_requires_python` for a
+`[runtime] python` pin your `requires-python` excludes), the
 `table` for a `toft.toml` key, and the `message`. When `requires-python` chose
 the Python version, `runtime.requires_python` says so. `job_limits` lists each job
 with its `limits`: `timeout` and `memory`, each a `value`, its `source` and, when
@@ -264,9 +290,18 @@ serving, and names it before acting. Run it again and it goes further back; it
 never goes forward. When nothing older exists, it exits 2 (`nothing_older`) and
 names the newer deployment you could switch to. Naming a newer deployment
 yourself works, and says `Switching … forward`. Nothing is rebuilt. When it succeeds it names the deployment now
-serving, the one it restored, and `--json` returns it as `deployment_id`. The id
+serving, the one it restored, and `--json` returns it as `deployment_id` — on
+the result and on every progress frame, where the platform's own short-lived
+rollback record is `watched_id`. The id
 can be a [unique prefix](#deployment-ids). Flags: `--yes`, `--no-watch`, `--json`,
 `--verify <path>`, `--verify-timeout <d>`.
+
+How far back you can go is what retention keeps. By default an app keeps **3
+versions, the serving one included**, so there are two to roll back to. The
+owner changes the number with **Deployments to keep** on the app's settings, or
+turns cleanup off; an administrator may set a cap. Each deploy that retires
+older versions records a quiet `releases_pruned` event naming them: `toft events
+--kind releases_pruned` answers "where did that version go".
 
 ## `toft status`
 
@@ -279,7 +314,8 @@ When the app is not running, the release line reads `release` rather than
 code pushed with `toft deploy` is serving on a repository-backed app. A locked
 app gets a `locked` line: who locked it, when, and their message. `--json`
 includes the app's `url`, `serving_since`, `status_changed_at` and `lock`
-(`null` unless locked).
+(`null` unless locked). Unlike the deploy-shaped results, its `app` is the whole
+app object: the id is `.app.id`.
 
 ## `toft fetch`
 
@@ -295,20 +331,27 @@ and prints the status line, then the body. The path is from the app's root:
 | `--max-body <n>` | Print at most `n` bytes of the body. Default `8192`; `0` prints all of it. |
 | `--expect <code>` | Exit 1 unless the status is exactly this. |
 | `--anonymous` | Send no credential, to see what a stranger sees. |
-| `--timeout <d>` | How long to wait for the app's answer. Default `60s`. |
+| `--timeout <d>` | How long to wait for the app's answer, as a duration such as `200s`. Default `60s`. An app that does not answer in time exits 1 with code `timeout`, retryable. |
 
 It exits 0 for a 2xx or 3xx answer and 1 otherwise, so it works as the check that
 a deploy works. A path with a `.` or `..` segment (or `%2e`) is refused before
 anything is sent, exit 2 `invalid_path`: a fetch stays inside the app. So is an
 absolute URL (`https://…` or `//host/…`): `fetch` takes a path of the app, never
 an address. The same goes for `--verify`. `--json` returns one document: `url`, `status`, a few useful
-`headers`, `body`, `bytes`, `truncated` and `elapsed_ms`.
+`headers`, `body`, `bytes`, `truncated`, `elapsed_ms`, `redirects` (`[]` when
+there were none) and `final_url` (the `url` itself when nothing redirected).
 
-When the platform answers in the app's place, for an app that is stopped,
-locked or crashed, `--json` names that state as `platform_page`, using the
-key from the page's `X-Toft-Interstitial` header (such as `stopped` or
-`deploy_failed`). A stopped app
-exits 1 with `app is stopped — toft start --app <slug>` instead of the page.
+When the platform answers in the app's place — the app is stopped, locked,
+building, crashed, or a batch app with no pages — `fetch` says *the platform
+answered 503 in the app's place (<state>)* and exits 1; it never reports that as
+the app's own answer. The code is the state, taken from the page's
+`X-Toft-Interstitial` header: `stopped` (the hint is `toft start --app <slug>`),
+`batch` (the app runs jobs and serves no pages — see `toft job list`),
+`building`, `deploy_failed`, `locked`, `crashed`, `sleeping`, `waking` and so
+on. States that pass on their own (`building`, `restarting`, `waking`,
+`unavailable`, `moving`) are `retryable`. Under `--json` the result document
+names the state as `platform_page`, and a refusal document coded with it
+follows.
 
 ```bash
 toft fetch /api/health --expect 200
@@ -362,6 +405,10 @@ in `toft logs --source platform`. A deploy or rollback you started that did not
 finish is recorded too, without notifying anyone.
 
 Flags: `--since <t>`, `--severity <s>`, `--kind <k>`, `--limit <n>`.
+`--severity` is `error`, `warning` or `info`. `--kind` takes the install's own
+event names — `app_crashed`, `app_restarted`, `deploy_failed`, `job_run_failed`,
+`releases_pruned` and so on, not `crash`. Anything else exits 2 with
+`invalid_kind` or `invalid_severity`, listing the valid values.
 
 ## `toft deps`
 
@@ -448,6 +495,12 @@ Names the platform sets itself — `PORT`, `HOST`, `BASE_PATH`, `TMPDIR`,
 `VIRTUAL_ENV`, `R_LIBS_SITE` and its `TOFT_*` variables — cannot be set here.
 Both refusals exit 2 before anything is sent (`invalid_env_name`,
 `reserved_env_name`).
+
+**Do not set `NODE_ENV=production`.** An app variable reaches the build too,
+where npm then skips devDependencies, and a Node build fails on the missing one
+(`vite: command not found`). The platform already sets it for the running app.
+`toft env set` accepts it but prints a warning on stderr (`warnings` under
+`--json`); `toft env unset NODE_ENV` removes it.
 
 The app reads its environment when it starts, so a change applies at the next
 restart — run `toft restart` — and no redeploy is needed. A notebook, Quarto or R Markdown app is the
@@ -567,10 +620,10 @@ eight characters `toft job runs` prints.
 |---|---|
 | `--param k=v` | A parameter. Repeatable. The install holds it to the job's declared type and choices and converts it, so `--param rows=500` arrives as a number. A required one left out is asked for when a terminal is attached. |
 | `--for <time>` | The instant the run is for, e.g. `2026-10-06T03:00:00+01:00`; `2026-10-06` or `2026-10-06T03:00` are read as UTC. The run sees it as `TOFT_SCHEDULED_FOR`. |
-| `--idempotency-key <k>` | Starts carrying the same key within 24 hours are one run. |
+| `--idempotency-key <k>` | Starts carrying the same key within 24 hours are one run: a repeat answers the first run, with `deduplicated: true`. The same key with a different job, parameters or `--for` exits 3 with `idempotency_key_reused`. |
 | `--no-wait` | Start and return the run id. |
 | `--follow` | Stream the run's log while waiting; with `logs`, keep reading until the run ends. `--logs` is the same. |
-| `--timeout <d>` | How long to wait. Default: as long as it takes. Running out exits 1 and the run carries on; the message names the `toft job wait` command that picks it up. |
+| `--timeout <d>` | How long to wait. Default: as long as it takes. Running out exits 1 with code `wait_timeout` (retryable) and the run carries on; the message names the `toft job wait` command that picks it up. |
 | `--limit <n>` | With `runs`: how many. |
 | `--json` | One document per line. A run that did not succeed prints the run, then the refusal. |
 
@@ -583,6 +636,18 @@ hint naming the command to fix it.
 
 Nothing is retried for you; `toft job rerun` is how you try again, and the new
 run records which one it repeats (`rerun_of`).
+
+**Two identical `toft job run`s are two runs.** The one-minute duplicate check
+the SDK applies (same person, same parameters) belongs to starts from the app
+alone; from the CLI or Toft's Run button, only `--idempotency-key` makes a
+repeat answer the first run. Every start's answer carries `deduplicated`, true or
+false. Parameters over 64 KB are refused with `params_too_large`: put the data in
+a store and pass its name.
+
+Under `--json`, `list` gives a scheduled job's `schedule` as the bare cron
+expression with `timezone` beside it (`UTC` when none is declared), and every
+row carries `expect_within_sec` and `expect_within` (such as `"26h"`), `null`
+when the job declares none.
 
 `toft task` is gone. It exits 2 with `removed_command` and points at
 `[jobs.<name>]` in `toft.toml`. See [Jobs](../../sdk/jobs/).
@@ -613,7 +678,9 @@ Flags for the tree commands: `-j <n>` transfers at once (default 4; below 1 exit
 to let a download replace local files (otherwise it refuses before transferring
 anything), and `--yes` to answer the confirmation `rm` and a local-to-store `mv`
 ask for. A folder exists while something is in it; `mkdir` writes an empty
-marker so an empty folder stays. A move that fails partway leaves both copies of
+marker so an empty folder stays. An upload writes markers only for empty local
+directories, and `cp -r` copies no marker of a folder that holds something.
+`rm -r` empties a folder in one run, host storage included. A move that fails partway leaves both copies of
 what it had not finished, never neither. A copy between two store paths passes
 through your machine.
 
@@ -632,13 +699,27 @@ is attached yet; an upload anywhere else is refused (exit 3).
 | `write` | Upload new files; never replace. |
 | `full` | Also replace and delete. |
 
-`rm` looks the store and the file up before it asks for confirmation, so a store
-you cannot reach or a file that isn't there exits 2 (`not_found`), and a folder
-without `-r` exits 2 (`is_a_folder`), rather than asking for `--yes`. The same
-goes for `ls`, `get` and `put` on a store that names nothing you can reach, and
-`get` of a file that isn't there. A refusal — your access level, or a
-partitioned store's folders — exits 3. That includes `put` onto a name that
-already exists when your access is `write`.
+`rm`, `cp` and `mv` look the store and the source up before anything moves or
+anything is asked, so a store you cannot reach or a file that isn't there exits
+2 (`not_found`) with nothing transferred, rather than asking for `--yes`. A
+folder where a file was wanted exits 2 (`is_a_folder`) — `get` of a folder, and
+`cp`, `mv` or `rm` of one without `-r`, with or without the trailing slash. The
+same goes for `ls`, `get` and `put` on a store that names nothing you can reach,
+and `get` of a file that isn't there. `toft://` with no store is exit 2
+`no_store`, and `get -o - --json` is exit 2 `conflicting_flags`, since both want
+stdout. A refusal — your access level, or a partitioned store's folders — exits
+3. That includes `put` onto a name that already exists when your access is
+`write`.
+
+A copy of several files in which every item was refused for the same reason is
+that refusal, with its exit code and `code`: copying one file onto an existing
+name at `write` exits 3 with `already_exists`, as `put` does. A batch that
+partly failed exits 1 with "n of m failed", and under `--json` each item carries
+its own `code`.
+
+A `toft store` grant lets you move files. It does not let you attach the store
+to an app: that needs a delegation from an administrator — see
+[`[[storage]]`](../../../user/build/toft-toml/#storage).
 
 Transfers go straight to the object store: an unreachable bucket is exit 4
 naming that host. Deploy keys cannot use `toft store`.
