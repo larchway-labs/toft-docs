@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" aria-hidden="true">
+  <defs>
+    <marker id="arch-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="dg-head" d="M0 0 L8 4 L0 8 z"/>
+    </marker>
+  </defs>
+
+  <!-- The reader's browser -->
+  <rect class="dg-box" x="16" y="96" width="124" height="72" rx="8"/>
+  <text class="dg-title" x="78" y="128" text-anchor="middle">Browser</text>
+  <text class="dg-sub" x="78" y="146" text-anchor="middle">people using Toft</text>
+
+  <!-- The binary -->
+  <rect class="dg-group" x="200" y="12" width="300" height="336" rx="10"/>
+  <text class="dg-label" x="216" y="36">THE TOFT BINARY</text>
+
+  <rect class="dg-accent" x="216" y="50" width="268" height="58" rx="7"/>
+  <text class="dg-title" x="230" y="74">Platform</text>
+  <text class="dg-sub" x="230" y="93"><tspan class="dg-mono">:8080</tspan> · web interface and API</text>
+
+  <rect class="dg-accent" x="216" y="124" width="268" height="58" rx="7"/>
+  <text class="dg-title" x="230" y="148">App proxy</text>
+  <text class="dg-sub" x="230" y="167"><tspan class="dg-mono">:8081</tspan> · deployed apps, another origin</text>
+
+  <rect class="dg-box dg-dashed" x="216" y="198" width="268" height="58" rx="7"/>
+  <text class="dg-title" x="230" y="222">Metrics</text>
+  <text class="dg-sub" x="230" y="241"><tspan class="dg-mono">METRICS_ADDR</tspan> · only when set</text>
+
+  <rect class="dg-box" x="216" y="272" width="268" height="58" rx="7"/>
+  <text class="dg-title" x="230" y="296">Build pipeline and scheduler</text>
+  <text class="dg-sub" x="230" y="315">clones, builds and starts apps; runs jobs</text>
+
+  <!-- Browser to the two origins -->
+  <path class="dg-line" d="M140 118 C 172 118, 182 79, 214 79" marker-end="url(#arch-arrow)"/>
+  <path class="dg-line" d="M140 146 C 172 146, 182 153, 214 153" marker-end="url(#arch-arrow)"/>
+
+  <!-- What it keeps and where apps run -->
+  <rect class="dg-box" x="552" y="36" width="152" height="58" rx="7"/>
+  <text class="dg-title" x="566" y="60">Postgres 17</text>
+  <text class="dg-sub" x="566" y="79">everything Toft knows</text>
+
+  <rect class="dg-box" x="552" y="110" width="152" height="58" rx="7"/>
+  <text class="dg-title" x="566" y="134">A filesystem</text>
+  <text class="dg-sub" x="566" y="153">releases, logs, caches</text>
+
+  <rect class="dg-box" x="552" y="184" width="152" height="58" rx="7"/>
+  <text class="dg-title" x="566" y="208">The agent</text>
+  <text class="dg-sub" x="566" y="227">shared-mode apps, jobs</text>
+
+  <rect class="dg-box dg-dashed" x="552" y="258" width="152" height="58" rx="7"/>
+  <text class="dg-title" x="566" y="282">A cluster</text>
+  <text class="dg-sub" x="566" y="301">optional · isolated apps</text>
+
+  <path class="dg-line" d="M500 65 H550" marker-end="url(#arch-arrow)"/>
+  <path class="dg-line" d="M500 139 H550" marker-end="url(#arch-arrow)"/>
+  <path class="dg-line" d="M500 213 H550" marker-end="url(#arch-arrow)"/>
+  <path class="dg-line dg-dashed" d="M500 287 H550" marker-end="url(#arch-arrow)"/>
+</svg>

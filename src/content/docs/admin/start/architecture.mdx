@@ -3,6 +3,8 @@ title: What you are running
 description: One Go binary, Postgres and a filesystem — the pieces, the listeners and the origin boundary.
 ---
 
+import Diagram from '../../../../components/Diagram.astro';
+
 Toft is a **single Go binary**. It serves its own web interface, migrates its own
 schema, and clones, builds and runs the apps you give it.
 
@@ -13,6 +15,9 @@ Toft links to all three for your version.
 :::
 
 ## The pieces
+
+<Diagram name="architecture" alt="A browser reaches the Toft binary on two origins: the platform (web interface and API) on :8080 and the app proxy on :8081. The binary also has an optional metrics listener and its build pipeline and scheduler. It keeps its data in Postgres 17 and a filesystem, and runs apps through the agent (shared mode) or, optionally, a cluster (isolated mode)." caption="One binary, two origins. Dashed boxes are optional." />
+
 
 | Piece | Role |
 |---|---|

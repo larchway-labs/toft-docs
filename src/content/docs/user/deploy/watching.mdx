@@ -3,10 +3,15 @@ title: Watching a deploy
 description: The deploy console, its three phases, the build log, and what each failure reason tells you to do.
 ---
 
+import Diagram from '../../../../components/Diagram.astro';
+
 While a deploy runs, a console sits above the app's tabs: the current step, a
 phase bar and the live build log. Leave and come back — it is still there.
 
 ## The three phases
+
+<Diagram name="deploy-pipeline" alt="A deploy runs three phases in order: Source (clone or receive the code, drop dependency folders), Scan (check dependencies against the install policy) and Deploy (detect, configure, build, package, start, health-check, go live). Source can fail as source_unavailable or source_blocked; Scan as dependency_blocked; Deploy as unsupported_framework, build_failed, start_failed or not_ready. The serving deployment keeps serving until the new one goes live." caption="The failure reasons under each phase are the common ones; the full list is below." />
+
 
 | Phase | Steps |
 |---|---|

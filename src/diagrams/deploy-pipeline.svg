@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" aria-hidden="true">
+  <defs>
+    <marker id="dp-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="dg-head" d="M0 0 L8 4 L0 8 z"/>
+    </marker>
+    <marker id="dp-arrow-fail" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="dg-head-fail" d="M0 0 L8 4 L0 8 z"/>
+    </marker>
+  </defs>
+
+  <!-- The three phases -->
+  <rect class="dg-box" x="16" y="16" width="196" height="76" rx="8"/>
+  <text class="dg-label" x="30" y="38">1</text>
+  <text class="dg-title" x="44" y="38">Source</text>
+  <text class="dg-sub" x="30" y="60">Clone or receive the code;</text>
+  <text class="dg-sub" x="30" y="77">drop dependency folders</text>
+
+  <rect class="dg-box" x="256" y="16" width="180" height="76" rx="8"/>
+  <text class="dg-label" x="270" y="38">2</text>
+  <text class="dg-title" x="284" y="38">Scan</text>
+  <text class="dg-sub" x="270" y="60">Check dependencies against</text>
+  <text class="dg-sub" x="270" y="77">the install's policy</text>
+
+  <rect class="dg-accent" x="480" y="16" width="224" height="76" rx="8"/>
+  <text class="dg-label" x="494" y="38">3</text>
+  <text class="dg-title" x="508" y="38">Deploy</text>
+  <text class="dg-sub" x="494" y="60">Detect, configure, build, package,</text>
+  <text class="dg-sub" x="494" y="77">start, health-check, <tspan class="dg-ink-link" font-weight="600">go live</tspan></text>
+
+  <path class="dg-line" d="M212 54 H254" marker-end="url(#dp-arrow)"/>
+  <path class="dg-line" d="M436 54 H478" marker-end="url(#dp-arrow)"/>
+
+  <!-- Where each phase can fail -->
+  <path class="dg-line-fail dg-dashed" d="M44 92 V112" marker-end="url(#dp-arrow-fail)"/>
+  <text class="dg-sub dg-mono dg-ink-fail" x="30" y="130">source_unavailable</text>
+  <text class="dg-sub dg-mono dg-ink-fail" x="30" y="148">source_blocked</text>
+
+  <path class="dg-line-fail dg-dashed" d="M284 92 V112" marker-end="url(#dp-arrow-fail)"/>
+  <text class="dg-sub dg-mono dg-ink-fail" x="270" y="130">dependency_blocked</text>
+
+  <path class="dg-line-fail dg-dashed" d="M508 92 V112" marker-end="url(#dp-arrow-fail)"/>
+  <text class="dg-sub dg-mono dg-ink-fail" x="494" y="130">unsupported_framework</text>
+  <text class="dg-sub dg-mono dg-ink-fail" x="494" y="148">build_failed</text>
+  <text class="dg-sub dg-mono dg-ink-fail" x="494" y="166">start_failed · not_ready</text>
+
+  <!-- What users see meanwhile -->
+  <rect class="dg-group" x="16" y="190" width="688" height="44" rx="8"/>
+  <text class="dg-title" x="32" y="217">The serving deployment keeps serving</text>
+  <text class="dg-sub" x="290" y="217">until the new one goes live. A deploy that fails changes nothing for your users.</text>
+</svg>
