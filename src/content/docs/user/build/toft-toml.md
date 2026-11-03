@@ -19,8 +19,10 @@ slug = "sales-dashboard"
 slug = "sales-dashboard-stg"
 ```
 
-`[app]` reads `slug`, `install` and `installs."<url>".slug` and nothing else.
-Any other key under it is reported by `toft check` and the deploy as a
+`[app]` reads `slug`, `install`, `installs."<url>".slug` and `name` and nothing
+else. `name` is the display name `toft create` gives a new app when `--name` is
+not passed — `--name` wins — and is read at create only: after that the name is
+the app's own setting, and a deploy never changes it. Any other key under it is reported by `toft check` and the deploy as a
 `manifest_unread` warning, like any key nothing reads.
 
 ## `[runtime]`
