@@ -31,9 +31,10 @@ directly, upgrade the dependency of yours the chain starts with.
 If a Python package your app needs has no wheel for the app's Python — such as
 a pin on a release that ships only source — the release can't be checked. Under
 blocking mode it is refused, and the refusal names the way out: pin a release
-that publishes a wheel, or declare an earlier Python line under
-[`[runtime]`](../../build/toft-toml/#runtime). Under warning-only mode it
-deploys as not scanned.
+that publishes a wheel, or — when the package has a wheel for an earlier Python
+line this install offers — declare that line under
+[`[runtime]`](../../build/toft-toml/#runtime). A release with no Linux wheel for
+any line gets only the first. Under warning-only mode it deploys as not scanned.
 
 1. **Upgrade the package.** Usually the whole fix.
 2. **Ask for a waiver.** Only an administrator grants one, and it expires.

@@ -73,7 +73,8 @@ would quietly settle on an older release than the build installs — a pin on a
 release that ships only source, say. Toft notices, and judges nothing it cannot
 list truly: under `block` the deploy is refused, and the refusal names the way
 out — pin a release that publishes a wheel, or declare an earlier Python line
-under `[runtime]`, which the scan honors. Under `warn` it deploys **not
+under `[runtime]`, which the scan honors; the second is offered only when the
+package has a wheel for an earlier line this install offers. Under `warn` it deploys **not
 scanned**.
 
 **Findings follow the release that is serving.** After a rollback, the
