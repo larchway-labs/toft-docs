@@ -23,6 +23,18 @@ An R app's list shows every package its build installed, marked **installed** (y
 
 The app page shows **Your last deploy was refused**; the build log names the package, version and advisory.
 
+Every finding names its `path`: for a package you list yourself it is `(this
+app) > <package>`, and for one that came in with another package it is the
+shortest chain from your app to it. When the refused package is not yours
+directly, upgrade the dependency of yours the chain starts with.
+
+If a Python package your app needs has no wheel for the app's Python — such as
+a pin on a release that ships only source — the release can't be checked. Under
+blocking mode it is refused, and the refusal names the way out: pin a release
+that publishes a wheel, or declare an earlier Python line under
+[`[runtime]`](../../build/toft-toml/#runtime). Under warning-only mode it
+deploys as not scanned.
+
 1. **Upgrade the package.** Usually the whole fix.
 2. **Ask for a waiver.** Only an administrator grants one, and it expires.
 3. **Argue it doesn't apply**, if you don't use the vulnerable code. Take it to your administrator.

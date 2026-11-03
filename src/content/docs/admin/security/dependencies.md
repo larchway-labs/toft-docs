@@ -69,11 +69,12 @@ the build log says so.
 Python is listed without building any package, because building runs its code,
 and for the Python version the app's release builds with. When a dependency
 publishes no wheel for that version, the listing
-would quietly settle on an older release than the build installs. Toft notices,
-and judges nothing it cannot list truly: under `block` the deploy is refused,
-naming the package without a wheel, and the way forward is to pin the version
-the scan could list or wait for that package to publish a wheel; under `warn` it
-deploys **not scanned**.
+would quietly settle on an older release than the build installs — a pin on a
+release that ships only source, say. Toft notices, and judges nothing it cannot
+list truly: under `block` the deploy is refused, and the refusal names the way
+out — pin a release that publishes a wheel, or declare an earlier Python line
+under `[runtime]`, which the scan honors. Under `warn` it deploys **not
+scanned**.
 
 **Findings follow the release that is serving.** After a rollback, the
 dependencies, the audit file and its SBOM name the release rolled back to.

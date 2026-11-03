@@ -11,7 +11,7 @@ app**: Toft runs it once during the deploy and serves the HTML it produces.
 | `.ipynb` | nbconvert (Python), or Quarto if you declare `engine = "quarto"` |
 | `.qmd` | Quarto, with Python or R depending on its engine |
 | `.Rmd` | R Markdown |
-| `.Rmd` with `runtime: shiny` | Not a document — a [Shiny app](../r/) |
+| `.Rmd` with `runtime: shiny` (or `shinyrmd`, `shiny_prerendered`) | Not a document — served live with `rmarkdown::run`, like a [Shiny app](../r/). List `shiny` and `rmarkdown` in `renv.lock`. |
 
 For a document viewers can interact with, use marimo, Streamlit or Shiny
 instead.

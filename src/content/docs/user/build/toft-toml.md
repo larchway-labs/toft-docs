@@ -72,7 +72,7 @@ See [Static sites](../static/).
 | Key | Meaning |
 |---|---|
 | `file` | The document to render, when there are several or it's in a subfolder. |
-| `engine` | `"nbconvert"` or `"quarto"` for an `.ipynb`; `"knitr"` (R) or `"jupyter"` (Python) for a `.qmd`. |
+| `engine` | One of `"nbconvert"` (the default for an `.ipynb`), `"quarto"`, `"knitr"` (Quarto's R engine, `.qmd` only) or `"jupyter"` (Quarto's Python engine). Any other value is refused as `manifest_invalid` with the code `invalid_notebook_engine`. |
 
 See [Notebooks and documents](../notebooks/).
 
@@ -237,11 +237,23 @@ Your code finds it by name, never by path — see the [storage hub](../../data/a
 | `storage_conflicts_console_mapping` | An administrator attached it differently; detach it there first |
 | `storage_revoked_during_deploy` | Permission was taken away during the deploy; the previous version is still serving |
 
+Those are `storage_refused`: entries this install won't attach. An entry that
+is wrong on its own — no `name`, an `access` other than `read`, `write` or
+`full`, a bad `path`, a duplicate — is refused as `manifest_invalid` instead,
+with one of these codes:
+
+| Code | When |
+|---|---|
+| `storage_entry_invalid` | A missing `name`, an `access` that isn't `read`, `write` or `full`, or a `path` Toft won't mount at |
+| `storage_name_ambiguous` | The same storage (and folder) declared twice |
+| `storage_path_taken` | Two entries at the same `path` |
+
 ## Errors and limits
 
 A malformed `toft.toml` fails `toft check` and the deploy with `reason`
 `manifest_invalid`, and every problem carries a `code` and a `hint` naming the
-line to write instead:
+line to write instead. `toft check` lists every problem in the file, each with
+its own code and hint; a deploy stops at the first.
 
 | Code | When |
 |---|---|
@@ -251,6 +263,8 @@ line to write instead:
 | `invalid_timeout` | A `timeout` that isn't a duration or is outside 1 second to 7 days; the message names the value |
 | `invalid_schedule`, `invalid_timezone`, `invalid_overlap`, `invalid_notify`, `invalid_expect_within` | The matching job key |
 | `invalid_param` | A parameter declaration |
+| `invalid_notebook_engine` | A `[notebook] engine` that isn't `nbconvert`, `quarto`, `knitr` or `jupyter` |
+| `storage_entry_invalid`, `storage_name_ambiguous`, `storage_path_taken` | A `[[storage]]` entry wrong on its own (above) |
 | `batch_and_static` | `[batch]` together with `[static]` |
 | `manifest_invalid` | Anything with no finer code |
 

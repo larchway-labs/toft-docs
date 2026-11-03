@@ -24,8 +24,8 @@ or newer. A `go` key under `[runtime]` in `toft.toml` is refused.
 
 A `go` line newer than any toolchain the install carries is not refused. `toft
 check` and the deploy warn (`go_toolchain_fetched`), and the build has the `go`
-command fetch the toolchain it needs; it fails only if that fetch can't happen,
-naming both versions. See [Language versions](../versions/).
+command fetch the toolchain it needs. It fails only if that fetch can't happen,
+and the build failure names the Go this install has. See [Language versions](../versions/).
 
 ## Jobs
 
