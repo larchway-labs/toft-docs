@@ -1,0 +1,18 @@
+---
+/**
+ * Starlight's site title, with the minor these guides describe beside it.
+ * /latest/ is built with DOCS_VERSION, so it names its version too; a build
+ * from main says "next", because it describes a release not yet cut.
+ */
+import Default from "@astrojs/starlight/components/SiteTitle.astro";
+import { docsVersion } from "../lib/markdown";
+
+const version = docsVersion();
+const label = version ? `v${version}` : "next";
+const title = version ? `These guides describe Toft ${version}` : "Unreleased: these guides describe the next version of Toft";
+---
+
+<div class="toft-site-title">
+  <Default />
+  <span class="toft-version" title={title}>{label}</span>
+</div>

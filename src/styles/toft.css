@@ -1564,3 +1564,46 @@ a.toft-path:hover {
     margin-top: 0.5rem;
   }
 }
+
+/* ── Header: version and GitHub ─────────────────────────────────────────────
+   The version is a quiet pill beside the name, in mono because it is a
+   number someone compares with their install. The GitHub mark sits after the
+   guide switcher, muted until hovered. */
+.toft-site-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.toft-version {
+  flex-shrink: 0;
+  padding: 0.0625rem 0.4375rem;
+  border: 1px solid var(--lp-border);
+  border-radius: 999px;
+  background: var(--lp-muted);
+  font-family: var(--sl-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--lp-muted-foreground);
+  cursor: default;
+}
+
+.toft-header-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: calc(var(--lp-radius) - 2px);
+  color: var(--lp-muted-foreground);
+}
+
+.toft-header-icon:hover {
+  background: var(--lp-muted);
+  color: var(--lp-foreground);
+}
+
+.mobile-preferences .toft-header-icon {
+  display: none;
+}

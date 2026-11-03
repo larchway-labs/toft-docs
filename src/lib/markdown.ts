@@ -22,11 +22,25 @@ export function markdownHref(id: string): string {
   return `${BASE}/${id}.md`;
 }
 
-/** Which minor these guides describe, read from the folder they are built into. */
-export function versionLabel(): string {
+/**
+ * The minor these guides describe: DOCS_VERSION from scripts/build-site.sh,
+ * which knows that /latest/ is a second build of the newest release branch,
+ * else the folder name when it is one (/0.9/), else null for an unreleased
+ * build (npm run dev, or main).
+ */
+export function docsVersion(): string | null {
+  const env = process.env.DOCS_VERSION?.trim();
+  if (env && /^\d+\.\d+$/.test(env)) return env;
   const last = BASE.split("/").pop() ?? "";
-  if (/^\d+\.\d+$/.test(last)) return `version ${last}`;
-  if (last === "latest") return "the newest published version";
+  return /^\d+\.\d+$/.test(last) ? last : null;
+}
+
+/** Which minor these guides describe, as a phrase for llms.txt. */
+export function versionLabel(): string {
+  const v = docsVersion();
+  const latest = BASE.split("/").pop() === "latest";
+  if (v) return latest ? `version ${v}, the newest published` : `version ${v}`;
+  if (latest) return "the newest published version";
   return "the unreleased next version";
 }
 

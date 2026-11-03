@@ -43,8 +43,10 @@ export default defineConfig({
       // Light and dark, following the reader's OS until they pick (toft.css
       // holds both palettes). The platform itself stays light-only.
       components: {
-        // The header's right-hand slot holds the guide switcher instead.
-        SocialIcons: "./src/components/GuideNav.astro",
+        // The header's right-hand slot holds the guide switcher and the
+        // GitHub link; the site title carries the version.
+        SocialIcons: "./src/components/HeaderLinks.astro",
+        SiteTitle: "./src/components/SiteTitle.astro",
         Sidebar: "./src/components/Sidebar.astro",
         PageTitle: "./src/components/PageTitle.astro",
         Hero: "./src/components/Hero.astro",

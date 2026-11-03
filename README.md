@@ -16,7 +16,7 @@ this site; a link is only ever followed by a reader's browser.
 | `src/content/docs/cli/` | The CLI & SDK guide |
 | `astro.config.mjs` | One Starlight site, and the components it overrides |
 | `src/sidebar.mjs` | The three guides' tables of contents — the sidebar, the home page's map and the agent index all read it |
-| `src/components/` | The header's guide switcher, the page head (section, title, description, Markdown actions), the home page |
+| `src/components/` | The header (version badge, guide switcher, GitHub link), the page head (section, title, description, Copy page menu), the task cards and guide map on the home page, diagrams |
 | `src/routeData.ts` | Per page: the sidebar shows only the current guide, and `<head>` names the page's Markdown copy |
 | `src/pages/` + `src/lib/` | The Markdown outputs for coding agents, below |
 | `scripts/build-site.sh` | Builds every published version into `site/` |

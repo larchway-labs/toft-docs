@@ -1,0 +1,16 @@
+---
+/**
+ * The header's right-hand group, in the slot Starlight keeps for social
+ * icons: the guide switcher, then the documentation's own repository. The
+ * product's source is not public, so the repository linked is these guides'.
+ */
+import { Icon } from "@astrojs/starlight/components";
+import GuideNav from "./GuideNav.astro";
+
+const repo = "https://github.com/larchway-labs/toft-docs";
+---
+
+<GuideNav />
+<a class="toft-header-icon" href={repo} title="These guides on GitHub" aria-label="These guides on GitHub">
+  <Icon name="github" size="1.125rem" />
+</a>
