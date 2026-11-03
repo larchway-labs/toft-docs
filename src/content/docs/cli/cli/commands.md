@@ -142,7 +142,7 @@ deploy` into it, or `toft delete` it.
 | Flag | |
 |---|---|
 | `--app <slug>` | The slug. Otherwise `toft.toml`, then the folder or directory name. |
-| `--name <name>` | Display name. Otherwise the slug. |
+| `--name <name>` | Display name. Otherwise `toft.toml`'s `[app] name`, otherwise the slug. Read at create only. |
 | `--repo <url>` | Create from a repository; bundles nothing. Not combinable with `[dir]`. |
 | `--branch <branch>` | With `--repo`. Otherwise the default branch. |
 | `--subdir <folder>` | With `--repo`: build this folder of the repository. The slug defaults to the folder's name. |
