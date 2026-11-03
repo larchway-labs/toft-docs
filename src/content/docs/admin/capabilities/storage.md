@@ -155,7 +155,12 @@ included:
 ## Folders
 
 An attachment or a grant can name a folder, and then that folder is all it
-reaches. The app or person can't see the folders beside it.
+reaches. The app or person can't see the folders beside it — with one
+exception. On an install without a cluster, below the
+[namespaces level](../../security/isolation/), an app attached to a folder of
+a whole resource can reach the folders beside it: it holds the resource's
+group, and app-to-app isolation there is an accepted risk. To keep apps out of
+each other's folders at every level, use a partitioned resource.
 
 - **One app can attach one resource twice**, at two folders and two levels: for
   example the root **Read only** and a `drop` folder **Can add**. App code then
