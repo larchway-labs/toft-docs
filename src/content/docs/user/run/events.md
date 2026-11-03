@@ -33,6 +33,6 @@ Every event has a time, a kind and a severity, and you can filter on each. An ev
 | **Held at CPU limit** | It spent more than a quarter of the last hour held at its CPU limit, so requests were slow. Clears once it stays under a tenth for an hour. Owners and editors are emailed at most once every six hours. An administrator can raise the limit in the app's Runtime settings. |
 | **Not restarting** | Toft stopped trying to restart it. |
 | **Job run failed** / **Scheduled job failed** | A run exited with an error. |
-| **Releases pruned** | Old deployments were deleted to keep **Deployments to keep**; names which. Informational, never emailed. |
+| **Old versions removed** | Old deployments were deleted to keep **Deployments to keep**; names which. Informational, never emailed. |
 
 Events are pruned after a period your administrator sets.
