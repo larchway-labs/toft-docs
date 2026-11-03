@@ -3,8 +3,13 @@ title: Base paths
 description: Your app is served under /apps/<slug>. Here's what that means for links, redirects and cookies.
 ---
 
+import Diagram from '../../../../components/Diagram.astro';
+
 Your app is served at `/apps/<slug>` on the apps address, not at the root of a
 host. Most "it deployed but the page is broken" problems come from this.
+
+<Diagram name="base-paths" alt="Three requests for an app served at /apps/sales. A relative link, href=app.css, makes the browser ask for /apps/sales/app.css; the proxy strips the prefix and the app receives /app.css, so it works. A root link, href=/app.css, makes the browser ask for /app.css, which is outside /apps/sales and not the app, so it breaks. A redirect to Location /login is sent on by the proxy as /apps/sales/login, so the browser lands back in the app." caption="Next.js, Streamlit and marimo receive the prefix instead of having it stripped. Links still have to carry it." />
+
 
 ## What your app is given
 

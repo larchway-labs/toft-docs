@@ -3,6 +3,8 @@ title: How apps are isolated
 description: Separate origins, the environment an app receives, what shared mode does not isolate.
 ---
 
+import Diagram from '../../../../components/Diagram.astro';
+
 ## Apps run on a separate origin
 
 The platform serves on one origin (`:8080`); apps on another (`:8081`,
@@ -50,6 +52,9 @@ instead — it blocks Toft's own pod too.
 
 **Admin → Info → Shared containment** says which of three levels this machine
 gives shared-mode apps, and why it is not the next one up:
+
+<Diagram name="shared-containment" alt="Three levels of shared-mode containment, each keeping everything in the level below. Processes: its own OS account and directory, memory sampled and CPU not limited; needs root. cgroups: adds memory and CPU limits the kernel enforces and a cap of 4,096 processes; needs a cgroup v2 hierarchy Toft may write. Namespaces: adds its own network address, view of the files and process list, so no app can reach another; needs CAP_SYS_ADMIN, CAP_NET_ADMIN, iptables and ip. Below Namespaces, app-to-app isolation is an accepted risk." caption="Each level keeps everything below it. Isolated mode, one container per app, is the other way to keep apps apart." />
+
 
 | Level | What each app gets | What it needs |
 |---|---|---|

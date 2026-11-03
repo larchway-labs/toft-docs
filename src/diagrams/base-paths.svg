@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" aria-hidden="true">
+  <defs>
+    <marker id="bp-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="dg-head" d="M0 0 L8 4 L0 8 z"/>
+    </marker>
+  </defs>
+
+  <!-- Row 1: a relative link -->
+  <text class="dg-title" x="16" y="56">Relative link</text>
+  <text class="dg-sub dg-ink-link" x="16" y="73">works</text>
+  <rect class="dg-box" x="152" y="26" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="166" y="50">Your page links to</text>
+  <text class="dg-title dg-mono" x="166" y="70">href="app.css"</text>
+  <rect class="dg-box" x="346" y="26" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="360" y="50">The browser asks for</text>
+  <text class="dg-title dg-mono" x="360" y="70">/apps/sales/app.css</text>
+  <rect class="dg-accent" x="540" y="26" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="554" y="50">Your app receives</text>
+  <text class="dg-title dg-mono" x="554" y="70">/app.css</text>
+  <path class="dg-line" d="M316 57 H344" marker-end="url(#bp-arrow)"/>
+  <path class="dg-line" d="M510 57 H538" marker-end="url(#bp-arrow)"/>
+  <text class="dg-label" x="525" y="20" text-anchor="middle">proxy strips</text>
+
+  <!-- Row 2: a root link -->
+  <text class="dg-title" x="16" y="146">Root link</text>
+  <text class="dg-sub dg-ink-fail" x="16" y="163">breaks</text>
+  <rect class="dg-box" x="152" y="116" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="166" y="140">Your page links to</text>
+  <text class="dg-title dg-mono" x="166" y="160">href="/app.css"</text>
+  <rect class="dg-box" x="346" y="116" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="360" y="140">The browser asks for</text>
+  <text class="dg-title dg-mono" x="360" y="160">/app.css</text>
+  <rect class="dg-fail" x="540" y="116" width="164" height="62" rx="7"/>
+  <text class="dg-title dg-ink-fail" x="554" y="140">Not your app</text>
+  <text class="dg-sub" x="554" y="160">outside /apps/sales</text>
+  <path class="dg-line" d="M316 147 H344" marker-end="url(#bp-arrow)"/>
+  <path class="dg-line-fail" d="M510 147 H538"/>
+
+  <!-- Row 3: a redirect -->
+  <text class="dg-title" x="16" y="236">Redirect</text>
+  <text class="dg-sub dg-ink-link" x="16" y="253">works</text>
+  <rect class="dg-box" x="152" y="206" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="166" y="230">Your app answers</text>
+  <text class="dg-title dg-mono" x="166" y="250">Location: /login</text>
+  <rect class="dg-box" x="346" y="206" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="360" y="230">The proxy sends</text>
+  <text class="dg-title dg-mono" x="360" y="250">/apps/sales/login</text>
+  <rect class="dg-accent" x="540" y="206" width="164" height="62" rx="7"/>
+  <text class="dg-sub" x="554" y="230">The browser lands</text>
+  <text class="dg-title" x="554" y="250">back in your app</text>
+  <path class="dg-line" d="M316 237 H344" marker-end="url(#bp-arrow)"/>
+  <path class="dg-line" d="M510 237 H538" marker-end="url(#bp-arrow)"/>
+  <text class="dg-label" x="331" y="290" text-anchor="middle">proxy adds the prefix</text>
+</svg>
