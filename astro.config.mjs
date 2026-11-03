@@ -52,6 +52,16 @@ export default defineConfig({
       // the hairline every other surface has, and no window chrome.
       expressiveCode: {
         themes: ["github-light"],
+        // A command is copied whole, so it is read whole: shell blocks wrap
+        // rather than hiding the end of a long URL behind a scrollbar.
+        defaultProps: {
+          overridesByLang: {
+            "bash,sh,shell,shellscript,zsh,console,powershell,ps,ps1,bat,cmd": {
+              wrap: true,
+              preserveIndent: true,
+            },
+          },
+        },
         styleOverrides: {
           borderRadius: "0.5rem",
           borderColor: "var(--lp-border)",
