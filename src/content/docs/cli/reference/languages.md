@@ -49,9 +49,11 @@ return toft.jobs.respond(run, req);         // a Fetch Response
 ES module, Node 18 or later. From CommonJS, use `await import("@larchway/toft")`.
 Network calls return Promises; `caller`, `viewer`, `run`, `storage`, `respond` and
 the scratch helpers are synchronous. `RUN_STATUSES` is exported, the eight run
-statuses `jobs.list` accepts.
-`outputJson()` on output that is not JSON raises `not_json`, and a malformed
-`TOFT_STORAGE` raises `storage_env_invalid`.
+statuses `jobs.list` accepts, beside `TERMINAL_STATUSES`; both are read-only
+(`add` throws). `toft.run.scheduledFor` is a `Date`, which holds no zone, so an
+instant sent as `+05:30` prints as `Z`; `toft.run.scheduledForText` keeps the
+text as sent, offset included. A malformed `TOFT_STORAGE` raises
+`storage_env_invalid`.
 
 ## Go
 
@@ -114,7 +116,8 @@ with `store_put()`, never `file.copy()`. Every `store_*()` function takes the
 store or its name, and a name not mapped to the app is `not_mapped`.
 `app_data_set()` and `app_data_update()` return the document, `list(data,
 version, empty = FALSE)` — before 3 November 2026 they returned the version
-number. `job_cancel()` returns the run read again.
+number. `job_cancel()` returns the run read again, and a run object carries
+`$done` beside its other fields.
 
 ## The same everywhere
 
@@ -124,7 +127,15 @@ number. `job_cancel()` returns the run read again.
 - Inside a [job](../../sdk/jobs/), the instant the run is for and sending
   notifications work the same way.
 - Off-platform, every call that needs the platform fails with `off_platform`,
-  naming the missing variable.
+  naming the missing variable. `storage()` and `store()` do too; set
+  `TOFT_STORAGE` to stand a mount in locally.
+- `output_json()` and its spellings answer `None` / `null` / `false` / `NULL`
+  when the run wrote no output, and raise `not_json` for output that is not
+  JSON, an output written empty included.
+- A JSON body holding `NaN` or `Inf` is `bad_request` before any request is
+  made.
+- An email `to` that is a string but not an address is sent, and the platform
+  refuses it with `bad_recipient`.
 - A refusal the SDK makes itself — a bad argument, a missing local file — is
   coded and never retryable.
 - A refusal carries the same `code`, `retryable` and `hint`. See

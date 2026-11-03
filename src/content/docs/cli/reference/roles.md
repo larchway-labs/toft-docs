@@ -24,7 +24,8 @@ if (!toft.caller(req.headers).atLeast(toft.ROLE_EDITOR)) return res.status(403).
 
 `at_least` compares on the ladder `anonymous < viewer < editor < owner`.
 `system`, `app` and `unknown` are not on it, so every check against them is
-false.
+false. A word that is not one of the six roles is `bad_request` (in Go,
+`AtLeast` panics with that error).
 
 A rung doesn't guarantee a human. A script calling the app is an account granted
 on it, and satisfies checks exactly as a person with that grant does.

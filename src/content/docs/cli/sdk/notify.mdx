@@ -45,8 +45,11 @@ notify("slack", text = "Ingest finished: 1,204 rows")
 </Tabs>
 
 Your app supplies the message. The platform supplies the identity: the bot
-token, the channel, the From address. Your app never holds or chooses them, and
-sending a `channel`, `folder` or `url` field is refused.
+token, the channel, the From address. Your app never holds or chooses them.
+Sending a `channel`, `folder` or `url` field is refused with
+`destination_not_allowed`, and an email's `from`, `reply_to` or headers with
+`sender_not_allowed`; the hint says the app's owners choose these on the
+Integrations tab.
 
 ## The calls
 
@@ -63,9 +66,12 @@ Go has `Slack`, `SlackFile`, `Email` and `Status`. R has `notify(kind, ...)`,
 whose named arguments become the message body; `notify(NULL, …)` is
 `bad_request`.
 
-An email `to` that is not an address or a list of them — `None` included — is
+An email `to` that is not a string or a list of strings — `None` included — is
 `bad_request` before anything is sent, as is a body that can't be encoded as
-JSON (`NaN` included).
+JSON (`NaN` or `Inf` included). A string that is not an address is sent, and
+the platform refuses it with `bad_recipient` (400). A message or attachment over
+the size limit is `too_large` (413). Every one of these refusals carries a
+`hint`.
 
 ## Ask first
 
