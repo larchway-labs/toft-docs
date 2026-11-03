@@ -3,6 +3,8 @@ title: Jobs
 description: Declare jobs in toft.toml, start them from your app, answer the request with a status page, and write the code that runs inside one.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 A job runs a command from your app's deployment as **its own process**, with
 its own timeout, memory and CPU limits and run record. It is Toft's one kind of
 automation: scheduled work is a job with a `schedule`, and work too long for a
@@ -82,16 +84,27 @@ environment sets them. A run records how long it was held at its CPU limit.
 `toft.jobs` is the app acting as itself. A viewer's `jobs` is the same surface
 acting for the signed-in person, and the run is recorded in their name.
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 me = toft.viewer(request.headers)
 run = me.jobs.start("reconcile", params={"month": "2026-03"})
 return toft.jobs.respond(run)          # Flask; respond(run, request=request) for FastAPI
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const me = toft.viewer(req.headers);
 const run = await me.jobs.start("reconcile", { params: { month: "2026-03" } });
 return toft.jobs.respond(run, req);     // a Fetch Response
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 me, err := toft.ViewerFor(r.Header)
 run, err := me.Jobs.Start(r.Context(), "reconcile", toft.StartOptions{
@@ -99,10 +112,17 @@ run, err := me.Jobs.Start(r.Context(), "reconcile", toft.StartOptions{
 })
 toft.Jobs.Respond(w, r, run)
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 run <- viewer_jobs(req) |> job_start("reconcile", params = list(month = "2026-03"))
 job_respond(run, res, req)             # fills in plumber's res
 ```
+
+</TabItem>
+</Tabs>
 
 `start` returns as soon as the run is queued. Parameters are checked against
 the declaration there: `param_required`, `param_type` or `param_choice`, before
@@ -157,19 +177,37 @@ current request.
 
 `wait` is for scripts, notebooks and one job waiting on another.
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 run = run.wait(timeout=600)
 run.succeeded, run.failure_reason, run.output_json()
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const done = await run.wait({ timeoutMs: 600_000 });
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 done, err := run.Wait(ctx, toft.WaitOptions{Timeout: 10 * time.Minute})
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 done <- job_wait(run, timeout = 600)
 ```
+
+</TabItem>
+</Tabs>
 
 A wait that runs out raises code `wait_timeout`, retryable, because the run is
 still going (in Python, `toft.WaitTimeout`, which is also a `TimeoutError`).

@@ -3,6 +3,8 @@ title: Files and scratch space
 description: Ephemeral scratch for work in progress, and durable storage an administrator attaches to your app.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 | | Scratch | Storage |
 |---|---|---|
 | Lifetime | Wiped on every start, restart and redeploy | Durable |
@@ -11,18 +13,36 @@ description: Ephemeral scratch for work in progress, and durable storage an admi
 
 ## Scratch
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 toft.scratch_dir("uploads")          # pathlib.Path, created if needed
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 toft.scratchDir("uploads");
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 dir, err := toft.ScratchDir("uploads")
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 scratch_dir()                        # no subfolder argument in R
 ```
+
+</TabItem>
+</Tabs>
 
 Per app, never backed up, never shared. `TMPDIR` points at the same place.
 The parts you pass stay inside it: an absolute part, or a `..` that climbs out of
@@ -33,18 +53,32 @@ local runs work and other users on the machine can't read it.
 
 ### One browser session's corner
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 sid = request.headers.get("X-Toft-Session") or request.cookies.get("viewer_sid") or toft.new_session_id()
 workdir = toft.session_scratch_dir(sid)
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 toft.sessionScratchDir(sessionId);
 toft.newSessionId();
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 toft.SessionScratchDir(sessionID)
 toft.NewSessionID()
 ```
+
+</TabItem>
+</Tabs>
 
 The proxy sends a per-login id in `X-Toft-Session`. Anonymous visitors carry
 none, so mint one with `new_session_id()` and keep it in your own cookie. Never
@@ -53,27 +87,45 @@ Shiny and Streamlit already separate sessions and don't need this.
 
 ## Storage
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 toft.storage("reports").path                 # an attached volume or store, by name
 toft.store("reports").put("nightly.parquet") # copy a file into a store
 toft.mounts()                                # everything attached
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 toft.storage("reports").path;
 await toft.store("reports").put(file);
 toft.mounts();
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 m, err := toft.Storage("reports")            // m.Path
 s, err := toft.Store("reports")
 _, err = s.Put(localPath, "nightly.parquet")
 all, err := toft.Mounts()
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 storage("reports")$path
 store_put(store("reports"), "report.parquet")   # or store_put("reports", ...)
 mounts()
 ```
+
+</TabItem>
+</Tabs>
 
 In R, every `store_*()` function takes the store itself or just its name:
 `store_upload("drop", "x.csv")` is `store_upload(store("drop"), "x.csv")`.
@@ -91,6 +143,9 @@ A store is also reached through Toft's signed URLs, whether or not it is
 mounted. On an install with no cluster, that is the only way: the store has no
 path, `.path` raises, and `put` tells you to use `upload`.
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 s = toft.store("uploads")
 s.upload("report.csv")                        # new files only, at write
@@ -99,21 +154,36 @@ link = s.url("report.csv", attachment=True)   # for a browser, valid 15 minutes
 s.remove("report.csv")                        # needs full
 page = s.list("2026/")                        # iterate it; .prefixes, .next_cursor
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 const s = toft.store("uploads");
 await s.upload(file);
 const link = await s.url("report.csv", { attachment: true });
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 s, err := toft.Store("uploads")               // s.Mounted() is false with no cluster
 _, err = s.Upload(ctx, localPath, "")
 link, err := s.URL(ctx, "report.csv", true)
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 s <- store("uploads")
 store_upload(s, "report.csv")
 store_url(s, "report.csv", attachment = TRUE)
 ```
+
+</TabItem>
+</Tabs>
 
 The bytes go straight between your app and the object store. Anyone holding a
 link from `url` can read that file until it expires, so don't log one.
@@ -128,18 +198,36 @@ Use `store_put()`.
 An administrator can attach one resource twice, for example its root read-only and
 a folder writable. Both arrive under the same name; name the folder to pick one:
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 toft.storage("drop", folder="backup")
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 toft.storage("drop", { folder: "backup" });
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 toft.StorageIn("drop", "backup")             // and toft.StoreIn
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 storage("drop", "backup")
 ```
+
+</TabItem>
+</Tabs>
 
 With no folder named, a name that matches two attachments raises and lists what
 is attached. An empty folder (`""`) means the root.

@@ -3,10 +3,14 @@ title: Deploy your first app
 description: From a repository URL to a running app you can share, in about ten minutes.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 The shortest path from a git repository to a URL. You need the
 [publisher role](../signing-in/).
 
 ## 1. Create the app
+
+<Steps>
 
 1. Select **New app**.
 2. **Source** — choose **Git repository** and paste the **Repository URL**.
@@ -17,6 +21,8 @@ The shortest path from a git repository to a URL. You need the
    and becomes the app's address, `/apps/<slug>`. Add any environment
    variables now (mark secrets sensitive). Select **Next**.
 4. **Deploy** — check the summary and select **Deploy now**.
+
+</Steps>
 
 :::tip[Monorepo?]
 Put the app's folder in **Folder (optional)**, for example `apps/web`. Only

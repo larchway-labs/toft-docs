@@ -3,6 +3,8 @@ title: First run
 description: Getting in the first time, and the order to configure things in.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 A new install migrates its schema and starts with **no sign-in providers**. You
 get in as the built-in administrator, `admin`.
 
@@ -30,6 +32,8 @@ that provider's `default_role`. Administrators are appointed by an administrator
 
 ## The order to do things in
 
+<Steps>
+
 1. **Sign in as `admin`** and set a real password.
 2. **Open Admin → System checks** to see what this install can and cannot do
    ([checks](../../operate/checks/)).
@@ -43,6 +47,8 @@ that provider's `default_role`. Administrators are appointed by an administrator
 7. **Adjust the [operating dials](../../config/operating-dials/)** if the defaults
    do not fit your machine.
 8. **Configure [email](../../capabilities/email/)** so people get notified.
+
+</Steps>
 
 :::caution[Do step 4]
 An install with SSO and no administrator behind it works until the day it does

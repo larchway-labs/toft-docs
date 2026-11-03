@@ -39,6 +39,12 @@ Every version's folder also holds plain Markdown, built from the same source:
 | `<page>.md` | Any page: `/user/start/first-app/` is also `/user/start/first-app.md` |
 
 Asides become blockquotes and links between pages point at the Markdown copies.
+A page that uses Starlight's `<Steps>` or `<Tabs>` is `.mdx`; its import and the
+wrapper tags are dropped from the Markdown copy, and a tab's label becomes a bold
+line (`src/lib/markdown.ts` matches each tag only on a line of its own). Code in
+several SDK languages goes in `<Tabs syncKey="lang">`, labelled Python, Node, Go,
+R in that order; an OS choice uses `syncKey="os"`; a procedure of three or more
+steps is a `<Steps>` list.
 **Every link is root-relative, never a full URL**, for the reason the HTML's
 are: a mirror copied onto another host keeps working. A page's `description` is
 its line in `llms.txt` and its lede under the title, so every page needs one.

@@ -3,24 +3,44 @@ title: What the SDK is
 description: The app SDK for Python, Node, Go and R — how your code calls the platform back.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 The app SDK is how your deployed code talks to Toft: send a notification, start
 a job, read the app's JSON document, find out who is looking at the page.
 
 It comes in four languages with one model behind them. The build installs it,
 so there is nothing to add to `requirements.txt`, `package.json` or `go.mod`.
 
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
 ```python
 import toft                      # Python
 ```
+
+</TabItem>
+<TabItem label="Node">
+
 ```js
 import toft from "@larchway/toft";   // Node (ESM)
 ```
+
+</TabItem>
+<TabItem label="Go">
+
 ```go
 import "toft"                    // Go
 ```
+
+</TabItem>
+<TabItem label="R">
+
 ```r
 library(toft)                    # R
 ```
+
+</TabItem>
+</Tabs>
 
 The source is published at
 [larchway-labs/toft-sdk](https://github.com/larchway-labs/toft-sdk) under the
