@@ -534,6 +534,19 @@ starlight-toc a[aria-current="true"] {
   height: 1.75rem;
 }
 
+/* expressive-code drops a terminal frame's copy button below the title strip
+   (its --button-spacing counts the strip's height). With the strip hidden
+   above, that offset hung the button under every one-line command. */
+.expressive-code .frame.is-terminal:not(.has-title) {
+  --button-spacing: 0.4rem;
+}
+
+/* Shell commands wrap (astro.config.mjs), so the last line must not run under
+   the copy button. */
+.expressive-code .frame.is-terminal .ec-line .code {
+  padding-inline-end: 2.75rem;
+}
+
 /* ── Tables ─────────────────────────────────────────────────────────────────
    The landing page's stack table: no box, hairlines between rows, the header a
    row of small muted labels. A table reads as part of the page, not as a card
