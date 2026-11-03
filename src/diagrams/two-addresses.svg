@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 210" aria-hidden="true">
+  <defs>
+    <marker id="ta-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="dg-head" d="M0 0 L8 4 L0 8 z"/>
+    </marker>
+  </defs>
+
+  <rect class="dg-box" x="16" y="69" width="140" height="72" rx="8"/>
+  <text class="dg-title" x="86" y="101" text-anchor="middle">Your browser</text>
+  <text class="dg-sub" x="86" y="119" text-anchor="middle">signed in as you</text>
+
+  <rect class="dg-box" x="300" y="16" width="404" height="72" rx="8"/>
+  <text class="dg-label" x="316" y="38">PLATFORM ADDRESS</text>
+  <text class="dg-title" x="316" y="60">Where you sign in and manage apps</text>
+  <text class="dg-sub" x="316" y="77">Deploys, settings, sharing, the API</text>
+
+  <rect class="dg-accent" x="300" y="122" width="404" height="72" rx="8"/>
+  <text class="dg-label" x="316" y="144">APPS ADDRESS</text>
+  <text class="dg-title" x="316" y="166">Your app, under <tspan class="dg-mono dg-ink-link" font-size="12">/apps/your-app/</tspan></text>
+  <text class="dg-sub" x="316" y="183">Every link in the app keeps that prefix</text>
+
+  <path class="dg-line" d="M156 94 C 220 94, 236 52, 298 52" marker-end="url(#ta-arrow)"/>
+  <path class="dg-line" d="M156 116 C 220 116, 236 158, 298 158" marker-end="url(#ta-arrow)"/>
+
+  <!-- The boundary: an app's script cannot reach the platform as you -->
+  <path class="dg-line-fail dg-dashed" d="M660 122 V96"/>
+  <path class="dg-line-fail" d="M653 98 L667 112 M667 98 L653 112" stroke-width="1.75"/>
+  <text class="dg-sub dg-ink-fail" x="644" y="110" text-anchor="end">your app's JavaScript cannot act as you here</text>
+</svg>

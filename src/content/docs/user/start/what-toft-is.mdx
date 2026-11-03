@@ -3,6 +3,8 @@ title: What Toft is
 description: Give Toft a repository and it builds, runs and serves your app at a URL. No Dockerfile, no web server config.
 ---
 
+import Diagram from '../../../../components/Diagram.astro';
+
 Toft runs your organization's own software — web apps, APIs, dashboards,
 reports and scheduled work. You give it code; it detects the framework,
 installs dependencies, builds, starts the app and serves it at a URL.
@@ -32,6 +34,9 @@ You do not write a Dockerfile, pick a base image or configure a web server.
   merges.
 
 ## Two addresses
+
+<Diagram name="two-addresses" alt="Your browser reaches two addresses. The platform address is where you sign in and manage apps. The apps address serves your app under /apps/your-app/, and every link in the app keeps that prefix. Your app's JavaScript cannot act as you on the platform address." />
+
 
 The platform (where you sign in and manage apps) and your apps are served on
 different addresses, so an app's JavaScript cannot act as you on the platform.

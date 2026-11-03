@@ -45,6 +45,12 @@ line (`src/lib/markdown.ts` matches each tag only on a line of its own). Code in
 several SDK languages goes in `<Tabs syncKey="lang">`, labelled Python, Node, Go,
 R in that order; an OS choice uses `syncKey="os"`; a procedure of three or more
 steps is a `<Steps>` list.
+
+**Diagrams** are SVG files in `src/diagrams/`, drawn only with the `dg-*` classes
+in `toft.css` § Diagrams so they follow the light and dark themes, and placed with
+`<Diagram name="…" alt="…" caption="…" />` on one line (no double quotes inside
+the values). The alt text is what an agent gets in the Markdown copy, so it
+describes the whole picture, not just names it.
 **Every link is root-relative, never a full URL**, for the reason the HTML's
 are: a mirror copied onto another host keeps working. A page's `description` is
 its line in `llms.txt` and its lede under the title, so every page needs one.
