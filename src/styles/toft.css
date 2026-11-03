@@ -443,42 +443,112 @@ starlight-toc a[aria-current="true"] {
   text-wrap: pretty;
 }
 
-.toft-page-actions {
+/* The page menu: a split button on the breadcrumb row, out of the reading
+   path. "Copy page" does the common thing; the chevron holds the rest. */
+.toft-page-top {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  margin-top: 1.25rem;
-  font-size: 0.8125rem;
 }
 
-.toft-page-actions button {
+.toft-page-top .toft-eyebrow {
+  margin: 0;
+}
+
+.toft-page-menu {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3125rem 0.625rem;
+  flex-shrink: 0;
   border: 1px solid var(--lp-border);
   border-radius: calc(var(--lp-radius) - 2px);
   background: var(--lp-card);
-  color: var(--lp-foreground);
+  font-size: 0.75rem;
+}
+
+.toft-page-menu > button,
+.toft-page-menu summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  background: none;
+  color: var(--lp-muted-foreground);
   font: inherit;
   font-weight: 500;
   cursor: pointer;
 }
 
-.toft-page-actions button:hover {
+.toft-page-menu summary {
+  list-style: none;
+  border-inline-start: 1px solid var(--lp-border);
+  padding-inline: 0.375rem;
+  height: 100%;
+}
+
+.toft-page-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.toft-page-menu > button:hover,
+.toft-page-menu summary:hover,
+.toft-page-menu details[open] summary {
+  background: var(--lp-muted);
+  color: var(--lp-foreground);
+}
+
+.toft-page-menu > button {
+  border-radius: calc(var(--lp-radius) - 3px) 0 0 calc(var(--lp-radius) - 3px);
+}
+
+.toft-page-menu summary {
+  border-radius: 0 calc(var(--lp-radius) - 3px) calc(var(--lp-radius) - 3px) 0;
+}
+
+.toft-page-menu-list {
+  position: absolute;
+  z-index: 20;
+  inset-inline-end: -1px;
+  top: calc(100% + 0.375rem);
+  width: 15rem;
+  padding: 0.25rem;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  background: var(--lp-card);
+  box-shadow: var(--sl-shadow-lg);
+}
+
+.toft-page-menu-list > * {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.0625rem;
+  width: 100%;
+  padding: 0.4375rem 0.625rem;
+  border: 0;
+  border-radius: calc(var(--lp-radius) - 3px);
+  background: none;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.toft-page-menu-list > :hover,
+.toft-page-menu-list > :focus-visible {
   background: var(--lp-muted);
 }
 
-.toft-page-actions a {
-  color: var(--lp-muted-foreground);
-  text-decoration: none;
+.toft-page-menu-list strong {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lp-foreground);
 }
 
-.toft-page-actions a:hover {
-  color: var(--lp-foreground);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.toft-page-menu-list small {
+  font-size: 0.75rem;
+  color: var(--lp-muted-foreground);
 }
 
 /* ── Prose ──────────────────────────────────────────────────────────────────
