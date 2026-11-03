@@ -1,10 +1,10 @@
 ---
 title: Checks reference
-description: All 28 system checks in report order, with their category and what moves each one off pass.
+description: All 29 system checks in report order, with their category and what moves each one off pass.
 ---
 
 Every check on **Admin → System checks**, in the order the report runs them.
-There are **28**, in nine categories. A test walks this registry, so a check
+There are **29**, in nine categories. A test walks this registry, so a check
 cannot silently stop running. Some checks emit more than one row; each row keeps
 its own id.
 
@@ -37,6 +37,7 @@ its own id.
 | `dev_switches` | Development switches | Security | `warn` when `DEV_PASSWORD` or `DEV_INSECURE_COOKIES` is set. `skip` on a loopback-only install. |
 | `trusted_proxy` | Trusted proxy | Security | `warn` when the request asking carried `X-Forwarded-For` from outside `TRUSTED_PROXY_CIDRS`. |
 | `hsts` | HTTPS only (HSTS) | Security | `pass` when every address is https. `warn` when one origin is http, or when one host serves the platform and the apps under different schemes, where the header is withheld. `skip` on an http install. |
+| `app_containment` | App containment | Security | Two rows. `app_accounts`: `fail` when shared apps run as the platform's own user, so every app can read its database credentials and other apps' secrets — set `APP_USER_PER_APP=1`. `cloud_metadata`: `warn` when apps can reach the cloud metadata endpoints — set `BLOCK_AWS_METADATA=1` unless the machine is not in a cloud. Both `pass` as shipped. |
 | `migrations` | Schema migrations | Platform | `warn` with a count when the schema moved under a running process. A pending migration at boot stops startup instead. |
 
 ## Statuses
