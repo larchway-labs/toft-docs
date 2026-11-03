@@ -5,7 +5,7 @@ description: Shiny, plumber and R documents — what Toft detects, and why you n
 
 | Framework | Detected by |
 |---|---|
-| **Shiny** | `app.R`; `ui.R` and `server.R`; `server.R` with `www/index.html`; or an `.Rmd` with `runtime: shiny` |
+| **Shiny** | `app.R`; `ui.R` and `server.R`; `server.R` with `www/index.html`; or an `.Rmd` whose YAML says `runtime: shiny` (or `shinyrmd`, or `shiny_prerendered`) |
 | **plumber** | `plumber.R`, or a root `.R` file with a route annotation such as `#* @get /summary` (`@get`, `@post`, `@put`, `@delete`, `@head`, `@options`, `@patch` or `@use`) |
 | **R Markdown** | one `.Rmd` at the root, rendered at deploy time |
 | **Quarto (knitr)** | one `.qmd` whose engine is knitr, rendered at deploy time |
@@ -15,6 +15,10 @@ covered in [Notebooks and documents](../notebooks/). A bare `#*` comment with no
 route annotation doesn't make a file plumber; a tree with nothing else to detect
 is refused as `unsupported_framework`. Keep helper scripts with route
 annotations out of the root, or the repository becomes plumber.
+
+An R Markdown document whose YAML says `runtime: shiny` (also `shinyrmd` or
+`shiny_prerendered`) is not rendered once like other documents: it is served
+live with `rmarkdown::run`. List `shiny` and `rmarkdown` in `renv.lock`.
 
 There is no generic R app: a script run with `Rscript` exits, and an app that
 exits is a crash. An R repository matching none of the four is refused, with

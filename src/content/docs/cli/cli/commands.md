@@ -241,9 +241,13 @@ It reports:
   the same way) — under `--json`, `storage` with `add`, `change`, `remove`,
   `keep` and `console`. A refused entry is a problem with reason
   `storage_refused` and its code, such as `storage_unknown` or
-  `storage_not_attachable_by_owner`;
+  `storage_not_attachable_by_owner`. An entry wrong on its own — no `name`, an
+  `access` other than read, write or full, a bad `path`, a duplicate — is
+  `manifest_invalid` instead, with code `storage_entry_invalid`,
+  `storage_name_ambiguous` or `storage_path_taken`;
 - what unpacking the bundle removed;
-- each problem that would refuse the deploy, with the same `reason` a failed
+- every problem that would refuse the deploy — all of them, where a deploy
+  stops at the first — with the same `reason` a failed
   deploy would carry (`unsupported_framework`, `manifest_invalid`,
   `runtime_version`), and always a `code` and a `hint`: a job asking for more
   than the install allows is `limit_exceeds_ceiling`, and a key Toft no longer
@@ -252,7 +256,8 @@ It reports:
   file does not parse; the line is named), `invalid_job_name`,
   `invalid_job_command`, `invalid_runtime`, `invalid_timeout`,
   `invalid_schedule`, `invalid_timezone`, `invalid_overlap`, `invalid_notify`,
-  `invalid_expect_within`, `invalid_param`, `batch_and_static`, and
+  `invalid_expect_within`, `invalid_param`, `invalid_notebook_engine`,
+  `batch_and_static`, and
   `manifest_invalid` itself only for what has no finer code. An unsatisfiable
   version pin is `runtime_version`, and its hint names a version to use. See
   [Pins](../../../user/build/toft-toml/#runtime) for the pin hints.
@@ -271,7 +276,10 @@ warning: a `code` (`manifest_unread` for a `toft.toml` table or key nothing
 reads, an unknown key under `[app]` included; `limit_clamped` for a job an
 administrator's lowered ceiling caps; `pin_excluded_by_requires_python` for a
 `[runtime] python` pin your `requires-python` excludes), the
-`table` for a `toft.toml` key, and the `message`. When `requires-python` chose
+`table` for a `toft.toml` key, and the `message`. A Go app whose `go.mod` asks
+for a Go this install doesn't have is warned `go_toolchain_fetched`: the build
+fetches that toolchain, and if it can't, the build failure names the Go this
+install has. When `requires-python` chose
 the Python version, `runtime.requires_python` says so. `job_limits` lists each job
 with its `limits`: `timeout` and `memory`, each a `value`, its `source` and, when
 clamped, what was `declared`.
@@ -457,6 +465,9 @@ policy is on.
 ```bash
 toft deps --json | jq '.refused.findings[] | {package, version, fixed_in, path}'
 ```
+
+Every finding has a `path`. A direct dependency's is `(this app) > <package>`;
+a transitive one's is the shortest chain from the app to it.
 
 ## `toft restart`, `start`, `stop`
 
