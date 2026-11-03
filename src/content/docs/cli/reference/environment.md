@@ -7,9 +7,9 @@ description: The variables Toft sets for your app and its jobs, and what never r
 
 | Variable | |
 |---|---|
-| `PORT` | The port to listen on. Never pick your own. |
-| `HOST` | The address to bind. `app.listen(port)` alone binds `0.0.0.0`, which bypasses the platform. |
-| `BASE_PATH` | Where the app is mounted, e.g. `/apps/reports`. |
+| `PORT` | The port to listen on. Never pick your own. The web process only: a job run gets no `PORT`. |
+| `HOST` | The address to bind. `app.listen(port)` alone binds `0.0.0.0`, which bypasses the platform. The web process only, like `PORT`. |
+| `BASE_PATH` | Where the app is mounted, e.g. `/apps/reports`. Set in jobs too. |
 | `TMPDIR` | Points at the app's scratch directory. |
 
 These, `VIRTUAL_ENV`, `R_LIBS_SITE` and the `TOFT_*` variables named below are the
@@ -20,7 +20,9 @@ and a name that isn't letters, digits and underscores (`invalid_env_name`).
 ### Base paths
 
 The proxy strips `BASE_PATH` before your handler sees the request and adds it
-back on the way out.
+back on the way out: route on `/summary`, not `/apps/reports/summary`. Next.js,
+Streamlit and marimo are the exception — Toft tells them their mount point and
+forwards the full path, which they expect.
 
 - **Links and form actions carry it.** `href="/apps/reports/new"`, or build them
   from `toft.app.base_path`. A root-absolute `/styles.css` asks the platform, not
@@ -35,11 +37,11 @@ You rarely read these yourself.
 | Variable | |
 |---|---|
 | `TOFT_API_URL` | Where to call the platform. |
-| `TOFT_APP_ID`, `TOFT_APP_SLUG` | This app. |
+| `TOFT_APP_ID`, `TOFT_APP_SLUG` | This app. `TOFT_APP_ID` is the web process's only; `TOFT_APP_SLUG` is set in jobs too. |
 | `TOFT_APP_TOKEN` | The app's own credential (`tofta_`). Not set inside a job. |
-| `TOFT_ROLE_KEY` | Verifies the signed role header. |
+| `TOFT_ROLE_KEY` | Verifies the signed role header. Not set inside a job. |
 | `TOFT_SCRATCH_DIR` | The scratch directory. |
-| `TOFT_STORAGE` | The storage attached to this app. |
+| `TOFT_STORAGE` | The storage attached to this app, as JSON. **Absent, not `[]`, when nothing is attached** — read it through `mounts()`. |
 
 ## Inside a job
 
@@ -72,7 +74,7 @@ because it was in your shell will not be there.
 
 Never set `NODE_ENV=production` as an app variable. It reaches the build, where
 npm skips dev dependencies and the build fails. The platform sets it for the
-running process.
+running process. `toft env set` accepts it but warns.
 
 ### Through the API
 
@@ -127,4 +129,5 @@ with `use_env_route`; creating an app still takes `env_vars`.
 
 A notebook, R Markdown or Quarto document runs at build time with your app's
 environment, and its output is published. If a chunk prints a connection string,
-the page shows it.
+the page shows it. The render is a build step, not a running app: an SDK call
+from a chunk or cell is refused with `off_platform`. Put platform work in a job.

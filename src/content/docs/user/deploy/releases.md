@@ -45,7 +45,11 @@ running app's directory does not survive a restart.
 
 On the **Settings** tab, **Delete old deployments automatically** keeps the
 newest deployments up to **Deployments to keep** (the serving one included), within
-your install's limit. Turned off, nothing is deleted, and deploys are refused
+your install's limit. The default is 3, so out of the box there are two earlier
+deployments to roll back to — how far back `toft rollback` reaches is exactly
+what is kept. Each deploy that deletes older deployments records a quiet
+**Releases pruned** event naming them (`toft events --kind releases_pruned`);
+nobody is emailed. Turned off, nothing is deleted, and deploys are refused
 once the app reaches the limit.
 
 Only successful deployments count. A failed deploy stays in the list with its

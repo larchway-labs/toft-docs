@@ -20,6 +20,11 @@ the disk.
 
 Owners see the policy that applies on the app's **Deployments** tab.
 
+**Deployments to keep** is 3 by default, so an app rolls back at most two
+deployments unless its owner raises it. Each deploy that deletes older
+deployments records an informational **Releases pruned** event on the app naming
+them (`releases_pruned`); it is never emailed.
+
 An owner can delete one deployment, or every one that is not current. Deleting an
 app removes its deployments, workload and storage attachments — not the data in a
 store.

@@ -50,9 +50,15 @@ R has a smaller surface than the other three. See
   startup and show "email is not enabled for this app" instead of failing later.
 - **Sends don't wait for delivery.** A send returns once the platform has
   recorded it. You can read the record back.
-- **Off-platform, calls fail.** Every call that needs the platform names the
-  missing environment variable. There is no dry-run mode; scratch directories
-  are the one exception.
+- **Off-platform, calls fail.** Every call that needs the platform raises
+  `off_platform` and names the missing environment variable — and so does a
+  call from a notebook or R Markdown render, which is a build step, not a
+  running app. There is no dry-run mode; scratch directories are the one
+  exception.
+- **A mistake on your side is coded and never retryable.** A bad argument
+  (`bad_request`), a missing local file (`not_found`) or a call off the platform
+  (`off_platform`) is refused before anything is sent. Only a request that
+  failed in transport is uncoded and retryable.
 - **Branch on the code, not the sentence.** Every refusal carries a stable
   `code`, a `retryable` flag and often a `hint`. See
   [When the platform says no](../errors/).

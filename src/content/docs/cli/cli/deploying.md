@@ -134,7 +134,9 @@ toft deploy --verify /healthz
 Once the deploy succeeds, `toft` requests that path as you and exits 1 unless it
 answers 2xx or 3xx. A 5xx is retried for up to 30 seconds while the new release
 warms up (`--verify-timeout` changes that). `redeploy`, `rollback` and `create`
-take the same flags.
+take the same flags. A failed check leaves the new release serving and names
+`toft rollback`, except on a first deploy, where there is nothing to roll back
+to and it names `toft logs` instead.
 
 To look at any page yourself, use `toft fetch`:
 
@@ -168,7 +170,7 @@ needs: a tail of the build log, or the dependency findings.
 | `build_failed` | The build log: `toft logs --deploy <id>`. |
 | `start_failed`, `not_ready` | It built but did not answer. Read the app log: `toft logs`. An app that crashes while starting fails in seconds, and the message carries its last 20 log lines. |
 | `dependency_blocked` | `toft deps`: the packages, advisories, and fixed versions. |
-| `manifest_invalid` | `toft.toml`. The message names the field. |
+| `manifest_invalid` | `toft.toml`. The message names the field, and `code` says what is wrong with it (`manifest_syntax`, `invalid_timeout`, `invalid_schedule`…). |
 | `unsupported_framework` | Nothing in the tree the install knows how to serve. |
 | `runtime_version` | The language version you declared is not available. |
 | `source_unavailable`, `source_blocked` | The repository URL, the credential, or the install's source policy. |
@@ -179,7 +181,8 @@ A successful deploy can carry `warnings`, such as a `toft.toml` table nothing
 reads, a key file the bundle carried, or a job capped by a ceiling an
 administrator lowered. They print as sentences, and appear in the `--json`
 result as `warnings`, with `warning_details` giving each one a `code`
-(`manifest_unread`, `limit_clamped`) and, for a `toft.toml` key, its `table`.
+(`manifest_unread`, `limit_clamped`, `pin_excluded_by_requires_python`,
+`go_toolchain_fetched`) and, for a `toft.toml` key, its `table`.
 
 A `[tasks]` table, or a job key Toft no longer reads (`retries`,
 `viewer_runnable`, `enabled`), fails the deploy with `removed_key` and a hint
@@ -192,6 +195,14 @@ help until an administrator lifts the lock.
 A deploy the install refuses before it starts, such as a locked app or a key
 that cannot write, carries a `code`, a `retryable` flag and often a `hint`
 naming the next step. See [Errors as JSON](../exit-codes/#errors-as-json).
+
+What a refusal leaves behind depends on where it happened. Anything `toft check`
+would refuse is refused at the upload: a `toft create` refused there leaves no
+app and claims no slug, and a `toft deploy` refused there on an existing app is
+recorded as a failed deployment under that reason. A create that gets past the
+upload and fails later — the dependency scan, the build or the start — keeps the
+app, with status `failed` and its build log; fix the tree and `toft deploy` into
+it, or `toft delete` it.
 
 ## After it is deployed
 

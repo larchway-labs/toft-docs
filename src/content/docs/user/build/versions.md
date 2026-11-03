@@ -30,7 +30,11 @@ Toft picks the **highest** installed version that satisfies the range.
 - `^`, `~`, `~=`, `||`, `!=` and any other `*` are refused, each with the range
   to write instead.
 - Extra components are refused, not truncated: `3.12.4` for Python, `22.4` for
-  Node.
+  Node. The refusal's hint is your own line at the right width: `node =
+  "22.1.0"` → write `"22"`, `python = "3.13.18"` → `"3.13"`, `python = "3"` →
+  `"==3.*"`, `">=3"` → `">=3.0"`.
+- A pin is a quoted string. `node = 22` is refused and told to write
+  `node = "..."`.
 
 To stay on an older version, give an upper bound or an exact version
 (`python = "3.13"`). A bare `>=` floor always takes the newest.
@@ -53,17 +57,26 @@ and the error lists the versions the install has.
 
 A lower bound such as `>=3.8` never changes the version, because the default
 already satisfies it. To choose a version yourself, pin it with `[runtime] python`.
+A pin that `requires-python` excludes still builds on the pin, with a
+`pin_excluded_by_requires_python` warning from `toft check` and the deploy.
+
+A dependency with no wheel yet for the default Python — a new interpreter line,
+such as PyYAML on 3.15, which takes marimo with it — leaves the release
+unscanned, and the dependency policy refuses it. The refusal names the way out:
+pin the version it lists, or declare an earlier Python under `[runtime]`. The
+scan honors the pin.
 
 ## Go
 
 Go reads the `go` line in `go.mod` as a minimum — `go 1.25` means 1.25 or
-newer. If no installed toolchain meets it, the `go` command either downloads
-one or fails, depending on your install. See [Go](../go/).
+newer. It is never refused for being newer than the install's toolchains: the
+deploy warns (`go_toolchain_fetched`) and the build has the `go` command fetch
+the toolchain it needs, failing only if it can't. See [Go](../go/).
 
 ## When no version matches
 
-The deploy is refused before anything builds, and the error lists the versions
-the install has. Toft never substitutes a different version.
+The deploy is refused before anything builds with `runtime_version`, and the
+error lists the versions the install has, with a hint naming one to pin. Toft never substitutes a different version.
 
 ## Which versions exist
 

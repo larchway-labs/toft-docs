@@ -38,12 +38,12 @@ help     = "Which region to report on"
 | Key | Notes |
 |---|---|
 | `command` | What to run, with your deployment's own interpreter and packages. |
-| `args` | Instead of `command`, for a Go app: arguments to the one binary your build produced. `args = ["job", "nightly-report"]` runs it as `./toft-app job nightly-report`. |
+| `args` | Instead of `command`, for a Go app: arguments to the one binary your build produced. `args = ["job", "nightly-report"]` runs it as `./toft-app job nightly-report`, on a web app or a `[batch]` app alike. A leading `"./toft-app"` in `args` is dropped, not passed on as an argument. |
 | `schedule` | Five cron fields. Leave it out and the job runs only when something starts it. |
 | `timezone` | An IANA zone such as `Europe/London`. The schedule follows the local clock through daylight saving changes and fires once per local time. |
 | `overlap` | What a scheduled firing does if the job's last scheduled run is still going: `queue` waits its turn and starts when that run ends (the default), `skip` records a **skipped** run instead. A run someone starts by hand is never held back. |
 | `notify` | Email the app's owners on `failures` (when a run fails) or `always` (after every run). `none` by default. |
-| `timeout` | `"45m"`, `"2h"`, or a number of seconds. Your administrator sets the default and the most a job may ask for. |
+| `timeout` | `"90s"`, `"45m"`, `"2h"`, `"7d"`, or a number of seconds, from 1 second to 7 days. Your administrator sets the default and the most a job may ask for. |
 | `expect_within` | `1h` to `31d`. If the job goes this long without a successful run, its owners are told once. A paused job is never overdue. |
 
 A job's **memory and CPU** are set by your administrator, not in `toft.toml`:
@@ -68,7 +68,7 @@ A parameter is declared under `[jobs.<name>.params.<param>]`:
 
 | Key | Notes |
 |---|---|
-| `type` | `string`, `int`, `float` or `bool`. |
+| `type` | `string`, `int`, `float` or `bool`. A `float` arrives as a float — `2` becomes `2.0` — whether it was sent as `"2"`, `2` or came from the default. |
 | `required` | `true` if every run must be given it. Not together with `default`. |
 | `default` | Used when a run is not given it. |
 | `choices` | The only values allowed. |

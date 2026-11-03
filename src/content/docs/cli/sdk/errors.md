@@ -25,13 +25,16 @@ or, inside a [job](../jobs/), from the run's calls such as `run.progress()` and
 
 Some refusals never reach the platform, because the SDK can see the answer
 first: a storage name nothing maps, a store that is reached over signed URLs
-rather than a path, a level too low to write. They carry the same fields, with
-`retryable` always false — a mapping or a name is wrong, and trying again
-changes neither.
+rather than a path, a level too low to write, a bad argument, a missing local
+file, a call made off the platform. **They always carry a `code`, and
+`retryable` is always false** — a mapping, a name or an argument is wrong, and
+trying again changes none of them. Only a request that failed in transport,
+never reaching the platform, comes back without a code and retryable, so a retry
+loop cannot spin on a local mistake.
 
 | `code` | When |
 |---|---|
-| `not_mapped` | No storage resource by that name is mapped to the app. |
+| `not_mapped` | No storage resource by that name is mapped to the app — in every language and for every operation. The message lists what is mapped. The fix is a mapping on the app's Storage tab by an administrator, or a [`[[storage]]`](../../../user/build/toft-toml/#storage) entry in `toft.toml` from someone who may attach it; the SDK's sentence names only the first. |
 | `ambiguous_mount` | One name is mapped twice (two folders) and no folder was named. The message names the call to make with the accessor you used — `store(…, folder=…)` or `storage(…, folder=…)`. |
 | `not_mounted` | `.path` or `put` on a store that is not mounted here; use `upload`, `download`, `list`, `url`. |
 | `insufficient_access` | A write through a mapping that does not allow it. |
@@ -42,11 +45,14 @@ changes neither.
 | `would_outlive_request` | `wait()` while serving a request, with no timeout or one past the request's deadline. The hint is `return toft.jobs.respond(run)`. |
 | `wait_timeout` | `wait()` ran out of time before the run finished. Retryable: the run is still going. |
 | `no_recipient` | An email that names nobody: pass an address in `to` (or `cc`, `bcc`). An email has no default recipient. |
-| `bad_request` | An argument the SDK rejects before sending: blank text, an empty send or session id, app data that is not an object; in R also `store_put()` or a store call given no store, or a local file that is not there. |
+| `bad_request` | An argument the SDK rejects before sending: blank text; an empty send id, session id or job name; a `jobs.list` status that is not one of the eight run statuses, or a `limit` out of range; `progress` outside 0–100; `app.can("")`; `access_token("")`; a body that is not JSON (`NaN` included); app data that is not an object (in R, anything but a named list); a scratch path outside the scratch folder; an email `to` that is not an address or a list of them; an unreadable local file; in R also `store_put()` or a store call given no store. |
+| `not_found` | A local file that is not there — an upload from a path that does not exist. |
 | `no_output` | `write_output` in a run that has no output location. |
 | `no_run` | An in-job call (R's `run_progress()`, `run_write_output()`) outside a job. |
-| `off_platform` | A variable the platform injects is missing — the code is running outside Toft. |
-| `storage_env_invalid` | R: `TOFT_STORAGE` is not valid JSON. |
+| `off_platform` | A variable the platform injects is missing — the code is running outside Toft, or in a notebook or R Markdown render, which is a build step — or a run handle was made outside a job. Node's `storage()` and `store()` off the platform raise this rather than `not_mapped`. |
+| `storage_env_invalid` | R and Node: `TOFT_STORAGE` is not valid JSON. |
+| `not_json` | Node: `outputJson()` on a run output that is not JSON. |
+| `write_failed`, `scratch_unavailable`, `entropy_unavailable` | Go: a local write failed, the scratch folder could not be made, or the system could not supply random bytes. |
 
 In R these are `toft_error` conditions like the platform's, with `e$status` `NA`.
 

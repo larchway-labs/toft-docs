@@ -22,10 +22,17 @@ http.ListenAndServe(addr, mux)
 The `go` line in `go.mod` is your version declaration. `go 1.25` means Go 1.25
 or newer. A `go` key under `[runtime]` in `toft.toml` is refused.
 
-If no installed toolchain meets your `go.mod`, Toft hands the build to the `go`
-command: depending on your install's settings it downloads the required
-toolchain or fails naming both versions. See
-[Language versions](../versions/).
+A `go` line newer than any toolchain the install carries is not refused. `toft
+check` and the deploy warn (`go_toolchain_fetched`), and the build has the `go`
+command fetch the toolchain it needs; it fails only if that fetch can't happen,
+naming both versions. See [Language versions](../versions/).
+
+## Jobs
+
+A Go job runs the binary the build produced, on a web app and on a `[batch]`
+app alike. Give it arguments with `command = "./toft-app job nightly"` or
+`args = ["job", "nightly"]`. `args` are the binary's own arguments; a leading
+`"./toft-app"` there is dropped rather than passed on as the first argument.
 
 ## Front ends
 

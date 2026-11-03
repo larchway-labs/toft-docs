@@ -22,10 +22,15 @@ app_base_path()
 
 :::caution[Node: id and slug are properties, the rest are async]
 In Node, `toft.app.id` and `toft.app.slug` are plain strings — calling them,
-`toft.app.slug()`, is a `TypeError`. `name()`, `mode()` and `basePath()` return
+`toft.app.slug()`, is a `TypeError`. Off the platform they raise `off_platform`
+rather than answering `""`, as every other field does. `name()`, `mode()` and `basePath()` return
 a Promise: forget the `await` and a template renders `[object Promise]`. In
 Python they are all plain properties.
 :::
+
+Inside a [job](../jobs/#inside-the-job), `toft.app` is refused with
+`job_send_only`, `id` and `slug` included — except in Node, where `app.slug`
+answers from the environment and `app.id` raises `off_platform`.
 
 The answer is fetched once and cached for the life of the process. Call
 `toft.app.refresh()` (Go: `toft.App.Refresh()`) to re-read it.
@@ -55,7 +60,8 @@ ok, err := toft.App.Can(ctx, "email")
 ```
 
 `can()` takes an integration name (`email`, `slack`) or a full capability
-(`email.send`). `toft.app.capabilities` lists everything attached.
+(`email.send`). `toft.app.capabilities` lists everything attached. `can("")` is
+`bad_request`.
 
 Check at startup. An app that does can tell someone "email is not enabled for
 this app" on a settings screen instead of failing later in a log.

@@ -59,10 +59,14 @@ fix: `return toft.jobs.respond(run)`.
   check), it raises `no_viewer` rather than starting the run as nobody, and a
   start for an anonymous visitor to a public app is refused `viewer_anonymous`,
   with a hint to start the job as the app instead.
-- **A repeated start is not a second run.** A start matching a run already in
-  flight, or one that finished in the last minute, returns that run with
-  `deduplicated` set. This keeps a Streamlit rerun or a double click from
-  starting the job twice.
+- **A repeated start is not a second run.** A start from your app matching a
+  run already in flight, or one that finished in the last minute (same person,
+  same parameters), returns that run with `deduplicated` set. This keeps a
+  Streamlit rerun or a double click from starting the job twice. The one-minute
+  window is your app's alone: `toft job run` and the **Run now** button start a
+  new run every time. An idempotency key makes repeats one run for 24 hours from
+  anywhere; reusing a key with a different job or parameters is refused with
+  `idempotency_key_reused`.
 - **The queue is capped.** When the app already has as many runs waiting as
   your install allows, `start` raises `toft.QueueFull`, so your code can say
   "try again in a moment".
@@ -100,9 +104,13 @@ a long loop can stop cleanly first. `run.scheduled_for` is the time the run is
 for: see [The time a run is for](../jobs/#the-time-a-run-is-for).
 
 A job can send messages and files through the app's
-[integrations](../../data/integrations/) and reach the app's storage while the
-run is in progress. It cannot read app data, act as a viewer or start another
-job.
+[integrations](../../data/integrations/), get integration tokens, and reach the
+app's storage while the run is in progress. It cannot read app data, ask about
+the app itself, act as a viewer or start another job: those calls are refused
+with `job_send_only`, naming the job and the run. Asking who is looking, with no
+viewer to ask about, simply answers nobody. A job gets no `PORT` or `HOST`,
+since it serves nothing. See [what a job may
+call](../../../cli/sdk/jobs/#inside-the-job) for the details per language.
 
 Jobs are not a message queue: there is no fan-out, and a run per request on a
 busy endpoint will fill the queue.

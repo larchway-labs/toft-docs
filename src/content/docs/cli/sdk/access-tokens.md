@@ -87,9 +87,19 @@ Google's client library, and `t.folder.item_id` is the folder's id.
   that is the whole site. Use the folder to know where to work.
 - **Ask first.** `toft.app.can("sharepoint.token")` is true only while the
   connection hands out tokens.
-- **Refusals.** `403 sharepoint_tokens_off` means the switch is off. `409
-  token_too_wide` means the connection's Entra app holds permissions beyond files,
-  such as sending mail, and Toft won't hand that token to an app.
+- **Refusals.** Each code starts with the kind you asked for:
+
+  | Code | Means |
+  |---|---|
+  | `sharepoint_off` (403) | The install has no such connection (`onedrive_off`, `gdrive_off` likewise). |
+  | `sharepoint_not_attached` | The connection exists but is not attached to this app. |
+  | `sharepoint_disabled` | The attachment is switched off. |
+  | `sharepoint_tokens_off` (403) | The connection doesn't hand out tokens: the switch is off. |
+  | `unknown_capability` (400) | A kind that is not `sharepoint`, `onedrive` or `gdrive`. |
+  | `token_too_wide` (409) | The connection's Entra app holds permissions beyond files, such as sending mail, and Toft won't hand that token to an app. |
+
+  `access_token("")` is `bad_request` before anything is sent, and so is
+  Python's `azure_credential` for anything but `sharepoint` or `onedrive`.
 - **A token works for about an hour**, even if your app is detached in the
   meantime. Never log it; the SDKs leave it out when a token is printed.
 - **Jobs** can get a token too, while their run is in flight.

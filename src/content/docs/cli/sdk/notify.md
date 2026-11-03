@@ -40,7 +40,12 @@ sending a `channel`, `folder` or `url` field is refused.
 | `status(send)` | Read back one send's record. |
 
 Go has `Slack`, `SlackFile`, `Email` and `Status`. R has `notify(kind, ...)`,
-whose named arguments become the message body.
+whose named arguments become the message body; `notify(NULL, …)` is
+`bad_request`.
+
+An email `to` that is not an address or a list of them — `None` included — is
+`bad_request` before anything is sent, as is a body that can't be encoded as
+JSON (`NaN` included).
 
 ## Ask first
 

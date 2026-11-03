@@ -13,6 +13,11 @@ toft events --since 24h --severity error
 toft events --kind deploy_failed --limit 50
 ```
 
+`--kind` takes the install's own names — `deploy_failed`, `app_crashed`,
+`app_restarted`, `job_run_failed`, `releases_pruned` and so on — and
+`--severity` is `error`, `warning` or `info`. Anything else is refused with the
+valid values listed.
+
 ## Why not just the log
 
 The log is what your process printed; an event is what Toft observed. If a scheduled run never started, only the events say so.
@@ -28,5 +33,6 @@ Every event has a time, a kind and a severity, and you can filter on each. An ev
 | **Held at CPU limit** | It spent more than a quarter of the last hour held at its CPU limit, so requests were slow. Clears once it stays under a tenth for an hour. Owners and editors are emailed at most once every six hours. An administrator can raise the limit in the app's Runtime settings. |
 | **Not restarting** | Toft stopped trying to restart it. |
 | **Job run failed** / **Scheduled job failed** | A run exited with an error. |
+| **Releases pruned** | Old deployments were deleted to keep **Deployments to keep**; names which. Informational, never emailed. |
 
 Events are pruned after a period your administrator sets.
