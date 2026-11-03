@@ -239,7 +239,8 @@ running. Node and Go use their own casing.
   `null` in Node, `nil` in Go and `NULL` in R, and `output_json()` /
   `outputJson()` / `job_output(json = TRUE)` answer `None` / `null` / `NULL`
   (Go's `OutputJSON` answers `false`). Empty bytes mean the run wrote an empty
-  output, which is not JSON: the JSON readers raise `not_json` for it. A 404 for any other reason —
+  output, which is not JSON: the JSON readers raise `not_json` for it, and
+  Go's `OutputJSON` answers `false` beside the error. A 404 for any other reason —
   no such run — still raises.
 - **`list` checks its arguments before asking**: a `status` that is not one of
   the eight above is `bad_request` (Node exports the list as `RUN_STATUSES`), as
@@ -272,7 +273,9 @@ variables](../../reference/environment/#inside-a-job).
 address its output is written to, but neither shows when you log it: Python's
 `repr(toft.run)`, Node's `console.log` and `JSON.stringify`, and Go's `%v`,
 `%+v`, `%#v` and `json.Marshal` all leave them out, and R's run does not hold
-them.
+them. Debugging does not reach them either: Python's `vars(toft.run)` holds
+neither, and `pickle.dumps(toft.run)` is refused (pass `run.id` and
+`run.params` instead); Node keeps them in private fields.
 
 - **The exit code decides the outcome.** Exit 0 is `succeeded`; anything else
   is `failed`, and the last line the job wrote to stderr becomes its reason
@@ -309,8 +312,11 @@ Tuesday's work on Thursday processes Tuesday.
 An instant named with an offset keeps it: `toft job run --for
 2026-11-03T09:00:00-05:00` reaches the job as `2026-11-03T09:00:00-05:00`, in
 `TOFT_SCHEDULED_FOR`, in `run.scheduled_for` and in every read of the run, not
-converted to UTC. In Node, a `JobRun`'s `scheduledFor` and `scheduledForText`
-are that text.
+converted to UTC. A scheduled run's instant is in its schedule's zone in
+every read too. In Node, a `JobRun`'s `scheduledFor` and `scheduledForText`
+are that text; in Python, `JobRun.scheduled_for` is a `datetime` in that
+offset, as `toft.run.scheduled_for` is, and `JobRun.scheduled_for_text` is the
+text.
 
 ## Which apps can have jobs
 

@@ -252,8 +252,11 @@ toft api PUT admin/storage/<id>/mappings/<app-id> --data '{"access":"read"}'
 toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
 ```
 
-- **Create** needs only `name` and `kind`. `backing` defaults to the one the
-  install offers (`GET admin/storage` lists them). On a host with
+- **Create** needs only `name` and `kind`. `backing` defaults to the kind's
+  usual one, or to the one the install offers, or to `host` where the install
+  offers host beside others (`GET admin/storage` lists them). With several on
+  offer and none of those among them, leaving it out is refused with
+  `storage_backing_required`, which lists them. On a host with
   `SHARED_STORAGE_ROOTS`, `storage_root` defaults to the single root when one is
   declared; with several, leaving it out is refused with `storage_root_required`,
   which lists them. A store, or a bucket-backed volume, also takes `bucket` and
@@ -264,7 +267,11 @@ toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
   is the root's own: read-write on a read-write root, read only on a `:ro` one.
   Leave `access` out to take it; anything else is 400
   `storage_level_unsupported`. A partitioned resource needs a `folder` (422
-  `storage_folder_required`).
+  `storage_folder_required`). One app cannot hold a resource whole and a
+  folder of it at nested paths, such as `/storage/sales-data` and
+  `/storage/sales-data/drop`: the second attach is refused with 409
+  `storage_path_taken`, as is a path another of the app's attachments already
+  uses. Give the folder a path of its own, or detach the whole resource first.
 - **Detach** with `DELETE …/mappings/<app-id>` removes every attachment of that
   resource on the app. `?folder=<name>` removes one folder's, and `?folder=`
   with nothing after it removes the whole-resource attachment.

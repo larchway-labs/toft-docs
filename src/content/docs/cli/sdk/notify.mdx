@@ -52,7 +52,8 @@ Sending a `channel`, `folder` or `url` field is refused with
 Integrations tab. Node refuses these fields itself, before anything is
 sent (R passes them on, and the platform refuses them) — in Node, `channel`, `folder`, `url`, `routingKey` and the like; `from`,
 `replyTo` or `reply_to`, and `headers`. Node also refuses any other option a
-call does not take, as `bad_request`.
+call does not take, as `bad_request` — on every call, not only notify. The
+refusal names the integration the send went to and the field.
 
 ## The calls
 
