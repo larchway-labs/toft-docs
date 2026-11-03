@@ -1426,3 +1426,141 @@ a.toft-path:hover {
 .toft-diagram .dg-head-fail {
   fill: var(--lp-danger-fg);
 }
+
+/* ── Home: start with a task ────────────────────────────────────────────────
+   Six cards between the hero and the full index: an icon chip, the task, one
+   line, and the guide it lives in. The whole card is the link. */
+.toft-tasks {
+  margin-top: 2.5rem;
+}
+
+.toft-tasks-title {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--lp-muted-foreground);
+}
+
+.toft-index-title {
+  margin: 4rem 0 0;
+}
+
+/* Under "Every page" the first guide's band needs no rule of its own. */
+.toft-tasks + .toft-map > .toft-band:first-child {
+  border-top: 0;
+  padding-top: 1.5rem;
+}
+
+.toft-task-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 40rem) {
+  .toft-task-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 64rem) {
+  .toft-task-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.toft-task-grid li {
+  margin: 0;
+}
+
+.toft-task {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--lp-border);
+  border-radius: calc(var(--lp-radius) + 4px);
+  background: var(--lp-card);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.toft-task:hover {
+  border-color: color-mix(in srgb, var(--lp-link) 45%, var(--lp-card));
+  box-shadow: 0 1px 2px oklch(from var(--lp-shadow-ink) l c h / 0.04), 0 12px 28px -18px oklch(from var(--lp-shadow-tint) l c h / 0.3);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toft-task:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.toft-task-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1rem;
+  border-radius: calc(var(--lp-radius) - 1px);
+  background: color-mix(in srgb, var(--lp-link) 9%, var(--lp-card));
+  color: var(--lp-link);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lp-link) 22%, var(--lp-card));
+}
+
+.toft-task-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lp-foreground);
+}
+
+.toft-task-body {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--lp-muted-foreground);
+}
+
+.toft-task-guide {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--lp-link);
+}
+
+.toft-task-guide::after {
+  content: " →";
+  transition: margin 0.15s;
+}
+
+.toft-task:hover .toft-task-guide::after {
+  margin-inline-start: 0.25rem;
+}
+
+/* A phone: icon beside the text, so six cards are a short list, not a scroll. */
+@media (max-width: 39.99rem) {
+  .toft-task {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 0.875rem;
+    padding: 1rem;
+  }
+  .toft-task-icon {
+    grid-row: 1 / span 3;
+    margin-bottom: 0;
+    width: 2rem;
+    height: 2rem;
+  }
+  .toft-task-body {
+    margin-top: 0.25rem;
+  }
+  .toft-task-guide {
+    margin-top: 0.5rem;
+  }
+}
