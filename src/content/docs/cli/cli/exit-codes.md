@@ -6,10 +6,10 @@ description: What each toft exit code means, and which ones are worth retrying.
 | Code | Meaning | Retry? |
 |---|---|---|
 | `0` | It worked. | |
-| `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page or the platform's own page in the app's place. Also a wait that ran out (`wait_timeout`, `timeout`): the work carries on. | No, except a wait that ran out or a platform page whose state passes on its own (`retryable` says). |
+| `1` | The platform did the thing and it failed: a failed build, a failed job run, a `toft check` that found a problem, a `toft fetch` or `--verify` that got an error page or the platform's own page in the app's place (a fetch the app answered with a failing status is `unexpected_status`). Also a wait that ran out (`wait_timeout`, `timeout`): the work carries on. | No, except a wait that ran out or a platform page whose state passes on its own (`retryable` says). |
 | `2` | Usage or configuration: a bad flag, an argument no command reads, no app linked, a refused prompt, a name that does not exist or is already taken. | No. Fix the command. |
 | `3` | Not authenticated, or refused: no key, an expired or read-only key, a license limit, jobs switched off on the install, or the app's state, such as rerunning a run that has not finished or deleting the serving deployment. | No. Fix the credential, or the state. |
-| `4` | The install could not be reached. | Yes. |
+| `4` | The install, or the app's address, could not be reached (`unreachable`). For `toft fetch`, `hostname_unresolved` means the app's own hostname has no DNS pointing at the install: fix the record, or `toft hostname --off`. | Yes, except `hostname_unresolved`. |
 
 ## Cases that land on 2
 
@@ -91,7 +91,9 @@ These exit 2 because nothing was attempted:
 - **`toft skill install` with nowhere to write** (`no_agent_folder`): neither
   `~/.claude` nor `~/.agents` exists. Name a folder with `--dir`.
 - **`toft create` with a deploy key and no `--owner-group`**
-  (`owner_group_required`), checked before anything is uploaded.
+  (`owner_group_required`), checked before anything is uploaded, and an owner
+  the install will not accept (`owner_group_empty`, `owner_is_viewer` and the
+  rest of the `owner_*` codes).
 - **An environment variable name `toft env set` refuses**: not letters, digits
   and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
   (`reserved_env_name`) — or a `--from-file` line that is not `KEY=VALUE`
@@ -191,8 +193,10 @@ too.
 
 A failed deploy writes its result object instead, with no second document; it
 carries a `code` (the install's, otherwise its `reason`, otherwise
-`deploy_failed`) and `retryable: false`. So does a failed `toft check`, `toft fetch` or `--verify`: the result already says
-what went wrong. Two cases write both: a `toft fetch` the platform answered in
+`deploy_failed`) and `retryable: false`. So does a failed `toft check` or `--verify`: the result already says
+what went wrong. Three cases write both: a `toft fetch` the app answered with a
+failing status (the result, then a refusal coded `unexpected_status` whose hint
+names `toft logs`), a `toft fetch` the platform answered in
 the app's place (the result, then a refusal coded with the state, such as
 `stopped` or `batch`), and a `toft job run` that did not succeed (the run, then
 a refusal coded with how it ended). Each of those refusals carries a `hint`
