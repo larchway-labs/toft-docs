@@ -37,9 +37,11 @@ with no rebuild. `toft rollback` does the same and names the deployment first.
 A deployment built before the app's base path changed — a rename, or a
 [hostname](../hostnames/) switched on or off — cannot serve at the new address
 as it is, so rolling back to it rebuilds its files there as a new deployment.
-Every rollback's deployment records the one it restored as `restored_from` in
-`GET /api/v1/apps/{id}/deployments`, kept even when the rollback was rebuilt,
-so a client can tell which release is really serving.
+That rebuilt deployment records the release it restored as `restored_from` in
+`GET /api/v1/apps/{id}/deployments`, and so does the rebuild a rename or hostname
+switch makes of the serving release, so a client can tell which release is
+really serving. A plain rollback creates no new deployment: the release it
+switched to is the one serving.
 
 **A restart is not a deploy.** The dependency policy, source policy and language
 version are judged as they were for that deployment, so an app does not fail to

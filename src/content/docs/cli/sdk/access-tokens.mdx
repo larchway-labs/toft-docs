@@ -125,7 +125,7 @@ Google's client library, and `t.folder.item_id` is the folder's id.
   | `sharepoint_not_attached` | The connection exists but is not attached to this app. |
   | `sharepoint_disabled` | The attachment is switched off. |
   | `sharepoint_tokens_off` (403) | The connection doesn't hand out tokens: the switch is off. |
-  | `unknown_capability` (400) | A kind that is not `sharepoint`, `onedrive` or `gdrive`. The hint spells the token capabilities as they are written: `sharepoint.token`, `onedrive.token`, `gdrive.token`. |
+  | `unknown_capability` (400) | A kind that is not `sharepoint`, `onedrive` or `gdrive`. The hint names the kinds to pass — `"sharepoint"`, never `"sharepoint.token"`. |
   | `token_too_wide` (409) | The connection's Entra app holds permissions beyond files, such as sending mail, and Toft won't hand that token to an app. |
 
   `access_token("")` is `bad_request` before anything is sent, and so is
