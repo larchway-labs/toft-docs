@@ -55,8 +55,15 @@ With more than one candidate at the root, or a document in a subfolder, name it:
 ```toml
 # toft.toml
 [notebook]
-file = "reports/weekly.qmd"
+file = "reports/weekly.qmd"     # or "reports/weekly.Rmd"
 ```
+
+The same table works for R Markdown. An `.Rmd` is knitted, so its `engine` is
+`"knitr"` or left out; any other engine is refused, with a hint.
+
+An R Markdown document is knitted in its own folder, as RStudio's **Knit**
+button does: a report at `reports/weekly.Rmd` reads `reports/data.csv` as
+`data.csv`, the same on your machine and on Toft.
 
 ## Quarto: Python or R
 

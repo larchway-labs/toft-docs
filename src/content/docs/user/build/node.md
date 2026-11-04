@@ -47,8 +47,12 @@ app needs, list them under [`[env]` in `toft.toml`](../toft-toml/#env).
 | no `package-lock.json` | `npm install` |
 
 Only `package-lock.json` is honored. With a `pnpm-lock.yaml` or `yarn.lock`,
-versions resolve from `package.json`, and the build log names the lockfile it
-passed over.
+Toft still installs with npm — from `package-lock.json` if there is one,
+otherwise from `package.json` — so the versions that lockfile pins are not the
+ones installed. The build log names the lockfile it passed over on every
+deploy, and on an install that checks dependencies the deploy also warns
+`lockfile_not_read`.
+Commit a `package-lock.json` (`npm install` writes one) to pin versions.
 
 :::caution
 Dependency lifecycle scripts (`postinstall` and similar) don't run unless your
