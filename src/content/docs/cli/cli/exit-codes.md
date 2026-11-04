@@ -23,9 +23,13 @@ These exit 2 because nothing was attempted:
   `toft deployments delete`, or a store you cannot reach (`not_found`). A deployment id that is too short
   (`invalid_id`) or matches several (`ambiguous_id`) lands here too.
 - **A name that is already taken** (`name_taken`): `toft create` with a slug
-  you named (`--app`, `toft.toml`) that someone has claimed. A slug you named
-  that is not a slug at all is `invalid_slug`, and the message names the slug
-  it would be.
+  you named (`--app`, `toft.toml`) that someone has claimed — and a hostname
+  another app holds (`hostname_taken`). A slug you named that is not a slug at
+  all is `invalid_slug`, from `toft check` as from `toft create`, and the
+  message names the slug it would be.
+- **An address that is not an install**: a `TOFT_URL` or `--install` that is
+  not a URL (`invalid_url`), or a server that answers with a web page rather
+  than Toft's API (`not_toft`).
 - **No app linked** for `toft deploy` (`no_app`), which never creates one, and
   `toft link` into an `[app]` table that already names a slug
   (`app_already_named`).
@@ -66,7 +70,8 @@ These exit 2 because nothing was attempted:
 - **`toft events --kind` or `--severity`** naming something the install does not
   record (`invalid_kind`, `invalid_severity`); the message lists the valid
   values.
-- **`toft store` given a folder where a file was wanted** (`is_a_folder`),
+- **`toft store` given a folder where a file was wanted** (`is_a_folder`), or
+  a file's path to `ls` (`is_an_object`),
   `toft://` with no store (`no_store`), or `get -o - --json`
   (`conflicting_flags`). A `cp` or `mv` source that is not there is
   `not_found`, with `-r` as without it.
@@ -110,8 +115,10 @@ no, has `"kind": "refused"` under `--json`, with the install's `code`.
 
 Some refusals mean "not now" rather than "no", and exit 1: another deployment
 is already queued for the app (`deploy_queued`), a run is already going
-(`already_running`), or the job queue is full (`queue_full`). Wait, then run the
-command again. `retryable` says which ones are worth retrying automatically.
+(`already_running`), the job queue is full (`queue_full` — its document
+carries `in_flight`, `limit` and `retry_after`), or the store is pacing your
+transfers (`store_busy`; a multi-file copy retries it itself). Wait, then run
+the command again. `retryable` says which ones are worth retrying automatically.
 
 A signal (Ctrl-C, SIGTERM) while `toft` was reading stdin exits 1 too, with the
 code `interrupted`: nothing was sent.
