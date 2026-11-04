@@ -229,7 +229,7 @@ Your code finds it by name, never by path — see the [storage hub](../../data/a
 
 | Refused with | When |
 |---|---|
-| `storage_unknown` | You hold nothing on a storage of that name — the same answer whether or not it exists |
+| `storage_unknown` | You hold nothing on a storage of that name — the same answer whether or not it exists. If an administrator created it, ask them to delegate it to you or to the app's owner |
 | `storage_not_attachable_by_owner` | You can attach it but the app's owner can't — ask an administrator |
 | `storage_not_attachable_by_you` | The owner can, but you can't, and the deploy adds it or raises its level — including when all you hold is a `toft store` grant |
 | `storage_level_above_ceiling` | The level is higher than you or the owner may attach |
