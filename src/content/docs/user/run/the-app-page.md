@@ -21,7 +21,7 @@ Everything about one app lives on its page. You see only the tabs your role and 
 
 ## Overview
 
-Opens on a **Summary** of the app — owner, who can see it, when it was created and, for editors, what is serving and whether it is the latest deployment. Under it, **Preview** shows the app inside the page; it stays closed until you open it, because loading the app wakes it and counts as a visit. Below that, an **Activity** section shows recent usage and failures. A [batch app](../../automation/jobs/#where-a-job-runs) has no address and no Open, Start or Stop.
+Opens on a **Summary** of the app — owner, who can see it, when it was created and, for editors, what is serving and whether it is the latest deployment. Under it, **Preview** shows the app inside the page; it stays closed until you open it, because loading the app wakes it and counts as a visit. Below that, an **Activity** section shows recent usage and failures. A [batch app](../../automation/jobs/#where-a-job-runs) has no Open, Start or Stop; its address lists each job's schedule, next run and last outcome.
 
 The first button at the top of the page is what the app needs next: **Start app** when it is stopped, **Restart app** when it has crashed, **View build log** when its first deploy failed, and **Open** otherwise. **Open** is always there. Start, Restart and Stop are also in the **⋯** menu. An uploaded app has a **Deploy** menu with **Upload new version** and **Redeploy current version**; an app deployed from git has **Redeploy**.
 
