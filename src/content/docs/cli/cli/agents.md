@@ -31,8 +31,14 @@ for s in toft-cli toft-sdk; do
 done
 ```
 
+`toft skill install` does the same in one step, for whichever of `~/.claude`
+and `~/.agents` exists. What it writes is a short `SKILL.md` that tells the
+agent to run `toft skill <name>`, so the instructions follow the `toft` you
+have installed without being copied again. With neither folder present it exits
+2 `no_agent_folder` and installs nothing; name a folder with `--dir`.
+
 For one project only, use `.claude/skills` or `.agents/skills` in that
-repository instead. `toft skill` with no name lists the skills, and it needs no
+repository instead (`toft skill install --dir .claude/skills`). `toft skill` with no name lists the skills, and it needs no
 sign-in. Run the loop again after upgrading `toft`.
 
 To fetch them without `toft` installed, download them from the repository:

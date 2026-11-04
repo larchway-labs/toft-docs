@@ -115,6 +115,8 @@ stream piped, none of this happens and you get the plain behaviour.
 a person to approve it in a browser. An unattended run — `--plain` or
 `TOFT_PLAIN`, `CI` set, or stdin not a terminal — refuses it with exit 2
 `unattended_login` rather than wait; use `--token-stdin` or `--password-stdin`.
+`toft login` with no address, on a machine where nothing is stored yet, exits 3
+`no_install`, as every other command does when it has no install to talk to.
 
 A signal (Ctrl-C, SIGTERM) while `toft` is reading stdin — `--token-stdin`,
 `--password-stdin`, `env set --from-file -`, `--data @-` — ends the read with
@@ -170,6 +172,24 @@ fails later — at the dependency scan, the build or the start — **keeps the a
 with status `failed`, its deployment and its build log. Fix the tree and `toft
 deploy` into it, or `toft delete` it.
 
+**A deploy key must name a group to own the app.** A deploy key belongs to
+nobody, so without `--owner-group` the create exits 2 `owner_group_required`
+before anything is uploaded; `toft api GET groups` lists the groups. A personal
+key may name one too, and the group owns the app instead of you. An owner the
+install will not accept is refused with its own code and a hint:
+
+| Code | The owner named |
+|---|---|
+| `owner_group_empty` | A group with no members, so nobody could administer the app. |
+| `owner_group_no_eligible_member` | A group whose members are all locked or viewers. |
+| `owner_group_mapped` | A group whose membership comes from your identity provider. It can be granted access, but cannot own. |
+
+A name `toft` cannot find among the groups exits 2 `not_found` before anything
+is sent.
+
+`toft check --owner-group <g>` asks the same question before a create, so a check
+that passes is not followed by a create refused for its owner.
+
 | Flag | |
 |---|---|
 | `--app <slug>` | The slug. Otherwise `toft.toml`, then the folder or directory name. |
@@ -178,6 +198,7 @@ deploy` into it, or `toft delete` it.
 | `--branch <branch>` | With `--repo`. Otherwise the default branch. |
 | `--subdir <folder>` | With `--repo`: build this folder of the repository. The slug defaults to the folder's name. |
 | `--execution-mode <m>` | `shared` or `isolated`, if the install lets you choose. |
+| `--owner-group <g>` | The group that will own the app, by name or id. Required with a deploy key. |
 | `--link` | Write the slug into `toft.toml` on success. |
 | `--logs` | Stream the first build's log. |
 | `--no-watch` | Return after starting; print the deployment id. |
@@ -200,9 +221,18 @@ linked it exits 2 `no_app` and names `toft link <slug>`.
 | `--verify-timeout <d>` | How long `--verify` retries a 5xx. Default `30s`. |
 
 Under `--json`, a successful result may carry `warnings`, the same sentences the
-deploy prints, and `warning_details` beside them: one object per coded warning,
-with its `code` (`go_toolchain_fetched`, `node_version_unread`,
-`manifest_unread`…), as [`toft check`](#toft-check) names them.
+deploy prints, and `warning_details` beside them: one object per warning, with
+its `code` (`go_toolchain_fetched`, `node_version_unread`,
+`manifest_unread`…), as [`toft check`](#toft-check) names them. Every warning a
+deploy gives has a code; [Warnings](../deploying/#warnings) lists
+them. With `--no-watch --json`, the one object still carries the warnings `toft`
+found in the bundle itself: `env_file_skipped`, `secret_in_bundle` and
+`go_work_dir_excluded`.
+
+A failed deploy's `--json` result is the whole answer, with no second document
+after it. Besides `reason` and the message, it always carries a `code` — the
+install's own when it gave one, otherwise the reason, otherwise `deploy_failed`
+— and `retryable: false`, since the same deploy fails the same way.
 
 ### `--verify`
 
@@ -291,8 +321,12 @@ Warnings are full sentences, the same ones a deploy prints. Under `--json`,
 warning: a `code` (`manifest_unread` for a `toft.toml` table or key nothing
 reads, an unknown key under `[app]` included; `limit_clamped` for a job an
 administrator's lowered ceiling caps; `pin_excluded_by_requires_python` for a
-`[runtime] python` pin your `requires-python` excludes), the
-`table` for a `toft.toml` key, and the `message`. A Go app whose `go.mod` asks
+`[runtime] python` pin your `requires-python` excludes;
+`go_work_dir_excluded` for a `go.work` that uses a folder the bundle leaves out,
+such as a git-ignored `.toft/sdk-go`, which the build would fail to load), the
+`table` for a `toft.toml` key, and the `message`. The install gives
+`go_work_dir_excluded` itself too, for a tree sent by any client, and `toft`
+does not repeat one the install already named. A Go app whose `go.mod` asks
 for a Go this install doesn't have is warned `go_toolchain_fetched`: the build
 fetches that toolchain, and if it can't, the build failure names the Go this
 install has. When `requires-python` chose
@@ -336,11 +370,19 @@ never goes forward. When nothing older exists, it exits 2 (`nothing_older`) and
 names the newer deployment you could switch to. A deployment that retention
 has pruned is no longer a target: naming it exits 2 `not_found`, or 1 `gone`
 when its record is still there but its files are not. Naming a newer deployment
-yourself works, and says `Switching … forward`. Nothing is rebuilt. When it succeeds it names the deployment now
+yourself works, and says `Switching … forward`. Nothing is rebuilt, except
+across a base-path change (below). When it succeeds it names the deployment now
 serving, the one it restored, and `--json` returns it as `deployment_id` — on
 the result and on every progress frame, where the platform's own short-lived
 rollback record is `watched_id`. The id
-can be a [unique prefix](#deployment-ids). Flags: `--yes`, `--no-watch`, `--json`,
+can be a [unique prefix](#deployment-ids).
+
+A rollback to a release built for a different base path — the app was renamed,
+or moved to or from its own hostname since — is rebuilt at the current address,
+from the same files, so it gets a deployment of its own, the newest in `toft
+deployments`. Every rollback's deployment carries `restored_from`, the release
+it restored, and the next `toft rollback` goes back from that release, never
+forward to the one you left. Flags: `--yes`, `--no-watch`, `--json`,
 `--verify <path>`, `--verify-timeout <d>`.
 
 How far back you can go is what retention keeps. By default an app keeps **3
@@ -377,7 +419,7 @@ and prints the status line, then the body. The path is from the app's root:
 | Flag | |
 |---|---|
 | `--method <verb>` | The request method. Default `GET`. |
-| `--data <body>` | A request body. `@file` reads a file, `@-` reads stdin. |
+| `--data <body>` | A request body. `@file` reads a file, `@-` reads stdin. `@-` with nothing on stdin exits 2 `empty_input`; leave `--data` off to send no body. A file that cannot be read is `unreadable_file`. |
 | `--header 'K: V'` | A request header. Repeat for more. |
 | `--form k=v` | A `multipart/form-data` field; `k=@file` sends a file under its own name. Repeat for more. Implies `POST`, and is not combined with `--data`. |
 | `-o`, `--output <file>` | Write the body to a file instead of printing it — whole, with no `--max-body` bound. Written only when the app answers 2xx or 3xx; a refusal is printed and the file is left as it was. `-o -` writes the whole body to stdout. |
@@ -426,8 +468,10 @@ toft fetch /export.csv -o - | wc -l      # the whole body on stdout
 toft fetch /admin/load --form dataset=frs --form file=@frs.csv
 ```
 
-Your key is sent only to the install's address for apps, and the install removes
-it before the request reaches your app. You never need the key in your shell, or
+An app on a [hostname of its own](../../../admin/apps/hostnames/) is requested
+there, at the address `toft status` names. Your key is sent only to the
+install's address for apps, or to that hostname, and the install removes it
+before the request reaches your app. You never need the key in your shell, or
 to work out the app's URL yourself.
 
 Over a key, the app is told your role but not **who** you are: code that asks the
@@ -437,7 +481,7 @@ request as a signed-in browser, so that code sees a name.
 
 ## `toft apps`
 
-The apps you can see. `--mine` lists only the ones that are yours: apps you own, apps a group you belong to owns, and apps you were granted — the same split as **Mine** in the web console. `--json` prints one app per line, and nothing when there are none.
+The apps you can see. `--mine` lists only the ones that are yours: apps you own, apps a group you belong to owns, and apps you were granted — the same split as **Mine** in the web console. A deploy key belongs to nobody, so `--mine` with one exits 2 `needs_personal_credential`: drop `--mine`, or use a personal key. `--json` prints one app per line, and nothing when there are none.
 
 ## `toft top`
 
@@ -835,14 +879,20 @@ stdout. A refusal — your access level, or a partitioned store's folders — ex
 3. That includes `put` onto a name that already exists when your access is
 `write`.
 
+`put` below `write` and `rm` below `full` exit 3 `insufficient_access`, with a
+hint, as `mv` does.
+
 A copy of several files in which every item was refused for the same reason is
 that refusal, with its exit code and `code`: copying one file onto an existing
 name at `write` exits 3 with `already_exists`, as `put` does. A batch that
 partly failed exits 1 with "n of m failed" (`partial_failure`). Under `--json`,
 a batch prints one document per item, and a failed item carries its own `code`
-and `bytes: 0`. When the store paces you (host storage takes four transfers per
-person at once), the copy backs off and retries, so a higher `-j` slows down
-rather than fails.
+and `bytes: 0`; a local file that cannot be read is `unreadable_file`. `rm -r
+--json` does the same: one `{object, bytes, deleted}` document per item, with
+`error` and `code` on one that failed. When the store paces you (host storage
+takes four transfers per person at once), `cp`, `mv` and `rm -r` back off and
+retry, so a higher `-j` slows down rather than fails; an item that still fails
+carries `store_busy`.
 
 A `toft store` grant lets you move files. It does not let you attach the store
 to an app: that needs a delegation from an administrator — see
@@ -937,3 +987,11 @@ toft skill toft-sdk > ~/.claude/skills/toft-sdk/SKILL.md
 ```
 
 `--json` prints one name per line, or `{name, content}` for one skill.
+
+`toft skill install` installs both for your coding agents: it writes a short
+`SKILL.md` for each into `~/.claude/skills` and `~/.agents/skills`, for
+whichever of `~/.claude` and `~/.agents` exists, telling the agent to run `toft
+skill <name>` — so the instructions always match the `toft` on your path.
+`--dir <folder>` writes into that skills folder instead, such as
+`.claude/skills` for one project. With neither folder present and no `--dir`,
+it exits 2 `no_agent_folder` and installs nothing.
