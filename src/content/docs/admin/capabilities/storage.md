@@ -248,9 +248,20 @@ delegations need the administrator's session (`--session`).
 
 ```bash
 toft api POST admin/storage --data '{"name":"sales-data","kind":"volume"}'
-toft api PUT admin/storage/<id>/mappings/<app-id> --data '{"access":"read"}'
+toft api PUT admin/storage/<id>/mappings/<app-id> --data '{}'
 toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
 ```
+
+The empty body takes the default level, which works on every backing: under a
+host root, the root's own (read-write, or read only on a `:ro` root); anywhere
+else, read. Name one with `"access"` only off a host root, such as
+`--data '{"access":"full"}'` — under one, any level but the root's own is
+refused (see **Attach**, below).
+
+The ids: `GET admin/storage` lists the resources with theirs, `GET apps` the
+apps with theirs (`toft status --app <slug> --json` prints one), and
+`GET users` the people, each with `id`, `login` and `email`. Routes that take
+an app want its id; a slug is not found.
 
 - **Create** needs only `name` and `kind`. `backing` defaults to the kind's
   usual one, or to the one the install offers, or to `host` where the install
@@ -284,6 +295,20 @@ toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
   with nothing after it removes the whole-resource attachment.
 - An attachment made this way takes effect at the app's next start — a restart
   or a deploy — like one made on this page.
+- **Grant a person** with `PUT admin/storage/<id>/grants` and
+  `{"subject_type": "user", "subject_id": "<user-id>", "access": "read"}`
+  (`"group"` and a group id for a group; `folder` narrows it). **List** with
+  `GET admin/storage/<id>/grants`.
+- **Revoke** with `DELETE admin/storage/<id>/grants/user:<user-id>` (or
+  `group:<group-id>`): the subject is one path segment, its type and id joined
+  by a colon. `?folder=<name>` revokes the grant on that folder only. It takes
+  effect at once. All three need `--session`:
+
+```bash
+toft api --session GET admin/storage/<id>/grants
+toft api --session DELETE admin/storage/<id>/grants/user:<user-id>
+toft api --session GET admin/storage/<id>/grants      # confirm it is gone
+```
 
 ## Without a cluster
 
