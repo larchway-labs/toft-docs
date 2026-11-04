@@ -114,7 +114,8 @@ These exit 2 because nothing was attempted:
 | `invalid_key` | The install does not know this key: it was revoked, or minted on another install. Check `TOFT_TOKEN`, or run `toft login`. A credential that is not shaped like a Toft key at all — one that does not begin `toft` — gets the same refusal from `toft` itself, before anything is sent. |
 | `key_read_scope` | The key can read but not write. Mint a full key. |
 | `no_install` | No install named and none stored — `toft login` with no address included. Run `toft login <install-url>`, or set `TOFT_URL` and `TOFT_TOKEN`. |
-| `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
+| `deny_system_role` | Your account is a viewer, and creating an app needs the publisher role. Ask an administrator. |
+| `deny_no_action` | Your role on this app does not allow that — you are its viewer, and deploying, rolling back or changing who can see it needs editor. Ask its owner for editor (`toft api POST apps/<id>/access-requests --data '{"role":"editor"}'`). If your account is itself a viewer, it needs the publisher role first. |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
 | `jobs_unavailable` | Jobs are switched off on this install, or there is nowhere to run them. An administrator's decision. |
 | `run_still_open` | `toft job rerun` of a run still queued or running. `toft job wait` it first. |
