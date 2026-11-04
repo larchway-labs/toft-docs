@@ -14,6 +14,19 @@ never own.
 bulk from a person's page before deleting them
 (`POST /api/v1/users/{id}/transfer-apps`).
 
+An owner Toft will not accept — at create, transfer or bulk transfer — is
+refused with 422, a code of its own and a hint:
+
+| Code | The owner named |
+|---|---|
+| `owner_not_found` | No such user or group. |
+| `owner_is_viewer` | A user whose account role is viewer. Raise their role first, or name someone else. |
+| `owner_user_locked` | A locked user. Unlock the account first, or name someone else. |
+| `owner_group_mapped` | A group whose membership comes from a directory. Grant it access instead. |
+| `owner_group_empty` | A group with no members, so nobody could administer the app. |
+| `owner_group_no_eligible_member` | A group whose every member is locked or a viewer. |
+| `invalid_owner_type` | An owner type other than `user` or `group`. |
+
 ## The three rungs
 
 Granted to a person or a group, per app, on its **Access** tab.
