@@ -101,7 +101,8 @@ and a call that timed out is never resent: 30 seconds is the whole call. Any
 other retry, a retryable `409` included, is your code's to make.
 
 A successful answer that is not JSON — a web page from a proxy or sign-in page
-in front of the install — is `not_toft`, not retryable: check `TOFT_API_URL`.
+in front of the install, or in Go an empty body — is `not_toft`, not retryable:
+check `TOFT_API_URL`.
 
 **Log the `hint`.** It is written for whoever reads the failure, and it is
 usually the part they act on: "an administrator has to lift the lock", "mint a

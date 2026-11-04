@@ -380,9 +380,10 @@ can be a [unique prefix](#deployment-ids).
 A rollback to a release built for a different base path — the app was renamed,
 or moved to or from its own hostname since — is rebuilt at the current address,
 from the same files, so it gets a deployment of its own, the newest in `toft
-deployments`. Every rollback's deployment carries `restored_from`, the release
-it restored, and the next `toft rollback` goes back from that release, never
-forward to the one you left. Flags: `--yes`, `--no-watch`, `--json`,
+deployments`, with `restored_from` naming the release it restored, and
+`deployment_id` under `--json` is that new deployment. A rename or hostname
+switch rebuilds the serving release the same way. Either way the next `toft
+rollback` goes back from that release, never forward to the one you left. Flags: `--yes`, `--no-watch`, `--json`,
 `--verify <path>`, `--verify-timeout <d>`.
 
 How far back you can go is what retention keeps. By default an app keeps **3

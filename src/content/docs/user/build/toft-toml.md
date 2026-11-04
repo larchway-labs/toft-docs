@@ -263,7 +263,8 @@ its own code and hint; a deploy stops at the first.
 | `invalid_timeout` | A `timeout` that isn't a duration or is outside 1 second to 7 days; the message names the value |
 | `invalid_schedule`, `invalid_timezone`, `invalid_overlap`, `invalid_notify`, `invalid_expect_within` | The matching job key |
 | `invalid_param` | A parameter declaration |
-| `invalid_notebook_engine` | A `[notebook] engine` that isn't `nbconvert`, `quarto`, `knitr` or `jupyter` |
+| `invalid_notebook_file` | A `[notebook] file` that is missing, absolute, outside the repository, or not an `.ipynb`, `.qmd` or `.Rmd` |
+| `invalid_notebook_engine` | A `[notebook] engine` that isn't `nbconvert`, `quarto`, `knitr` or `jupyter`; listed beside `invalid_notebook_file` when both are wrong |
 | `storage_entry_invalid`, `storage_name_ambiguous`, `storage_path_taken` | A `[[storage]]` entry wrong on its own (above) |
 | `batch_and_static` | `[batch]` together with `[static]` |
 | `manifest_invalid` | Anything with no finer code |
