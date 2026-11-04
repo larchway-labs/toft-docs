@@ -49,7 +49,9 @@ The parts you pass stay inside it: an absolute part, or a `..` that climbs out o
 the scratch folder, is refused with `bad_request` (a `..` that stays inside is
 fine). Off-platform, every SDK uses a private folder (mode `0700`), so local
 runs work and other users on the machine can't read it. All four create
-`toft-scratch-<uid>/<app>` under the system temp directory, and it outlives the
+`toft-scratch-<uid>/<hash>` under the system temp directory, where `<hash>` is 12
+hex characters of the working directory's hash — so two apps in development do
+not share one — and it outlives the
 process, so a second local run finds what the first left there. If that folder
 cannot be made private, R falls back to its session's temporary directory
 (`tempdir()`), which is removed when the R session ends.

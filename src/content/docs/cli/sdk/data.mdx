@@ -91,7 +91,7 @@ it waits depends on the language:
 | | Waits out `rate_limited` |
 |---|---|
 | Python, Node, Go | Up to 300 seconds in all, honoring `Retry-After` |
-| R | Retries once, as every R call does |
+| R | Waits it out for the call's 30 seconds, as every R call does |
 
 Past that, it raises `rate_limited` itself.
 

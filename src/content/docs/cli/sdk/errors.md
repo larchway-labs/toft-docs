@@ -92,9 +92,13 @@ When the platform says how long to wait, the error carries it: `retry_after`
 (Python, seconds), `retryAfter` (Node, seconds), `RetryAfter` (Go, a
 `time.Duration`), `e$retry_after` (R, seconds).
 
-The SDK resends a request once on its own, and only when that cannot do harm:
-when it cannot have reached the platform's handler (a rate limit at the gateway,
-a connection that never opened), or when it is a read, or a write carrying an
+The SDK resends a request on its own only when that cannot do harm. A rate
+limit (`rate_limited`, a 429) is waited out — `Retry-After` plus a little jitter,
+as many times as the call's 30 seconds allow — so many calls at once, from a
+thread pool, `Promise.all` or goroutines, are paced rather than refused. Anything
+else is resent once:
+when it cannot have reached the platform's handler (a connection that never
+opened), or when it is a read, or a write carrying an
 `Idempotency-Key`, that got a server error or lost its connection. A write
 without a key that got a server error is not resent — it may have happened —
 and a call that timed out is never resent: 30 seconds is the whole call. Any
