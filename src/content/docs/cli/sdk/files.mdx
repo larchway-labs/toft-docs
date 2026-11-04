@@ -48,10 +48,11 @@ Per app, never backed up, never shared. `TMPDIR` points at the same place.
 The parts you pass stay inside it: an absolute part, or a `..` that climbs out of
 the scratch folder, is refused with `bad_request` (a `..` that stays inside is
 fine). Off-platform, every SDK uses a private folder (mode `0700`), so local
-runs work and other users on the machine can't read it. Python, Node and Go
-create `toft-scratch-<uid>/<app>` under the system temp directory; R uses its
-session's temporary directory (`tempdir()`, already `0700`), which is removed
-when the R session ends.
+runs work and other users on the machine can't read it. All four create
+`toft-scratch-<uid>/<app>` under the system temp directory, and it outlives the
+process, so a second local run finds what the first left there. If that folder
+cannot be made private, R falls back to its session's temporary directory
+(`tempdir()`), which is removed when the R session ends.
 
 ### One browser session's corner
 
