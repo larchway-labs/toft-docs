@@ -260,7 +260,14 @@ toft api DELETE 'admin/storage/<id>/mappings/<app-id>?folder=drop'
   `SHARED_STORAGE_ROOTS`, `storage_root` defaults to the single root when one is
   declared; with several, leaving it out is refused with `storage_root_required`,
   which lists them. A store, or a bucket-backed volume, also takes `bucket` and
-  `prefix`.
+  `prefix`. A name already in use is 409 `name_taken` (`GET admin/storage` lists
+  the names); a name that breaks the naming rule — 3 to 40 lowercase letters,
+  digits and single hyphens, starting with a letter — is 400
+  `invalid_storage_name`.
+- **Delegate** with `PUT admin/storage/<id>/managers` and `{"subject_type",
+  "subject_id", "max_access"}`. `max_access` is the highest level the delegate
+  may attach at; a grant's field is `access`, a delegation's is not. A body
+  without `max_access` is refused with `missing_fields`, naming it.
 - **Attach** takes `path`, `access` and `folder`, all optional. The path
   defaults to `/storage/<name>`, or `/storage/<name>/<folder>` with a folder —
   the same default as `[[storage]]` in `toft.toml`. Under a host root, the level

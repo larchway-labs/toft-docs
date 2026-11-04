@@ -25,7 +25,13 @@ Toft refuses some owners:
 
 - A group whose membership comes from your identity provider. It can hold grants but not own an app. Ask your administrator for a group managed in Toft.
 - A person whose account role is viewer, or a locked account.
-- A group with no member who could administer the app.
+- A group with no member who could administer the app — it has no members at
+  all, or every member is locked or a viewer.
+
+Each refusal says which of these it was, and what to do about it. From the
+command line or the API, it carries a code: `owner_group_mapped`,
+`owner_is_viewer`, `owner_user_locked`, `owner_group_empty` or
+`owner_group_no_eligible_member`.
 
 ## When someone leaves
 
