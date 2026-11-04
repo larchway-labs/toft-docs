@@ -826,7 +826,8 @@ anything is asked, so a store you cannot reach or a file that isn't there exits
 2 (`not_found`) with nothing transferred, rather than asking for `--yes` — with
 `-r` as without it. A
 folder where a file was wanted exits 2 (`is_a_folder`) — `get` of a folder, and
-`cp`, `mv` or `rm` of one without `-r`, with or without the trailing slash. The
+`cp`, `mv` or `rm` of one without `-r`, with or without the trailing slash —
+and `ls` of a file's path exits 2 (`is_an_object`). The
 same goes for `ls`, `get` and `put` on a store that names nothing you can reach,
 and `get` of a file that isn't there. `toft://` with no store is exit 2
 `no_store`, and `get -o - --json` is exit 2 `conflicting_flags`, since both want
@@ -837,8 +838,11 @@ stdout. A refusal — your access level, or a partitioned store's folders — ex
 A copy of several files in which every item was refused for the same reason is
 that refusal, with its exit code and `code`: copying one file onto an existing
 name at `write` exits 3 with `already_exists`, as `put` does. A batch that
-partly failed exits 1 with "n of m failed". Under `--json`, a batch prints one
-document per item, and a failed item carries its own `code`.
+partly failed exits 1 with "n of m failed" (`partial_failure`). Under `--json`,
+a batch prints one document per item, and a failed item carries its own `code`
+and `bytes: 0`. When the store paces you (host storage takes four transfers per
+person at once), the copy backs off and retries, so a higher `-j` slows down
+rather than fails.
 
 A `toft store` grant lets you move files. It does not let you attach the store
 to an app: that needs a delegation from an administrator — see
