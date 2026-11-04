@@ -313,7 +313,9 @@ An instant named with an offset keeps it: `toft job run --for
 2026-11-03T09:00:00-05:00` reaches the job as `2026-11-03T09:00:00-05:00`, in
 `TOFT_SCHEDULED_FOR`, in `run.scheduled_for` and in every read of the run, not
 converted to UTC. A scheduled run's instant is in its schedule's zone in
-every read too. In Node, a `JobRun`'s `scheduledFor` and `scheduledForText`
+every read too, and so is one given in UTC on a job whose schedule names a
+zone: `--for 2026-11-03T15:00:00Z` on a New York job reads
+`2026-11-03T10:00:00-05:00` in every read, as `TOFT_SCHEDULED_FOR` says. In Node, a `JobRun`'s `scheduledFor` and `scheduledForText`
 are that text; in Python, `JobRun.scheduled_for` is a `datetime` in that
 offset, as `toft.run.scheduled_for` is, and `JobRun.scheduled_for_text` is the
 text.

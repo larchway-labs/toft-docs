@@ -199,7 +199,9 @@ link from `url` can read that file until it expires, so don't log one.
 
 :::caution[R: write with store_put]
 `file.copy()` onto a store mount creates an empty file and returns `FALSE`.
-Use `store_put()`.
+Use `store_put()`. Given a name, `store_put()` copies onto whatever is mounted
+under it — a mounted volume as well as a mounted store, as `put()` does in the
+other languages. The other `store_*()` functions are for stores only.
 :::
 
 ### One name, attached twice
@@ -249,8 +251,11 @@ languages.
   and names what is attached — in every language, for every operation (in Go,
   each method of the empty `Mount` returned beside the error). `mounts()` with
   nothing attached returns an empty list; the `TOFT_STORAGE` variable it reads
-  is then absent altogether, not `[]`. Off the platform, `storage()` and
-  `store()` raise `off_platform` instead, in all four languages. Set
+  is then absent altogether, not `[]`. Off the platform — the platform's
+  variables absent and `TOFT_STORAGE` unset or blank — `storage()` and
+  `store()` raise `off_platform` instead, in all four languages. A
+  `TOFT_STORAGE` of `[]` reads as a platform that attached nothing, so a name
+  is `not_mapped`. Set
   `TOFT_STORAGE` to stand a mount in locally; an entry in it without its
   `name`, `kind` or `access` is `storage_env_invalid`.
 - **The fix for `not_mapped`** is an attachment: an administrator on the app's
