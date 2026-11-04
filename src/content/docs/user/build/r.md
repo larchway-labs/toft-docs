@@ -29,8 +29,10 @@ the four listed.
 :::caution
 Without `renv.lock`, no packages are installed, and `toft check` and the build
 log say so. A Shiny or plumber app deploys and then fails at its first
-`library()` call. An R Markdown or Quarto document still goes through its render
-step, so the deploy fails there, naming the missing package.
+`library()` call. A batch app (`[batch]`) deploys too, and each of its jobs
+fails at its first `library()` call. An R Markdown or Quarto document still
+goes through its render step, so the deploy fails there, naming the missing
+package.
 :::
 
 ```r
