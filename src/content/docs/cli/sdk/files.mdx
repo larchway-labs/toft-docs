@@ -141,7 +141,7 @@ install. Each one carries its `access` level: Python `read_only`, Node
 `name`, `kind`, `path`, `access`, `folder`, `read_only` and `mounted`. In R
 they are list elements; Node prints and JSON-encodes them under those names;
 in Go they are the encoded `Mount`, with `ReadOnly()` and `Mounted()` as
-methods.
+methods; in Python they are attributes, and `m.to_dict()` is the JSON form.
 
 A `.sqlite` or `.duckdb` file on an attached volume is opened directly at its path.
 
