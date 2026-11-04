@@ -1,12 +1,15 @@
 ---
 title: Checks reference
-description: All 29 system checks in report order, with their category and what moves each one off pass.
+description: All 29 system checks in report order, the rows each one reports, and what moves each one off pass.
 ---
 
 Every check on **Admin → System checks**, in the order the report runs them.
 There are **29**, in nine categories. A test walks this registry, so a check
-cannot silently stop running. Some checks emit more than one row; each row keeps
-its own id.
+cannot silently stop running. Some checks emit more than one row, and each row
+keeps its own id: **the report — and `GET /api/v1/system/checks` — lists rows, not
+checks**, so it carries more entries than this table has lines, under the row ids
+the last column names. `app_containment`, for one, never appears by that id; its
+rows are `app_accounts` and `cloud_metadata`.
 
 | Id | Name | Category | What it reads |
 |---|---|---|---|
