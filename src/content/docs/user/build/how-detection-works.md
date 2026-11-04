@@ -20,7 +20,11 @@ You don't declare a framework. Toft inspects the repository root — or the
 | 8 | `app.R`, `ui.R` + `server.R`, `plumber.R`, or a root `.R` with a route annotation such as `#* @get /x` | [Shiny or plumber](../r/) |
 | 9 | `requirements.txt`, `pyproject.toml` or `Pipfile` | [Python](../python/) |
 | 10 | A folder of HTML with none of the files above | [Static site](../static/) |
+| 11 | A root `app.py`, `main.py`, `streamlit_app.py`, `server.py` or `wsgi.py`, and no HTML | [Python](../python/), with no dependencies to install |
 
+- **A folder of HTML wins over a lone Python file.** A site that ships a preview
+  `server.py` and no `requirements.txt` deploys as a static site. Add a
+  `requirements.txt` (an empty one will do) to deploy it as Python instead.
 - **R wins over Python.** An `app.R` beside a `requirements.txt` is an R app.
 - **A notebook wins over a Python server.** A Flask repo with an `.ipynb` at
   its root deploys as a notebook. Move the notebook into a subfolder.
