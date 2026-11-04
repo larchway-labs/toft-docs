@@ -29,11 +29,11 @@ Give it an account of its own from your identity provider, ask the app's owner t
 
 ## Deploy keys
 
-An administrator creates these. A deploy key belongs to nobody, so it keeps working when people leave. It can create, deploy, roll back and restart apps, but cannot delete apps or change who can see them. Use one in CI instead of someone's personal key.
+An administrator creates these. A deploy key belongs to nobody, so it keeps working when people leave. It can create, deploy, roll back and restart apps, and set who can see an app only as part of creating or promoting it. It cannot delete apps or change who can see an existing one. Use one in CI instead of someone's personal key.
 
 ## Limits on every key
 
-No key can create keys, change permissions or change who can see what — that needs a browser session. A revoked key stops working on the next request.
+No key can create keys or change who holds a role on an app — that needs a browser session. A personal key acts as you, so it can change who can see an app you own (`toft visibility`). A revoked key stops working on the next request.
 
 You can hold ten personal keys. An expired key still counts until you revoke it, and `toft login` does not revoke the key it replaces — so if creating one is refused with `key_limit_reached`, revoke old ones on **Credentials** first.
 

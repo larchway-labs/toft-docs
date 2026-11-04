@@ -63,12 +63,21 @@ To take everything away from a person at once rather than app by app, see
 [what can this person reach?](#what-can-this-person-reach), and for a person
 leaving, transfer their apps first (`POST users/<id>/transfer-apps`).
 
+## Administrators
+
+**A Toft administrator acts as owner on every app, whether or not they hold a
+grant on it**: deploy, restart, change who can see it, delete it, and read its
+logs, events and settings. Every such action is audited under their name. What
+the *app* is told is separate: an administrator with no grant reaches the app
+as `viewer` (`X-Toft-Role`), with `is_admin` set — see
+[roles](../../../cli/reference/roles/).
+
 ## Listable and readable
 
 | | Means | Used by |
 |---|---|---|
 | **Listable** | Appears in a listing (includes the `list` rung) | Listings |
-| **Readable** | May be opened | Every other read: consumption, events, logs, deploy history, the workload |
+| **Readable** | May be opened | Opening the app and reading its summary. Its logs, events, deploy history, job runs and dependencies are read at **editor**, not here |
 
 Nothing defines a third set, which is why an app can appear in a list without
 any other field leaking.

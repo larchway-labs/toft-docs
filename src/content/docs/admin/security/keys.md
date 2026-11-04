@@ -78,8 +78,10 @@ audited as `deploy_key:{id}`. An install holds at most 30 unrevoked deploy keys.
 ## What no key can do
 
 No key manages credentials or authorization: none can mint a key, change a
-permission, add a sign-in provider, connect a git host, or point an app at a
+grant, add a sign-in provider, connect a git host, or point an app at a
 connected host (`git_connection_id` is refused with **403 `session_required`**).
+Visibility is not a grant: a personal key changes it as its owner may, and a
+deploy key only as part of creating or promoting an app.
 The route list is an allow-list checked by a test that walks the router, so a new
 route is unreachable by keys until it is classified.
 

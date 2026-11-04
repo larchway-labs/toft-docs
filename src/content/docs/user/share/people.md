@@ -8,7 +8,7 @@ Share an app under **Access → People and groups**. Search for a person or a gr
 | Role | Can |
 |---|---|
 | **List only** | See the app's name, slug and owner in their list. Cannot open it, but can [request access](../requesting-access/). |
-| **Viewer** | Open the app. |
+| **Viewer** | Open the app. Not its logs, events, status, deploy history or job runs — those need editor. |
 | **Editor** | Everything a viewer can, plus deploy, change settings and run automation. |
 
 Owning an app is not a grant. To hand an app over, [transfer it](../ownership/).
