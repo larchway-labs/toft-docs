@@ -80,6 +80,18 @@ These exit 2 because nothing was attempted:
   directory is `is_a_directory`, and `-o - --json` is `conflicting_flags`.
 - **A `toft.toml` that does not parse** (`manifest_invalid`).
 - **A directory argument that is not a directory** (`no_such_directory`).
+- **Nothing on stdin where something was asked for** (`empty_input`):
+  `--token-stdin`, `--password-stdin`, `env set --from-file -`, and `toft fetch
+  --data @-` or `toft api --data @-` with an empty pipe. A local file `toft`
+  cannot read — a `--data @file`, an item of a `toft store` upload — is
+  `unreadable_file`.
+- **`toft apps --mine` with a deploy key** (`needs_personal_credential`): a
+  deploy key belongs to nobody, so nothing is its own. Drop `--mine`, or use a
+  personal key.
+- **`toft skill install` with nowhere to write** (`no_agent_folder`): neither
+  `~/.claude` nor `~/.agents` exists. Name a folder with `--dir`.
+- **`toft create` with a deploy key and no `--owner-group`**
+  (`owner_group_required`), checked before anything is uploaded.
 - **An environment variable name `toft env set` refuses**: not letters, digits
   and underscores (`invalid_env_name`), or one of `PORT`, `HOST`, `BASE_PATH`
   (`reserved_env_name`) — or a `--from-file` line that is not `KEY=VALUE`
@@ -99,6 +111,7 @@ These exit 2 because nothing was attempted:
 | `key_expired` | Run `toft login` to replace the key. |
 | `invalid_key` | The install does not know this key: it was revoked, or minted on another install. Check `TOFT_TOKEN`, or run `toft login`. A credential that is not shaped like a Toft key at all — one that does not begin `toft` — gets the same refusal from `toft` itself, before anything is sent. |
 | `key_read_scope` | The key can read but not write. Mint a full key. |
+| `no_install` | No install named and none stored — `toft login` with no address included. Run `toft login <install-url>`, or set `TOFT_URL` and `TOFT_TOKEN`. |
 | `deny_system_role` | Your account is a viewer; deploying needs the publisher role. Ask an administrator. |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
 | `jobs_unavailable` | Jobs are switched off on this install, or there is nowhere to run them. An administrator's decision. |
@@ -106,6 +119,7 @@ These exit 2 because nothing was attempted:
 | `deployment_protected` | `toft deployments delete` of the serving deployment. Roll back or deploy first. |
 | `already_current` | The deployment you asked to make current is already serving. |
 | `already_exists` | `toft store put` or `cp` onto a name that exists, when your access is `write`. Upload under another name, or ask for `full`. |
+| `insufficient_access` | `toft store put` below `write`, `rm` below `full`, or an `mv` your levels do not allow. Ask an administrator for a higher level; `toft store ls` shows yours. |
 | `idempotency_key_reused` | `toft job run --idempotency-key` with a key already used for a different job, parameters or `--for`. Use a new key. |
 
 Any refusal of this kind, where the app's state rather than your credential says
@@ -117,7 +131,7 @@ Some refusals mean "not now" rather than "no", and exit 1: another deployment
 is already queued for the app (`deploy_queued`), a run is already going
 (`already_running`), the job queue is full (`queue_full` — its document
 carries `in_flight`, `limit` and `retry_after`), or the store is pacing your
-transfers (`store_busy`; a multi-file copy retries it itself). Wait, then run
+transfers (`store_busy`; `cp`, `mv` and `rm -r` retry it themselves). Wait, then run
 the command again. `retryable` says which ones are worth retrying automatically.
 
 A signal (Ctrl-C, SIGTERM) while `toft` was reading stdin exits 1 too, with the
@@ -174,8 +188,9 @@ misspelled address.
 When the install sends a `hint`, `toft` prints it under the sentence on stderr
 too.
 
-A failed deploy writes its result object instead, with no second document. So
-does a failed `toft check`, `toft fetch` or `--verify`: the result already says
+A failed deploy writes its result object instead, with no second document; it
+carries a `code` (the install's, otherwise its `reason`, otherwise
+`deploy_failed`) and `retryable: false`. So does a failed `toft check`, `toft fetch` or `--verify`: the result already says
 what went wrong. Two cases write both: a `toft fetch` the platform answered in
 the app's place (the result, then a refusal coded with the state, such as
 `stopped` or `batch`), and a `toft job run` that did not succeed (the run, then

@@ -87,7 +87,9 @@ without an offset is read as UTC.
   stderr. Retry only when `retryable` is true. See
   [Errors as JSON](../exit-codes/#errors-as-json).
 - **A failed deploy carries `reason`**, the message, and its detail (a log tail
-  or dependency findings). Branch on `reason`, not the message.
+  or dependency findings), with a `code` (`deploy_failed` when nothing finer
+  applies) and `retryable: false`. Branch on `reason` or `code`, not the
+  message.
 - **Warnings are sentences, with codes beside them.** A deploy's or a check's
   `warnings` are for a person to read; `warning_details` gives each a `code` to
   branch on. A deploy that carried a key file such as `server.key` says so in

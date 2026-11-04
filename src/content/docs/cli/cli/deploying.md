@@ -101,6 +101,11 @@ warning, not refused. `toft check` names both.
 Do not install dependencies before deploying; the install resolves them. For R,
 ignore `renv/library/` and ship `renv.lock`.
 
+For Go, a `go.work` that uses a folder the bundle leaves out — usually a
+git-ignored `.toft/sdk-go` from `toft sdk vendor` — would fail the build, so
+`toft check` and the deploy warn `go_work_dir_excluded`. Ignore both `go.work`
+and `.toft/`, or neither.
+
 ## Checking before you deploy
 
 ```bash
@@ -177,12 +182,35 @@ needs: a tail of the build log, or the dependency findings.
 | `publish_failed` | The install's artifact store. Tell an administrator. |
 | `internal_error` | Retry, then tell an administrator. |
 
+A failed deploy's `--json` result also carries a `code` to branch on — the
+install's own when it gave one, otherwise the `reason`, otherwise
+`deploy_failed` — and `retryable: false`: the same deploy fails the same way.
+
+### Warnings
+
 A successful deploy can carry `warnings`, such as a `toft.toml` table nothing
 reads, a key file the bundle carried, or a job capped by a ceiling an
 administrator lowered. They print as sentences, and appear in the `--json`
-result as `warnings`, with `warning_details` giving each one a `code`
-(`manifest_unread`, `limit_clamped`, `pin_excluded_by_requires_python`,
-`go_toolchain_fetched`) and, for a `toft.toml` key, its `table`.
+result as `warnings`, with `warning_details` giving each one a `code` and, for
+a `toft.toml` table or key, its `table`. Every deploy warning has a code:
+
+| `code` | Means |
+|---|---|
+| `manifest_unread` | A `toft.toml` table or key nothing reads. |
+| `limit_clamped` | A job capped by a ceiling an administrator lowered. `table` names the job, such as `jobs.nightly`. |
+| `pin_excluded_by_requires_python` | A `[runtime] python` pin your `requires-python` excludes. |
+| `node_version_unread` | A Node version pinned only where Toft does not read it (`engines.node`, `.nvmrc`). |
+| `go_toolchain_fetched` | `go.mod` asks for a Go the install does not have, so the build fetched it. |
+| `go_work_dir_excluded` | `go.work` uses a folder the bundle does not hold. |
+| `env_file_skipped`, `secret_in_bundle` | A `.env` left out, or a file that looks like a secret shipped. Each carries its `path`. |
+| `schedule_removed` | The previous release declared a `[restart]` or `[render]` schedule and this one does not, so it was removed. `table` says which. |
+| `jobs_not_recorded`, `schedules_not_recorded` | This release's `[jobs]`, or its `[restart]` or `[render]`, could not be saved, so the previous release's stay in force. Deploy again. |
+| `advisory_data_missing` | No advisory data has loaded on the install yet, so the dependencies were listed but not checked against any. |
+| `lockfile_not_read` | A lockfile Toft does not read, such as `yarn.lock`; versions came from `package.json`. |
+| `no_lockfile` | No lockfile Toft reads, so the versions checked are the ones this build resolved. |
+| `vendored_not_checked` | A committed vendored directory, whose contents are not checked against advisory data. |
+| `dependencies_unresolved` | The dependencies, or some of them, could not be listed, so they were not checked. |
+| `dependencies_direct_only` | Only the packages you name were checked; what they depend on is installed but was not listed. |
 
 A `[tasks]` table, or a job key Toft no longer reads (`retries`,
 `viewer_runnable`, `enabled`), fails the deploy with `removed_key` and a hint
@@ -232,7 +260,10 @@ schedule = "0 3 * * *"
 A `[batch]` table makes a **batch app**: the deploy installs dependencies for
 Node, Python, Go or R, starts nothing, and the app's work is its
 [jobs](../../sdk/jobs/). It settles as `ready`, and `restart`, `start` and `stop`
-are refused with `no_service`. `[batch]` together with `[static]` is refused.
+are refused with `no_service`. It serves no pages, so turning viewer identity on
+for it is refused with `batch_app`. `[batch]` together with `[static]` is
+refused. An R batch app with no `renv.lock` deploys with nothing installed, and
+each job then fails at its first `library()` call.
 
 ## Publishing from RStudio
 
