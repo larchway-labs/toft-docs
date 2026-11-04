@@ -45,7 +45,7 @@ if me and "finance" in me.group_names:
 | `None` | An anonymous visitor, or someone whose access was revoked while their page stayed open. |
 | An error | Viewer identity is not turned on for this app. Check `toft.app.can("viewer.identity")` at startup. |
 
-On a public app, `email` is always empty. Viewer identity is not available to [static apps](../../build/static/), rendered [documents](../../build/notebooks/) or batch apps: they have no process serving requests.
+On a public app, `email` is always empty. Viewer identity is not available to [static apps](../../build/static/), rendered [documents](../../build/notebooks/) or batch apps: they have no process serving requests. Turning it on for one is refused (`static_app`, `document_app` or `batch_app`).
 
 ## Rules for your app
 
