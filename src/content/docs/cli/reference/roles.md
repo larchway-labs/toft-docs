@@ -34,8 +34,11 @@ on it, and satisfies checks exactly as a person with that grant does.
 
 - **A job started by hand is not `system`.** Its trigger role is that of
   whoever pressed **Run now** or ran `toft job run`.
-- **A Toft administrator with no grant reads as `viewer`.** The role has no admin
-  bit; use [`who`](../../sdk/viewer/) and `is_admin`.
+- **A Toft administrator with no grant reads as `viewer` — to the app.** That is
+  the role the app is told; it has no admin bit, so use
+  [`who`](../../sdk/viewer/) and `is_admin`. On Toft's own routes an
+  administrator acts as owner of every app
+  ([administrators](../../../admin/apps/ownership-and-grants/#administrators)).
 - **The role is always on.** Viewer identity (`who`) is off until an
   administrator enables it; the role is not, because an app that can't tell an
   editor from a visitor can't be written safely.
