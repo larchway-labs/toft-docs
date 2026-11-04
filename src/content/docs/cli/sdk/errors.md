@@ -90,9 +90,16 @@ When the platform says how long to wait, the error carries it: `retry_after`
 (Python, seconds), `retryAfter` (Node, seconds), `RetryAfter` (Go, a
 `time.Duration`), `e$retry_after` (R, seconds).
 
-The SDK retries once on its own, and only for a request that never reached the
-platform's handler, such as a rate limit at the gateway. Any other retry, a
-retryable `409` included, is your code's to make.
+The SDK resends a request once on its own, and only when that cannot do harm:
+when it cannot have reached the platform's handler (a rate limit at the gateway,
+a connection that never opened), or when it is a read, or a write carrying an
+`Idempotency-Key`, that got a server error or lost its connection. A write
+without a key that got a server error is not resent — it may have happened —
+and a call that timed out is never resent: 30 seconds is the whole call. Any
+other retry, a retryable `409` included, is your code's to make.
+
+A successful answer that is not JSON — a web page from a proxy or sign-in page
+in front of the install — is `not_toft`, not retryable: check `TOFT_API_URL`.
 
 **Log the `hint`.** It is written for whoever reads the failure, and it is
 usually the part they act on: "an administrator has to lift the lock", "mint a
