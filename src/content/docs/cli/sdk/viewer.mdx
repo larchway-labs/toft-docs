@@ -127,8 +127,9 @@ setting itself.
 
 - `role` is `owner`, `editor` or `viewer` on this app in Toft. A rule about your
   own domain, such as who approves invoices, belongs on groups.
-- `is_admin` is separate. Administrators effectively own every app, so gating on
-  `role == "owner"` alone would include all of them.
+- `is_admin` is separate. `role` comes from ownership and grants alone, so an
+  administrator with no grant on the app reads as `viewer` with `is_admin` true.
+  To let administrators in, check `is_admin` beside the role, as above.
 - `email` is empty on a public app.
 
 Answers are cached for 60 seconds. Pass `refresh=True` (Node `{ refresh: true }`,
