@@ -168,6 +168,7 @@ export const sidebar = [
           { label: "The artifact store", slug: "admin/apps/artifact-store" },
           { label: "The estate views", slug: "admin/apps/estate-views" },
           { label: "What an app can reach", slug: "admin/apps/reach" },
+          { label: "Viewer identity", slug: "admin/apps/viewer-identity" },
         ],
       },
       {

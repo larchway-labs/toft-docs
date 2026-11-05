@@ -140,7 +140,9 @@ included:
 
 - Each level includes the ones above it.
 - **Can add** is the safe default for a dataset an app or a person contributes
-  to: nothing already there can be changed.
+  to: nothing already there can be changed — unless that person is also a
+  [delegate](#delegates) of the resource, which gives them its files at the
+  delegation's level.
 - **Azure Blob can't be attached at Can add.** Its driver mounts read-only or
   read-write, nothing between, so Can add is refused when you attach. It still
   works for people.
@@ -187,8 +189,16 @@ offer it otherwise.
 
 By default only administrators attach storage. Make someone a **delegate** of a
 resource, with a top level, and they can attach it to any app they can edit, at
-that level or below. Delegating an object store also lets them browse it at
-that level.
+that level or below.
+
+**A delegation is also access to the files.** Delegating any resource people
+can browse — an object store, a volume under a host mount, an S3 Files volume —
+lets the delegate list, download and change its files with `toft store` and the
+storage browser, at the delegation's level, with or without a grant. On a
+read-write host mount a volume can only be delegated at **Read & write**, so
+the delegate can replace and delete. Nothing is gained that attaching gave them
+already: an app they attach at that level can do the same. But a person you
+mean to give a write-only drop is not write-only once they are also a delegate.
 
 Each attachment records who made it. Removing a delegate removes the
 attachments they made, and **restarts the apps that had them**. It is the one

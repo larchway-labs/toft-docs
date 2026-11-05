@@ -3,7 +3,7 @@ title: What your app learns about a viewer
 description: The signed role on every request, asking who the viewer is, and the rules for using either.
 ---
 
-Every request Toft forwards tells your app **what the caller may do** to this app. Your app learns **who they are** only if an administrator turns on viewer identity for it.
+Every request Toft forwards tells your app **what the caller may do** to this app. Your app learns **who they are** only if an administrator turns on [viewer identity](../../../admin/apps/viewer-identity/) for it, on the app's Settings tab.
 
 ## The role
 

@@ -17,7 +17,7 @@ Everything about one app lives on its page. You see only the tabs your role and 
 | **Reach** | Everything the app has been given | Editors |
 | **Audit** | The app's audit file, for an assessor | Editors |
 | **Access** | Visibility, sharing, access requests | Whoever may share |
-| **Settings** | Name, source, runtime, variables, deletion | Editors |
+| **Settings** | Name, source, runtime, variables, [viewer identity](../../../admin/apps/viewer-identity/) (changed by an administrator), deletion | Editors |
 
 ## Overview
 
