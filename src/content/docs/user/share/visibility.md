@@ -13,6 +13,8 @@ Every app has one visibility, set under **Access → Who can view this app**. Ne
 
 Toft enforces visibility before the request reaches your app. Your app never sees a request from someone who may not open it.
 
+Public opens the app, not its record in Toft: its owner, deployments and usage are still read only by people signed in to the install.
+
 ## When Public is not available
 
 An administrator can turn off public access for every app.
