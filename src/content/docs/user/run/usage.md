@@ -7,9 +7,10 @@ The **Usage** tab shows traffic and consumption over the last **7d**, **30d** or
 
 | Figure | Meaning |
 |---|---|
-| **Requests** | Requests to the app in the window. |
-| **Unique viewers** | Distinct people and keys that made them. |
-| **Requests / day** | The average. |
+| **Page loads** | Pages people opened, signed in or not. One page counts once, however many requests it makes. The total number of requests is shown beneath it. |
+| **People signed in** | Distinct people who opened the app while signed in. |
+| **Anonymous browsers** | Distinct browsers that opened the app without signing in. Shown only when your administrator has turned on counting. It is an estimate, accurate to about 1%. |
+| **Requests / day** | The average. Shown in place of anonymous browsers when counting is off. |
 | **CPU time** | CPU used, with the reservation if one is set. |
 | **Peak memory** | The highest reading, against the memory the app is allowed. |
 
@@ -21,6 +22,7 @@ The list of individual viewers is shown only to people who manage the app's shar
 
 - **Reachability probes.** The platform checking that a public app answers.
 - **Security scans** that identify themselves.
+- **The Preview on the app's own page.** It shows the app in a frame, and a framed page is not a page load.
 
 Neither is somebody using the app, so neither makes it look busy or keeps it from looking [quiet](../quiet/).
 

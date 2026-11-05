@@ -27,3 +27,8 @@ anonymous" without a list of exceptions.
 - [`apps_listable_to_authenticated`](../../apps/listing/), beside it on the same
   page, is about signed-in people seeing an app's *name* in a list — a separate
   question.
+- **Count anonymous browsers**, the other switch in this card, counts how many
+  browsers open apps without signing in. It is off by default; see
+  [Counting anonymous browsers](../../operate/usage/#counting-anonymous-browsers).
+  With anonymous access off, nobody anonymous is served, so there is nothing to
+  count.
