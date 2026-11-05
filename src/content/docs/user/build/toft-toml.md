@@ -225,7 +225,9 @@ Your code finds it by name, never by path — see the [storage hub](../../data/a
   and get files with `toft store`. Attaching storage to an app needs a
   delegation from an administrator, to you or to the app's owner; an entry
   naming storage you hold only a grant on is refused with
-  `storage_not_attachable_by_you`, and the message says what to ask for.
+  `storage_not_attachable_by_you`, and the message says what to ask for. The
+  other way round is not true: a delegation on storage people can browse also
+  lets you reach its files with `toft store`, at the delegation's level.
 
 | Refused with | When |
 |---|---|

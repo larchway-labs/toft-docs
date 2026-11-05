@@ -115,7 +115,8 @@ These exit 2 because nothing was attempted:
 | `key_read_scope` | The key can read but not write. Mint a full key. |
 | `no_install` | No install named and none stored — `toft login` with no address included. Run `toft login <install-url>`, or set `TOFT_URL` and `TOFT_TOKEN`. |
 | `deny_system_role` | Your account is a viewer, and creating an app needs the publisher role. Ask an administrator. |
-| `deny_no_action` | Your role on this app does not allow that — you are its viewer, and deploying, rolling back, changing who can see it, or reading its logs, events, status or job runs needs editor. Ask its owner for editor (`toft api POST apps/<id>/access-requests --data '{"role":"editor"}'`). If your account is itself a viewer, it needs the publisher role first. |
+| `deny_no_action` | Your role on this app does not allow that — you are its viewer, and deploying, rolling back, changing its settings, or reading its logs, events, status or job runs needs editor. Ask its owner for editor (`toft api POST apps/<id>/access-requests --data '{"role":"editor"}'`). If your account is itself a viewer, it needs the publisher role first. |
+| `deny_owner_only` | Deleting the app, changing who can see it and managing who has access are its owner's alone (or an administrator's), so no role you could ask for allows it — an editor is refused too. Ask the owner. |
 | `deny_list_only` | You can see that this app exists but not open it. Ask its owner for access (`toft api POST apps/<id>/access-requests --data '{"role":"viewer"}'`, or `"editor"` to deploy to it). |
 | `tier_limit` | A license limit on the install. Nothing already deployed has stopped. |
 | `jobs_unavailable` | Jobs are switched off on this install, or there is nowhere to run them. An administrator's decision. |

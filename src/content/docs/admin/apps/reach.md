@@ -13,7 +13,7 @@ this app been given**, and **which apps hold this thing**. Each app also has a
 |---|---|
 | Who may open it | Visibility and grants, by name |
 | Who may frame it | Embedding |
-| Whether it is told who is looking | [Viewer identity](../../capabilities/optional/) |
+| Whether it is told who is looking | [Viewer identity](../viewer-identity/) |
 | Values its owner never holds | [Broker credentials](../../capabilities/credentials/) |
 | Values its owner set | Environment variables |
 | Durable storage attached to it | [Storage hub](../../capabilities/storage/), and where |

@@ -120,7 +120,9 @@ person ladder*. But it sends no viewer, so `who()` returns nothing and
 administrator's session](../../cli/signing-in/#the-administrators-session)).
 
 It fails for one reason: a signed-in person is looking and viewer identity is not
-switched on for this app. That is an administrator's setting, not a state to
+switched on for this app. That is an administrator's setting — **Can see who
+is viewing** on the app's Settings tab ([Viewer
+identity](../../../admin/apps/viewer-identity/)) — not a state to
 branch on. With nobody on the request — anonymous, or an API key — it returns
 nothing whatever the setting; `toft.app.can("viewer.identity")` reads the
 setting itself.

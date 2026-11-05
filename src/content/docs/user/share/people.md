@@ -11,7 +11,7 @@ Share an app under **Access → People and groups**. Search for a person or a gr
 | **Viewer** | Open the app. Not its logs, events, status, deploy history or job runs — those need editor. |
 | **Editor** | Everything a viewer can, plus deploy, change settings and run automation. |
 
-Owning an app is not a grant. To hand an app over, [transfer it](../ownership/).
+Owning an app is not a grant. Three things stay with its **owner** (and administrators), whoever else holds editor: changing who can see it, sharing it, and deleting it. To hand an app over, [transfer it](../ownership/).
 
 Prefer a group to a list of people: the grant survives when someone joins or leaves the team. Groups are managed in Toft, and your administrator may fill some of them from your identity provider.
 
