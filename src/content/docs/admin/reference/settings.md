@@ -69,6 +69,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `session_absolute_hours` | Sign in again after | How long a session lasts from sign-in, however much it is used. | 1–24 hours |
 | `session_idle_minutes` | End an unused session after | How long an unused session lasts. 0 turns this off. | 5–480 minutes, or 0 |
 | `public_apps_enabled` | Apps open to anyone | Whether an app may be opened by someone who isn’t signed in. | — |
+| `audience_measurement_enabled` | Count anonymous browsers | Counts how many browsers open apps without signing in, with a 13-month cookie. Off by default. See [Usage](../../operate/usage/#counting-anonymous-browsers). | — |
 | `apps_listable_to_authenticated` | Everyone signed in can see every app | Every app appears in everyone’s list by name and owner, without being openable. | — |
 | `sign_in_providers` | Sign-in providers | Your identity provider, who it lets in, and which social logins are offered. | — |
 | `local_admin_enabled` | Built-in administrator | A local username and password for setup, and for recovery when sign-in breaks. | — |
