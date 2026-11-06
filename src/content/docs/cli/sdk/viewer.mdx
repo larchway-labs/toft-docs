@@ -127,8 +127,9 @@ branch on. With nobody on the request — anonymous, or an API key — it return
 nothing whatever the setting; `toft.app.can("viewer.identity")` reads the
 setting itself.
 
-- `role` is `owner`, `editor` or `viewer` on this app in Toft. A rule about your
-  own domain, such as who approves invoices, belongs on groups.
+- `role` is `owner`, `editor` or `viewer` on this app in Toft. When a group owns
+  the app, every member of that group is `owner`. A rule about your own domain,
+  such as who approves invoices, belongs on groups.
 - `is_admin` is separate. `role` comes from ownership and grants alone, so an
   administrator with no grant on the app reads as `viewer` with `is_admin` true.
   To let administrators in, check `is_admin` beside the role, as above.
