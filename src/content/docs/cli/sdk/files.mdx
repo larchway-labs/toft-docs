@@ -160,6 +160,7 @@ path, `.path` raises, and `put` tells you to use `upload`.
 ```python
 s = toft.store("uploads")
 s.upload("report.csv")                        # new files only, at write
+s.upload("out/q1.csv", name="2026/q1.csv")    # stored under a name of your choosing
 data = s.download("report.csv")
 link = s.url("report.csv", attachment=True)   # for a browser, valid 15 minutes
 s.remove("report.csv")                        # needs full
@@ -171,7 +172,8 @@ page = s.list("2026/")                        # iterate it; .prefixes, .next_cur
 
 ```js
 const s = toft.store("uploads");
-await s.upload(file);
+await s.upload("report.csv");
+await s.upload("out/q1.csv", "2026/q1.csv");    // stored under a name of your choosing
 const link = await s.url("report.csv", { attachment: true });
 ```
 
@@ -180,7 +182,8 @@ const link = await s.url("report.csv", { attachment: true });
 
 ```go
 s, err := toft.Store("uploads")               // s.Mounted() is false with no cluster
-_, err = s.Upload(ctx, localPath, "")
+_, err = s.Upload(ctx, localPath, "")            // "" keeps the file's own name
+_, err = s.Upload(ctx, "out/q1.csv", "2026/q1.csv")
 link, err := s.URL(ctx, "report.csv", true)
 ```
 
@@ -190,13 +193,15 @@ link, err := s.URL(ctx, "report.csv", true)
 ```r
 s <- store("uploads")
 store_upload(s, "report.csv")
+store_upload(s, "out/q1.csv", "2026/q1.csv")
 store_url(s, "report.csv", attachment = TRUE)
 ```
 
 </TabItem>
 </Tabs>
 
-The bytes go straight between your app and the object store. Anyone holding a
+`upload` stores the file under its own name unless you give one, and returns
+the name it stored. The bytes go straight between your app and the object store. Anyone holding a
 link from `url` can read that file until it expires, so don't log one.
 
 ### A link to send someone

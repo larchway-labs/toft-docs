@@ -132,6 +132,10 @@ except toft.ToftError as err:
 `toft.QueueFull` and `toft.VersionConflict` are subclasses, so one `except
 toft.ToftError` catches them too.
 
+The class is `toft.ToftError`. There is no `toft.Error` in Python — that is the
+Go SDK's name — and `except toft.Error` fails only when the SDK first raises,
+with an `AttributeError` in place of your handler.
+
 ## Node
 
 ```js
