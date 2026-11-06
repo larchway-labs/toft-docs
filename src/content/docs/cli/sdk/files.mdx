@@ -199,6 +199,57 @@ store_url(s, "report.csv", attachment = TRUE)
 The bytes go straight between your app and the object store. Anyone holding a
 link from `url` can read that file until it expires, so don't log one.
 
+### A link to send someone
+
+For a link that goes in an email, a Slack message or a report, use `link`
+instead of `url`. It works from a job, never expires, and carries no
+credential — it's your install's address plus the store and the file name:
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+
+```python
+link = toft.store("reports").link("2026-11/summary.pdf")
+# https://toft.example.com/files/reports/2026-11/summary.pdf
+```
+
+</TabItem>
+<TabItem label="Node">
+
+```js
+const link = await toft.store("reports").link("2026-11/summary.pdf");
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+s, err := toft.Store("reports")
+link, err := s.Link(ctx, "2026-11/summary.pdf")
+```
+
+</TabItem>
+<TabItem label="R">
+
+```r
+link <- store_link(store("reports"), "2026-11/summary.pdf")
+```
+
+</TabItem>
+</Tabs>
+
+**Only people who have been given access to the store can open the link.**
+Toft signs them in and checks their access when they click. Everyone else
+sees "Not found", and your app can't tell in advance who that will be. So give
+the recipients access to the store first (an administrator does it on the
+store's page under Admin → Storage), or send them something else.
+
+The link opens whatever is at that name when it's clicked. If your job
+overwrites `latest.pdf` every night, last week's email opens tonight's file —
+write a dated name instead. The file doesn't need to exist when you build the
+link. `link` also works on a folder on the server's own disk
+(`toft.storage("name").link(...)`).
+
 :::caution[R: write with store_put]
 `file.copy()` onto a store mount creates an empty file and returns `FALSE`.
 Use `store_put()`. Given a name, `store_put()` copies onto whatever is mounted
