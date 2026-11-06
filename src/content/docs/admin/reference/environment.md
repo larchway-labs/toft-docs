@@ -161,7 +161,7 @@ and a `CALLBACK_URL` a workload can resolve.
 | `KUBE_NAMESPACE`, `KUBECONFIG`, `KUBE_CONTEXT` | Kubernetes backend. |
 | `ECS_CLUSTER`, `ECS_SUBNETS`, `ECS_SECURITY_GROUPS` | ECS backend; lists are comma-separated. |
 | `ECS_EXECUTION_ROLE_ARN`, `ECS_TASK_ROLE_ARN`, `ECS_ASSIGN_PUBLIC_IP` | ECS task roles and networking. |
-| `CALLBACK_URL` | Where a workload reaches the platform. |
+| `CALLBACK_URL` | Where a workload reaches the platform. Without isolated execution it can stay unset: workloads then reach the platform directly on this machine (`127.0.0.1` and `PORT`), never through `BASE_URL`. |
 | `RUNNER_IMAGE_PYTHON`, `RUNNER_IMAGE_NODE`, `RUNNER_IMAGE_GO`, `RUNNER_IMAGE_R`, `RUNNER_IMAGE_STATIC` | [Runner images](../../build/runner-images/), one per language. |
 | `RUNNER_VERSION` | The runner contract version. Leave unset. |
 
