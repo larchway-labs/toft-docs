@@ -22,7 +22,7 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 
 | Setting | Label | What it does | Range |
 |---|---|---|---|
-| `public_base_url` | Address | Where links in email point. Leave blank to use the address the install started with. | — |
+| `public_base_url` | Address | Where people reach this install. Sign-in, email and Slack links from Toft use it. Blank uses `BASE_URL`. Apps’ own links start from `APPS_BASE_URL`, shown read-only beside it. | — |
 | `environment_tag` | Environment name | Which environment this is, such as stage or prod. Telemetry reports it as the deployment environment from the next restart. It is a label only: an app’s variables are named in its `toft.toml` and given values on each install with `toft env set`. Blank names none. | — |
 | `install_name` | Install name | What emails and notifications call this install, in place of “Toft”: the mail header and footer, Slack posts, Teams and webhook cards, and app mail’s sender (`<App> (via <name>)`). The install’s address always follows it. Up to 60 characters; nothing that looks like an address. Never sent to the vendor. Blank uses “Toft”. | — |
 | `security_txt_contact` | Security contact | Where to report a security problem. Filling this in publishes /.well-known/security.txt. | — |

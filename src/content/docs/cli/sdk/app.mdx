@@ -62,6 +62,37 @@ every link and form action from it. Redirects (`Location`) must not include it;
 the proxy adds it. It falls back to the `BASE_PATH` variable, so it is never empty
 on a mounted app. See [Environment variables](../../reference/environment/).
 
+### Links that leave the app
+
+A link in an email, a Slack message, a PDF or a ticket has to be absolute, and
+your app can't work it out from the request: the request reaches your app at an
+internal address, and a job has no request at all. Ask the SDK instead:
+
+```python
+toft.app.url("/reports/42")    # https://apps.example.com/apps/reporter/reports/42
+toft.app.url()                 # the app's front page
+toft.app.url(run.status_url)   # a job run's status page
+```
+
+Node: `await toft.app.url("/reports/42")`. Go: `toft.App.URL(ctx, "/reports/42")`.
+R: `app_url("/reports/42")`.
+
+- Pass the path inside your app. `/reports/42` and `reports/42` mean the same
+  page. A path that already starts with the base path isn't given it twice.
+- It works the same in a web request, a job and a schedule.
+- The address comes from the install each time (reused for a minute), so if an
+  administrator moves the install or gives your app its own hostname, new links
+  follow without a restart. Don't put the address in `toft.toml` or an
+  environment variable.
+- If the install has no address for its apps, the call fails with
+  `no_public_address`. An administrator sets it in the install's configuration
+  (`APPS_BASE_URL`).
+
+Inside your own pages, keep using relative links built from `base_path`. If your
+framework builds URLs from the request, tell it to trust the `X-Forwarded-Host`,
+`X-Forwarded-Proto` and `X-Forwarded-Prefix` headers, which Toft sets on every
+request (for Flask, Werkzeug's `ProxyFix`).
+
 ### Mode
 
 `mode` is `shared` or `isolated` for **this** running workload, taken from the

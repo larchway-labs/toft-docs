@@ -53,8 +53,17 @@ save.
 
 ## Links in mail
 
-`public_base_url` (**Address**) is the address links in mail use. Leave it blank to
-use the address the install was started with.
+`public_base_url` (**Address**) is the address Toft's own links use: sign-in
+links, and links in Toft's email and Slack messages. Leave it blank to use
+`BASE_URL` from the install's configuration; the page shows that value under
+the field.
+
+Links that apps build themselves (with the SDK's `url()`) start from the apps
+address instead, `APPS_BASE_URL`. Settings shows it read-only, as **Apps are
+served at**, when it differs from the Address. Changing it is a configuration
+change and a restart: the chart's `platform.appsBaseUrl`, the compose bundle's
+`.env`, or your infrastructure code. Links already sent keep the old address,
+so keep the old name redirecting for a while after a move.
 
 ## Channels and replies
 
