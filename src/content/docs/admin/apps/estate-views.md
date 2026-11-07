@@ -10,7 +10,7 @@ description: The admin pages that answer questions about every app at once.
 | **Scan targets** | Which addresses a scanner should be pointed at | Admin → Scan targets |
 | **Processes** | What is running now, and where | Admin → Processes |
 | **Queue** | What is building and waiting | Admin → Processes → Build queue |
-| **Automation** | Every schedule and every run | Admin → Automation |
+| **Automation** | What fires on any day, every schedule and every run | Admin → Automation |
 | **Dependencies** | What the estate installs, and what policy says | Admin → Dependencies |
 | **Reach** | What each app has been [given](../reach/) | Admin → Reach |
 
