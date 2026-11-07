@@ -80,7 +80,7 @@ It prints `True` for an unaltered file.
 
 ## One app's audit file
 
-Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and never sees more than they could elsewhere. A personal API key can read it; deploy keys cannot.
+Each app also has an **Audit** tab, read by its editors. It shows the app's own evidence: grants, with who gave each one and when; deploys and who started them; packages and an SBOM per release; reach; credential age; logs; viewers; and deletion. Each section is checked exactly as the page it mirrors would be. An editor who is not an administrator sees the app's change history as **Refused**, with the reason, and otherwise sees no more than they could elsewhere, with two deliberate exceptions: who granted each current role and since when (the **access** section), and who started each build (**releases**). A personal API key can read it; deploy keys cannot.
 
 | | API |
 |---|---|

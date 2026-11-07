@@ -19,9 +19,10 @@ Set both or neither. If the runner mounts secrets as files, use
 `TOFT_TOKEN_FILE=<path>` instead of `TOFT_TOKEN`: a path is not sensitive, while
 an environment variable is visible in `/proc` and inherited by child processes.
 
-A deploy key can create apps, deploy, roll back, restart, stop, run jobs, set
-environment variables, and read logs, events and dependencies. It cannot use `toft store`, or manage
-keys and grants. For those, use a full personal key
+A deploy key can create apps, deploy, roll back, restart, stop, start, rerun and list jobs and read their runs, set
+environment variables, and read logs, events and dependencies. It cannot use `toft store`, pause schedules, or manage
+keys and grants, and it cannot open the app itself: `toft fetch` and
+`--verify` take a personal key or a browser session. For those, use a full personal key
 (`toftu_`).
 
 ## No prompts
@@ -38,15 +39,18 @@ set -euo pipefail
 
 toft whoami --app my-app                 # exits 3 if the key cannot be used
 toft check --app my-app                  # exits 1 if the deploy would be refused (works before the app exists)
-toft deploy --logs --app my-app          # exits 1 if the build fails
+toft deploy --logs --app my-app          # waits for the deploy; exits 1 if the build fails
 toft job run migrate --app my-app        # exits 1 if the migration fails
 toft restart --wait --app my-app         # exits 1 if the app does not come up
-toft fetch /healthz --app my-app         # exits 1 unless it answers 2xx or 3xx
 ```
 
 Each step fails the pipeline on its own; no output parsing is needed. If a step
 fails, `toft events` says what the platform noticed. For a batch app, drop the
 `restart` line.
+
+A health check through the app (`toft fetch /healthz`, or `toft deploy
+--verify /healthz`) needs a public app, or a personal key of an account
+granted on the app — a deploy key never opens an app.
 
 ## Setting secrets from a pipeline
 

@@ -41,7 +41,7 @@ help     = "Which region to report on"
 | `schedule` | Five cron fields. Leave it out and the job runs only when something starts it. |
 | `timezone` | An IANA zone such as `Europe/London`. The schedule follows the local clock through daylight saving changes and fires once per local time. |
 | `overlap` | What a scheduled firing does if the job's last scheduled run is still going: `queue` waits its turn and starts when that run ends (the default), `skip` records a **skipped** run instead. A run someone starts by hand is never held back. |
-| `notify` | Email the app's owners on `failures` (when a run fails) or `always` (after every run). `none` by default. |
+| `notify` | Email the app's owners on `failures` (when a run fails) or `always` (after every run). `none` by default. Failure emails obey the app's **Email this app's owners and editors when it breaks** setting; the success email `always` sends is sent regardless of it. |
 | `timeout` | `"90s"`, `"45m"`, `"2h"`, `"7d"`, or a number of seconds, from 1 second to 7 days. Your administrator sets the default and the most a job may ask for. |
 | `expect_within` | `1h` to `31d`. If the job goes this long without a successful run, its owners are told once. A paused job is never overdue. |
 
@@ -188,8 +188,12 @@ at your app's own address, showing the job's progress, any message the job
 reports, and how it ended. You write no polling code and no template. A script
 calling the same endpoint gets `202 Accepted` and the run as JSON instead.
 
-A run started for a person is shown on its status page to that person and to
-the app's owners and editors.
+Who sees a run's status page (`/__toft/runs/<id>` on your app's address)
+depends on who started the run:
+
+- **Your app**, through `respond` — anyone who can open the app.
+- **A person** — that person, and the app's owners and editors.
+- **A schedule or a deploy key** — only the app's owners and editors.
 
 Waiting for the run inside the request (`run.wait()`) is refused with
 `would_outlive_request`, because the request would be cut off first. See

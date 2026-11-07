@@ -12,7 +12,7 @@ The **Settings** tab holds everything you can change about an app.
 | **Identity** | Name, slug, app ID, tags |
 | **Source & deploys** | Repository, branch, folder, auto-deploy, git token |
 | **Runtime** | Language version, execution mode, sleep, memory, credentials, environment variables |
-| **Notifications** | Email maintainers when the app breaks |
+| **Notifications** | Email maintainers when the app breaks. Governs failure emails only, a job's per-run failure email included; a job with `notify = "always"` still gets its success email |
 | **Data** | The app's saved data |
 | **Danger zone** | Transfer ownership, delete |
 

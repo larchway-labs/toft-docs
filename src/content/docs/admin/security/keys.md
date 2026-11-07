@@ -67,8 +67,13 @@ working when people leave — prefer it to a personal key in a pipeline.
 | `deploy` | Create, upload, deploy, roll back, restart, stop, set and remove environment variables, read history |
 | `read` | Those reads only: apps, groups, deploy history, dependency verdicts, deployment archives |
 
-Neither scope deletes apps, deletes old deployments, or touches jobs, schedules, tags or
-storage. A `deploy` key can set an app's environment variables so a pipeline can
+A `deploy` key also starts, reruns and lists an app's jobs and reads their runs,
+so a pipeline can run a migration it just shipped. It does not pause schedules
+or touch tags or storage. Neither scope deletes apps or old deployments.
+
+**A deploy key deploys an app but cannot open it.** Requests to the app itself
+take a personal key or a browser session, so a health check through the app
+needs a public app or a personal key of an account granted on it. A `deploy` key can set an app's environment variables so a pipeline can
 rotate a secret with the key it already deploys with; it cannot change a
 variable an attached credential supplies, and it never reads a sensitive value.
 Routes allowed to `deploy` are a strict subset of a full personal key's.
