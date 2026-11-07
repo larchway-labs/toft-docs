@@ -29,7 +29,7 @@ Give it an account of its own from your identity provider, ask the app's owner t
 
 ## Deploy keys
 
-An administrator creates these. A deploy key belongs to nobody, so it keeps working when people leave. It can create, deploy, roll back and restart apps, and set who can see an app only as part of creating or promoting it. It cannot delete apps or change who can see an existing one. Use one in CI instead of someone's personal key.
+An administrator creates these. A deploy key belongs to nobody, so it keeps working when people leave. It can create, deploy, roll back and restart apps. It sets who can see an app only along with code: `"visibility"` when it creates one with `POST /api/v1/apps`, or the `visibility` form field when it pushes a bundle (`POST /api/v1/apps/upload`, or `POST /api/v1/apps/{id}/upload` for an app that exists — how an app is promoted from one install to another). It cannot delete apps, and `toft visibility` is refused to it. Use one in CI instead of someone's personal key.
 
 ## Limits on every key
 
