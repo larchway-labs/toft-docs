@@ -21,7 +21,7 @@ setting by its words, and offers only what the sidebar shows.
 |---|---|---|
 | **[Usage](../../operate/usage/)** | `/admin/usage` | Which apps are used, what they cost, which nobody opens. |
 | **[Scan targets](../../security/scan-targets/)** | `/admin/estate/targets` | Every app as an address, for a scanner. |
-| **[Automation](../../operate/automation/)** | `/admin/automation` | Every schedule and every run. |
+| **[Automation](../../operate/automation/)** | `/admin/automation` | What fires on any day, every schedule and every run. |
 | **[Tags](../../apps/tags/)** | `/admin/tags` | The tags apps are filed under, and who may add them. |
 | **[Storage](../../capabilities/storage/)** | `/admin/storage` | Storage locations, and which apps and people reach each. |
 

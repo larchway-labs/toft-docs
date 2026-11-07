@@ -18,6 +18,36 @@ only in `toft.toml`: neither you nor an app's owner can create or edit one in
 the UI. An owner can run one now, pause its schedule until the next deploy,
 run a finished run again, and cancel.
 
+## What runs on a given day
+
+**Upcoming**, at the top of Admin → Automation, shows what the install's
+schedules will fire on one day — today when the page opens, any later day from
+the arrows, **Tomorrow** or the date field. Times are in your display zone — the one chosen on your account page, else the
+install's default, else your browser's; hover a time for UTC and the schedule in
+words. The day is in the address (`?day=2026-11-10`), so you can
+send someone a link to the night of an upgrade.
+
+- **The strip** draws each firing as a bar for as long as that schedule usually
+  takes — the median of its last ten scheduled runs. Overlapping firings stack.
+  A schedule with no runs yet is a point, with its timeout drawn faintly behind
+  it. A schedule that fires more than once an hour is one thin band.
+- **Nothing else scheduled** lists every stretch of 30 minutes or more with no
+  scheduled firing in it — the place to look when choosing a maintenance window.
+- **The list** below it has every firing in time order, each linking to the app
+  where the schedule is shown and paused.
+
+Paused schedules, and schedules on a locked app, are not drawn; a line above the
+strip counts the ones that would otherwise run that day. A deploy resumes a
+pause, so check the day again before you rely on it.
+
+:::caution[Nothing scheduled is not nothing running]
+The view knows only schedules. A run an app, a person or the CLI starts, a
+deploy, and a run that takes longer than usual can all land in a gap. And a
+schedule that comes due while the install is down runs **once, as soon as it is
+back** — so everything due during a two-hour upgrade starts together when it
+ends.
+:::
+
 ## Where a job runs
 
 Jobs are on by default (`background_jobs_enabled`). The install decides where a
@@ -113,7 +143,8 @@ in `toft.toml`, never inferred. Node, Python, Go and R only; `[batch]` beside
   in the spring gap moves forward; a time repeated in autumn fires once.
 - The zone database is compiled into the binary, so zones resolve the same on
   any image.
-- A missed firing (the platform was down) is skipped, never fired late.
+- A firing missed while the platform was down runs once, as soon as it is back
+  — never once for each time it missed.
 - `overlap` decides what a firing does while the job's last scheduled run is
   still going: `queue` (the default) waits behind it and starts when it ends,
   `skip` records a `skipped` run with its reason. A run a person or the app
