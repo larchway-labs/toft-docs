@@ -11,6 +11,8 @@ Every app is owned by exactly one person or one group. The owner can do everythi
 2. Pick a person or a group.
 3. Select **Transfer ownership**.
 
+You stay on the app as an editor. The new owner can remove that on the app's **Access** tab.
+
 :::caution
 Once you transfer an app away, you cannot take it back yourself unless you are in the new owning group or are an administrator.
 :::

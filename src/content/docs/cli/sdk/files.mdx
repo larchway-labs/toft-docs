@@ -249,6 +249,10 @@ sees "Not found", and your app can't tell in advance who that will be. So give
 the recipients access to the store first (an administrator does it on the
 store's page under Admin → Storage), or send them something else.
 
+Opening the link hands the browser a short-lived address for the file, good
+for one minute. Revoking someone's access stops new opens at once; an address
+already opened stays good for up to that minute.
+
 The link opens whatever is at that name when it's clicked. If your job
 overwrites `latest.pdf` every night, last week's email opens tonight's file —
 write a dated name instead. The file doesn't need to exist when you build the

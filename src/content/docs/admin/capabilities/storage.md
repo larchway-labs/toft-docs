@@ -311,8 +311,9 @@ an app want its id; a slug is not found.
   `GET admin/storage/<id>/grants`.
 - **Revoke** with `DELETE admin/storage/<id>/grants/user:<user-id>` (or
   `group:<group-id>`): the subject is one path segment, its type and id joined
-  by a colon. `?folder=<name>` revokes the grant on that folder only. It takes
-  effect at once. All three need `--session`:
+  by a colon. `?folder=<name>` revokes the grant on that folder only. It stops
+  new opens at once; a file address already handed out by a store link stays
+  good for up to one minute. All three need `--session`:
 
 ```bash
 toft api --session GET admin/storage/<id>/grants
