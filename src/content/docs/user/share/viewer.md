@@ -17,6 +17,10 @@ Each forwarded request carries a signed `X-Toft-Role` header.
 | `app` | The app acting as itself — a job it started. |
 | `unknown` | The header is missing, unsigned, tampered with or expired. Treat it as no role. |
 
+A browser that opened a public app before signing in is still `anonymous` on
+public apps for up to a minute after the person signs in. After that, the app
+sees them by name.
+
 The signing key is per app and changes on every start, and one signed role is good for two minutes. Let the SDK verify it:
 
 ```python

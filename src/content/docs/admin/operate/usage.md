@@ -41,7 +41,9 @@ Counting is **off** until you turn on **Count anonymous browsers** under
 - **No app ever receives the cookie.** It is removed before the request
   reaches the app.
 - Signed-in people are not counted as browsers. They are already counted by
-  name.
+  name. The exception is the first minute after someone signs in, if that
+  browser opened a public app anonymously just before: those visits count as an
+  anonymous browser.
 - Browsers that send the Global Privacy Control signal (`Sec-GPC: 1`) are not
   counted. Their page loads still are.
 - None of these figures leave your install. They are not sent at license
