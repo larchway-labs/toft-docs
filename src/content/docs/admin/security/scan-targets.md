@@ -33,8 +33,9 @@ Scan as an account of its own, issued by your identity provider like any other,
 so your provider owns its lifecycle.
 
 1. Sign the scanner in once, so the account exists in Toft.
-2. On **People**, open the account and switch on **This is a scanner account**.
-   Only an administrator can, and not on their own account.
+2. On **People**, open the account and switch on **Mark as a scanner**.
+   Only an administrator can, and not on their own account. Switching it off
+   removes the mark (`DELETE /api/v1/users/{id}/scanner`).
 3. Grant it on any private apps the scan should cover. **The mark gives no
    access**: the account reaches exactly the apps it is granted, like anyone.
 4. Point the tool at **Scan targets** with the account's session or its

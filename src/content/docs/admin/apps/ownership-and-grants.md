@@ -10,9 +10,17 @@ creator's principal decides it, on every creation path. A
 [mapped directory group](../../identity/directory-groups/) may hold grants but
 never own.
 
-**Transfer** moves ownership entirely: `POST /api/v1/apps/{id}/transfer`, or in
-bulk from a person's page before deleting them
-(`POST /api/v1/users/{id}/transfer-apps`).
+**Transfer** moves ownership entirely. For one app,
+`POST /api/v1/apps/{id}/transfer` with `{"new_owner_id": "<user or group id>"}`;
+`"new_owner_type": "user"` or `"group"` is optional, and a bare group id is
+understood as the group. In bulk, from a person's page before deleting them,
+`POST /api/v1/users/{id}/transfer-apps` with
+`{"to_type": "user"|"group", "to_id": "<id>"}`; add `"storage": "keep_as_admin"`
+to keep storage the new owner cannot attach attached as an administrator's
+instead of stopping at that app.
+
+Either way, **the former owner stays on the app as an editor**. Remove that
+grant on the app's **Access** tab to take it away.
 
 An owner Toft will not accept — at create, transfer or bulk transfer — is
 refused with 422, a code of its own and a hint:

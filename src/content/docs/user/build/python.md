@@ -6,7 +6,7 @@ description: Flask, FastAPI, Streamlit, marimo and plain Python — how each is 
 | Framework | Detected by | Started with |
 |---|---|---|
 | **Streamlit** | `streamlit` in your dependencies | `streamlit run`, mounted under your app's path |
-| **FastAPI** | `fastapi` in your dependencies | `uvicorn` with `--root-path` set |
+| **FastAPI** | `fastapi` in your dependencies | `uvicorn` with `--root-path` set — `uvicorn` (or `fastapi[standard]`) must be in your dependencies; see [FastAPI](#fastapi) |
 | **Flask** | `flask` in your dependencies | `gunicorn` if your dependencies include it, otherwise `flask run` — see [Flask](#flask) |
 | **marimo** | a root `.py` that imports `marimo` and builds a `marimo.App` | `marimo run`, mounted under your app's path |
 | **Python** | anything else | `python <entry point>` |
@@ -14,6 +14,12 @@ description: Flask, FastAPI, Streamlit, marimo and plain Python — how each is 
 Dependencies are read from `requirements.txt`, else `pyproject.toml`, else
 `Pipfile`. `marimo` as a dependency alone is not the trigger — a Flask app that
 imports it stays Flask.
+
+## FastAPI
+
+Toft never adds a web server you didn't ask for, and FastAPI needs one: put
+`uvicorn` (or `fastapi[standard]`, which includes it) in your dependencies. A
+FastAPI build without uvicorn fails, and the build log names the fix.
 
 ## Flask
 
