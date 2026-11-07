@@ -86,7 +86,11 @@ No key manages credentials or authorization: none can mint a key, change a
 grant, add a sign-in provider, connect a git host, or point an app at a
 connected host (`git_connection_id` is refused with **403 `session_required`**).
 Visibility is not a grant: a personal key changes it as its owner may, and a
-deploy key only as part of creating or promoting an app.
+deploy key only along with code — `"visibility"` on `POST /api/v1/apps`, or the
+`visibility` form field on an upload (`POST /api/v1/apps/upload`, or
+`POST /api/v1/apps/{id}/upload` for an existing app, which is how an app is
+promoted between installs). `PATCH /api/v1/apps/{id}`, which `toft visibility`
+uses, is refused to it.
 The route list is an allow-list checked by a test that walks the router, so a new
 route is unreachable by keys until it is classified.
 
