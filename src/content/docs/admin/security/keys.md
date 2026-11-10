@@ -80,6 +80,33 @@ Routes allowed to `deploy` are a strict subset of a full personal key's.
 A deploy key must name an owning group when it creates an app. Each action is
 audited as `deploy_key:{id}`. An install holds at most 30 unrevoked deploy keys.
 
+## Short-lived keys from a trusted issuer
+
+Posit Workbench, and a Workbench session, can sign a person in without a
+long-lived key: they present the person's identity token from your identity
+provider, and the install gives back a key starting `toftx_` that expires on its
+own. Nothing is trusted until you add an issuer on **Admin → Authentication →
+Trusted issuers**:
+
+- **Issuer** — exactly as the tokens' `iss` claim carries it.
+- **Audience** — the caller's client ID at the identity provider, which its
+  tokens carry in `aud`. A token issued to any other application is refused.
+- **Finds the person by** — their identity on one of your sign-in providers
+  (`sub`), or their verified email. The person must have signed in to this
+  install before; no account is created.
+- **Key lifetime** — 1 to 24 hours, 8 by default.
+
+A short-lived key acts as its person and can do what a `deploy` key can —
+create, upload, deploy, roll back, environment variables, jobs — plus Posit
+Connect publishing. It cannot open an app or reach anything else. Whoever holds
+it can revoke it, and so can you, from the live keys listed under the issuers.
+Switching an issuer off or removing it stops every key it vouched for at once.
+Each exchange is in the audit log as *exchanged_key.create*, naming the issuer.
+
+The caller exchanges the token at `POST /api/v1/auth/token-exchange`, in the
+standard OAuth 2.0 token-exchange form; rsconnect uses its own path,
+`/__api__/v1/oauth/integrations/credentials`, which works the same way.
+
 ## What no key can do
 
 No key manages credentials or authorization: none can mint a key, change a
@@ -99,7 +126,7 @@ scope would work), `session_required` or `deploy_key_not_permitted` (no key
 would).
 
 A credential the install cannot read at all — a bearer token that is no key or
-session, an `X-API-Key` that is neither `toftu_` nor `toftd_` — is refused
+session, an `X-API-Key` that is not `toftu_`, `toftd_` or `toftx_` — is refused
 **401 `invalid_key`**. It is never treated as no credential, so a mistyped key
 cannot quietly see only what an anonymous visitor would. A request with no
 credential at all is still anonymous. A method a route does not take is
