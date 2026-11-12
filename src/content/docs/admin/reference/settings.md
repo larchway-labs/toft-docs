@@ -1,10 +1,10 @@
 ---
 title: Settings reference
-description: All 104 install-wide settings by API name, grouped by the admin page that renders them.
+description: All 108 install-wide settings by API name, grouped by the admin page that renders them.
 ---
 
 Every install-wide setting, by the name the API uses, grouped by the page that
-renders it. There are **104**. Settings for one app are on that app's own pages
+renders it. There are **108**. Settings for one app are on that app's own pages
 and are not listed here.
 
 | | |
@@ -46,7 +46,11 @@ variable underneath are the [operating dials](../../config/operating-dials/).
 | `notebook_render_timeout_seconds` | Let a notebook render for | How long a notebook may take to render during a deploy. Past this, the deploy fails. | 60–3,600 seconds |
 | `report_delivery_min_interval_minutes` | Email one report at most every | The shortest gap between two deliveries of one report. 0 removes the floor. | — |
 | `build_timeout_seconds` | Let a build command run for | How long one build step may take. Past this, the deploy fails. | 60–3,600 seconds |
-| `idle_sleep_minutes` | Sleep idle apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |
+| `idle_sleep_minutes` | Sleep idle shared apps after | Minutes without a request before a shared app is stopped to free memory. 0 turns this off. | 5–10,080 minutes, or 0 |
+| `isolated_idle_sleep_minutes` | Sleep idle isolated apps after | Minutes without a request before an isolated app’s pod is stopped, freeing what the cluster reserves for it. The next visit starts it again, which can take a few minutes; visitors see a page that refreshes until it is up. Jobs are not affected. 0 turns this off. Shown only where apps can be isolated. | 5–10,080 minutes, or 0 |
+| `isolated_sleep_window_enabled` | Sleep isolated apps only overnight | Isolated apps sleep only between the two times below, and once the window ends every isolated app still asleep is woken one at a time, so pods are warm for the working day. When off, the timeout applies at any hour. Does nothing while the isolated timeout is 0. | — |
+| `isolated_sleep_window_start` | Sleep window starts | From this time of day, idle isolated apps may sleep. 24-hour, in the install’s time zone (`display_time_zone`), or UTC when none is set. 19:00 as shipped. | HH:MM |
+| `isolated_sleep_window_end` | Sleep window ends | At this time, isolated apps still asleep are woken one at a time. Must differ from the start; a window may cross midnight. 07:00 as shipped. | HH:MM |
 | `job_concurrency_per_app` | Concurrent runs per app | How many of one app’s runs may be in flight at once. | 1–100 |
 | `max_queued_runs_per_app` | Runs waiting per app | How many of one app’s runs may wait. A start past this is refused until one finishes. | 1–10,000 runs |
 | `default_job_timeout_seconds` | Stop a job after | The timeout for a job whose toft.toml declares none. | 60–604,800 seconds |

@@ -20,7 +20,7 @@ it is finished, [lock it](../locking/) with a message saying who to ask.
 
 | | Measured in | Reversed by |
 |---|---|---|
-| **Sleeping** (`idle_sleep_minutes`) | Minutes | The next request |
+| **Sleeping** (`idle_sleep_minutes`, `isolated_idle_sleep_minutes`) | Minutes | The next request, or the end of the isolated sleep window |
 | **Quiet** | Months | Someone wanting it |
 
 An app can be awake and quiet, or asleep and busy.

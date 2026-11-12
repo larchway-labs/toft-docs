@@ -11,7 +11,7 @@ it is an implementation detail.
 | Runs as | A process on the Toft machine, placed and restarted by Toft's agent, bound to `127.0.0.1`, reached only through the proxy | One container per app, with its own network policy |
 | App-to-app isolation | **No** on most installs — an accepted risk. Where the machine allows it, each app gets its own network, files and processes (see [isolation](../../security/isolation/)) | Yes |
 | Resource limits | Held by the kernel where the machine allows it, otherwise sampled | Enforced per app |
-| Cost | No cluster, images or registry; fast sleep and wake | A cluster, [runner images](../../build/runner-images/), an [artifact store](../artifact-store/) |
+| Cost | No cluster, images or registry; fast sleep and wake (isolated apps sleep on their own timeout, and wake in minutes rather than seconds) | A cluster, [runner images](../../build/runner-images/), an [artifact store](../artifact-store/) |
 
 An isolated workload that keeps crashing is restarted a bounded number of times, then reported as no longer restarted.
 
